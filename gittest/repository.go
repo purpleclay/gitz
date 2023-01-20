@@ -82,7 +82,6 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 
 	// Initialize the repository so that it is ready for use
 	Exec(t, `git commit --allow-empty -m "initialize repository"`)
-	Exec(t, "git push origin main") // ?
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
