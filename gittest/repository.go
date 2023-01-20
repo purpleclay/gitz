@@ -81,7 +81,8 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
 	// Initialize the repository so that it is ready for use
-	Exec(t, "git commit --allow-empty -m 'initialize repository'")
+	Exec(t, `git commit --allow-empty -m "initialize repository"`)
+	Exec(t, "git push origin main") // ?
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
@@ -102,7 +103,7 @@ func importLog(log []LogEntry) error {
 	// It is important to reverse the list as we want to write the log back
 	// to the repository using oldest to latest
 	for i := len(log) - 1; i >= 0; i-- {
-		commitCmd := fmt.Sprintf("git commit --allow-empty -m '%s'", log[i].Commit)
+		commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, log[i].Commit)
 		if _, err := exec(commitCmd); err != nil {
 			return err
 		}
@@ -111,12 +112,12 @@ func importLog(log []LogEntry) error {
 			continue
 		}
 
-		tagCmd := fmt.Sprintf("git tag '%s'", log[i].Tag)
+		tagCmd := fmt.Sprintf(`git tag "%s"`, log[i].Tag)
 		if _, err := exec(tagCmd); err != nil {
 			return err
 		}
 
-		pushCmd := fmt.Sprintf("git push --atomic origin main '%s'", log[i].Tag)
+		pushCmd := fmt.Sprintf(`git push --atomic origin main "%s"`, log[i].Tag)
 		if _, err := exec(pushCmd); err != nil {
 			return err
 		}
