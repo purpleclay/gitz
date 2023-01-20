@@ -84,8 +84,8 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
 	// Initialize the repository so that it is ready for use
-	Exec(t, `git commit --allow-empty -m "initialize repository"`)
-	Exec(t, "git show-ref")
+	fmt.Println(Exec(t, `git commit --allow-empty -m "initialize repository"`))
+	fmt.Println(Exec(t, "git show-ref"))
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}

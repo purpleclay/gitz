@@ -58,7 +58,7 @@ func TestDeleteTag(t *testing.T) {
 	gittest.InitRepo(t, gittest.WithLog(log))
 
 	client := git.NewClient()
-	err := client.DeleteTag("0.1.0")
+	err := client.DeleteTag("0.11.0")
 
 	require.NoError(t, err)
 
