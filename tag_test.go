@@ -56,6 +56,7 @@ func TestDeleteTag(t *testing.T) {
 	log := "(tag: 0.1.0) feat: a brand new feature"
 
 	fmt.Println("Is there an issue with committing here??")
+	fmt.Println(gittest.Exec(t, "git config --list"))
 
 	gittest.InitRepo(t, gittest.WithLog(log))
 
