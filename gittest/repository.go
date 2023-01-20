@@ -36,6 +36,13 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
+const (
+	// DefaultAuthorName ...
+	DefaultAuthorName = "batman"
+	// DefaultAuthorEmail ...
+	DefaultAuthorEmail = "batman@dc.com"
+)
+
 // RepositoryOption ...
 type RepositoryOption func(*repositoryOptions)
 
@@ -82,6 +89,9 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 		require.NoError(t, importLog(options.Log))
 	}
 
+	require.NoError(t, setConfig("user.name", DefaultAuthorName))
+	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+
 	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
 	})
@@ -112,6 +122,12 @@ func importLog(log []LogEntry) error {
 	}
 
 	return nil
+}
+
+func setConfig(key, value string) error {
+	configCmd := fmt.Sprintf("git config %s '%s'", key, value)
+	_, err := exec(configCmd)
+	return err
 }
 
 // Exec ...
