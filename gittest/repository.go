@@ -77,6 +77,7 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, os.Chdir("./test"))
 
 	// Ensure an author identity is set
+	Exec(t, "git config --global init.defaultbranch main")
 	require.NoError(t, setConfig("user.name", DefaultAuthorName))
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
@@ -127,7 +128,7 @@ func importLog(log []LogEntry) error {
 }
 
 func setConfig(key, value string) error {
-	configCmd := fmt.Sprintf("git config %s '%s'", key, value)
+	configCmd := fmt.Sprintf(`git config %s "%s"`, key, value)
 	_, err := exec(configCmd)
 	return err
 }
