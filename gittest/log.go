@@ -20,51 +20,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package git_test
+package gittest
 
 import (
-	"fmt"
-	"testing"
-
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"bufio"
+	"strings"
 )
 
-// Formats a tag into the expected refs/tags/<tag> format
-func refs(tag string) string {
-	return fmt.Sprintf("refs/tags/%s", tag)
+// LogEntry ...
+type LogEntry struct {
+	Commit string
+	Tag    string
 }
 
-func TestTag(t *testing.T) {
-	gittest.InitRepo(t)
+// ParseLog ...
+func ParseLog(log string) []LogEntry {
+	entries := make([]LogEntry, 0)
 
-	client := git.NewClient()
-	err := client.Tag("0.1.0")
+	scanner := bufio.NewScanner(strings.NewReader(log))
+	scanner.Split(bufio.ScanLines)
 
-	require.NoError(t, err)
+	for scanner.Scan() {
+		entry := LogEntry{}
 
-	out := gittest.Tags(t)
-	assert.Contains(t, out, refs("0.1.0"))
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
 
-	out = gittest.RemoteTags(t)
-	assert.Contains(t, out, refs("0.1.0"))
-}
+		if strings.HasPrefix(line, "(tag:") {
+			// Parse the tag from the log line and add it to the log entry
+			tag, commit, _ := strings.Cut(line, ") ")
+			entry.Commit = commit
 
-func TestDeleteTag(t *testing.T) {
-	log := "(tag: 0.1.0) feat: a brand new feature"
+			// Process the tag, and strip off the 'tag: ' prefix
+			entry.Tag = strings.TrimLeft(tag, "(tag: ")
+		} else {
+			// Use the raw line of the log, as this will be a plain commit message
+			entry.Commit = line
+		}
 
-	gittest.InitRepo(t, gittest.WithLog(log))
+		entries = append(entries, entry)
+	}
 
-	client := git.NewClient()
-	err := client.DeleteTag("0.1.0")
-
-	require.NoError(t, err)
-
-	out := gittest.Tags(t)
-	assert.NotContains(t, out, refs("0.1.0"))
-
-	out = gittest.RemoteTags(t)
-	assert.NotContains(t, out, refs("0.1.0"))
+	return entries
 }

@@ -20,51 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package git_test
+package gittest_test
 
-import (
-	"fmt"
-	"testing"
-
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-// Formats a tag into the expected refs/tags/<tag> format
-func refs(tag string) string {
-	return fmt.Sprintf("refs/tags/%s", tag)
-}
-
-func TestTag(t *testing.T) {
-	gittest.InitRepo(t)
-
-	client := git.NewClient()
-	err := client.Tag("0.1.0")
-
-	require.NoError(t, err)
-
-	out := gittest.Tags(t)
-	assert.Contains(t, out, refs("0.1.0"))
-
-	out = gittest.RemoteTags(t)
-	assert.Contains(t, out, refs("0.1.0"))
-}
-
-func TestDeleteTag(t *testing.T) {
-	log := "(tag: 0.1.0) feat: a brand new feature"
-
-	gittest.InitRepo(t, gittest.WithLog(log))
-
-	client := git.NewClient()
-	err := client.DeleteTag("0.1.0")
-
-	require.NoError(t, err)
-
-	out := gittest.Tags(t)
-	assert.NotContains(t, out, refs("0.1.0"))
-
-	out = gittest.RemoteTags(t)
-	assert.NotContains(t, out, refs("0.1.0"))
-}
+// InitRepository
+// Exec
+// Tags
+// RemoteTags

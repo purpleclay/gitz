@@ -26,6 +26,20 @@ import "fmt"
 
 // Tag ...
 func (c *Client) Tag(tag string) error {
-	_, err := c.exec(fmt.Sprintf("git tag %s", tag))
+	if _, err := c.exec(fmt.Sprintf("git tag '%s'", tag)); err != nil {
+		return err
+	}
+
+	_, err := c.exec(fmt.Sprintf("git push origin '%s'", tag))
+	return err
+}
+
+// DeleteTag ...
+func (c *Client) DeleteTag(tag string) error {
+	if _, err := c.exec(fmt.Sprintf("git tag -d '%s'", tag)); err != nil {
+		return err
+	}
+
+	_, err := c.exec(fmt.Sprintf("git push --delete origin '%s'", tag))
 	return err
 }
