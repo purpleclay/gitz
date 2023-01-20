@@ -45,10 +45,7 @@ func TestTag(t *testing.T) {
 
 	require.NoError(t, err)
 
-	out := gittest.Exec(t, "git config --list")
-	fmt.Println(out)
-
-	out = gittest.Tags(t)
+	out := gittest.Tags(t)
 	assert.Contains(t, out, refs("0.1.0"))
 
 	out = gittest.RemoteTags(t)

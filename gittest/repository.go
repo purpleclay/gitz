@@ -76,6 +76,10 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 
 	require.NoError(t, os.Chdir("./test"))
 
+	// Ensure an author identity is set
+	require.NoError(t, setConfig("user.name", DefaultAuthorName))
+	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+
 	// Initialize the repository so that it is ready for use
 	Exec(t, "git commit --allow-empty -m 'initialize repository'")
 
@@ -88,9 +92,6 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 	if len(options.Log) > 0 {
 		require.NoError(t, importLog(options.Log))
 	}
-
-	require.NoError(t, setConfig("user.name", DefaultAuthorName))
-	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
 	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
