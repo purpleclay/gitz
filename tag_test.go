@@ -52,6 +52,17 @@ func TestTag(t *testing.T) {
 	assert.Contains(t, out, refs("0.1.0"))
 }
 
+func TestTagWithInvalidName(t *testing.T) {
+	gittest.InitRepo(t)
+
+	// See https://git-scm.com/docs/git-check-ref-format for details on what
+	// constitutes an invalid tag (ref)
+	client := git.NewClient()
+	err := client.Tag("[0.1.0]")
+
+	assert.ErrorContains(t, err, "'[0.1.0]' is not a valid tag name")
+}
+
 func TestDeleteTag(t *testing.T) {
 	log := "(tag: 0.1.0) feat: a brand new feature"
 
@@ -67,4 +78,13 @@ func TestDeleteTag(t *testing.T) {
 
 	out = gittest.RemoteTags(t)
 	assert.NotContains(t, out, refs("0.1.0"))
+}
+
+func TestDeleteMissingLocalTag(t *testing.T) {
+	gittest.InitRepo(t)
+
+	client := git.NewClient()
+	err := client.DeleteTag("0.1.0")
+
+	assert.ErrorContains(t, err, "tag '0.1.0' not found")
 }
