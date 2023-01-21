@@ -25,6 +25,7 @@ package git
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"strings"
 
@@ -51,9 +52,11 @@ func (c *Client) exec(cmd string) (string, error) {
 		interp.StdIO(os.Stdin, &buf, &buf),
 	)
 	if err != nil {
-		return buf.String(), err
+		return "", err
 	}
 
-	err = r.Run(context.Background(), p)
-	return buf.String(), err
+	if err := r.Run(context.Background(), p); err != nil {
+		return "", errors.New(buf.String())
+	}
+	return buf.String(), nil
 }

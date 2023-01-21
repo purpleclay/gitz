@@ -36,7 +36,7 @@ func (c *Client) Tag(tag string) error {
 
 // DeleteTag ...
 func (c *Client) DeleteTag(tag string) error {
-	if _, err := c.exec(fmt.Sprintf("git tag -d '%s'", tag)); err != nil {
+	if _, err := c.exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
 		return err
 	}
 

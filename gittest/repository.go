@@ -73,19 +73,17 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 	tmpDir := t.TempDir()
 	require.NoError(t, os.Chdir(tmpDir))
 
-	Exec(t, "git init --bare test.git")
+	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s test.git", DefaultBranch))
 	Exec(t, "git clone ./test.git")
-
 	require.NoError(t, os.Chdir("./test"))
 
 	// Ensure default config is set on the repository
-	require.NoError(t, setConfig("init.defaultbranch", DefaultBranch))
 	require.NoError(t, setConfig("user.name", DefaultAuthorName))
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
 	// Initialize the repository so that it is ready for use
-	fmt.Println(Exec(t, `git commit --allow-empty -m "initialize repository"`))
-	fmt.Println(Exec(t, "git show-ref"))
+	Exec(t, `git commit --allow-empty -m "initialize repository"`)
+	Exec(t, fmt.Sprintf("git push origin %s", DefaultBranch))
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
@@ -120,7 +118,7 @@ func importLog(log []LogEntry) error {
 			return err
 		}
 
-		pushCmd := fmt.Sprintf(`git push --atomic origin main "%s"`, log[i].Tag)
+		pushCmd := fmt.Sprintf(`git push --atomic origin %s "%s"`, DefaultBranch, log[i].Tag)
 		if _, err := exec(pushCmd); err != nil {
 			return err
 		}
