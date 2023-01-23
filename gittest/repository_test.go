@@ -22,7 +22,62 @@ SOFTWARE.
 
 package gittest_test
 
-// InitRepository
-// Exec
-// Tags
-// RemoteTags
+import (
+	"fmt"
+	"os/exec"
+	"testing"
+
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestInitRepositoryConfigSet(t *testing.T) {
+	gittest.InitRepo(t)
+
+	cmd := exec.Command("git", "config", "--list")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), fmt.Sprintf("user.name=%s", gittest.DefaultAuthorName))
+	assert.Contains(t, string(out), fmt.Sprintf("user.email=%s", gittest.DefaultAuthorName))
+}
+
+func TestInitRepositoryDefaultBranchSet(t *testing.T) {
+	gittest.InitRepo(t)
+
+	cmd := exec.Command("git", "branch")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Equal(t, fmt.Sprintf("* %s\n", gittest.DefaultBranch), string(out))
+}
+
+func TestInitRepositoryWithLog(t *testing.T) {
+	log := "feat: this is a brand new feature"
+	gittest.InitRepo(t, gittest.WithLog(log))
+
+	cmd := exec.Command("git", "log", "--oneline")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), "feat: this is a brand new feature")
+}
+
+func TestExecHasRawGitOutput(t *testing.T) {
+	out := gittest.Exec(t, "git --version")
+
+	assert.Contains(t, out, "git version")
+}
+
+// TODO: maybe clone a repository from purpleclay that has some tags and basic log
+
+func TestTags(t *testing.T) {
+	gittest.Tags(t)
+}
+
+func TestRemoteTags(t *testing.T) {
+	gittest.RemoteTags(t)
+}
+
+// TODO: function to create a temporary directory, initialize it with a repo, add a couple of tags, then check

@@ -153,6 +153,7 @@ func exec(cmd string) (string, error) {
 	r, err := interp.New(
 		interp.StdIO(os.Stdin, &buf, &buf),
 	)
+	// TODO: will this happen??
 	if err != nil {
 		return "", errors.New(buf.String())
 	}
