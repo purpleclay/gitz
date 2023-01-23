@@ -20,5 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Package git ...
+// Package git provides a simple lightweight library for performing fluent
+// git operations against an existing cloned repository
 package git

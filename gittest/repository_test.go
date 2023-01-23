@@ -33,7 +33,7 @@ import (
 )
 
 func TestInitRepositoryConfigSet(t *testing.T) {
-	gittest.InitRepo(t)
+	gittest.InitRepository(t)
 
 	out, err := exec.Command("git", "config", "--list").CombinedOutput()
 	require.NoError(t, err)
@@ -43,7 +43,7 @@ func TestInitRepositoryConfigSet(t *testing.T) {
 }
 
 func TestInitRepositoryDefaultBranchSet(t *testing.T) {
-	gittest.InitRepo(t)
+	gittest.InitRepository(t)
 
 	out, err := exec.Command("git", "branch").CombinedOutput()
 	require.NoError(t, err)
@@ -53,7 +53,7 @@ func TestInitRepositoryDefaultBranchSet(t *testing.T) {
 
 func TestInitRepositoryWithLog(t *testing.T) {
 	log := "feat: this is a brand new feature"
-	gittest.InitRepo(t, gittest.WithLog(log))
+	gittest.InitRepository(t, gittest.WithLog(log))
 
 	out, err := exec.Command("git", "log", "--oneline").CombinedOutput()
 	require.NoError(t, err)
@@ -67,8 +67,10 @@ func TestExecHasRawGitOutput(t *testing.T) {
 	assert.Contains(t, out, "git version")
 }
 
+// TODO: use an external repository and clone
+
 func TestTags(t *testing.T) {
-	gittest.InitRepo(t)
+	gittest.InitRepository(t)
 
 	_, err := exec.Command("git", "tag", "0.1.0").CombinedOutput()
 	require.NoError(t, err)
@@ -78,7 +80,7 @@ func TestTags(t *testing.T) {
 }
 
 func TestRemoteTags(t *testing.T) {
-	gittest.InitRepo(t)
+	gittest.InitRepository(t)
 
 	_, err := exec.Command("git", "tag", "0.2.0").CombinedOutput()
 	require.NoError(t, err)

@@ -37,30 +37,48 @@ import (
 )
 
 const (
-	// DefaultBranch ...
+	// DefaultBranch contains the name of the default branch used when
+	// initializing the test repository
 	DefaultBranch = "main"
-	// DefaultAuthorName ...
+
+	// DefaultAuthorName contains the author name written to local git
+	// config when initializing the test repository
 	DefaultAuthorName = "batman"
-	// DefaultAuthorEmail ...
+
+	// DefaultAuthorEmail contains the author email written to local git
+	// config when initializing the test repository
 	DefaultAuthorEmail = "batman@dc.com"
 )
 
-// RepositoryOption ...
+// RepositoryOption provides a utility for setting repository options during
+// initialization. A repository will always be created with sensible default
+// values
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
 	Log []LogEntry
 }
 
-// WithLog ...
+// WithLog ensures the repository will be initialized with a given snapshot
+// of commits and tags. Ideal for initializing a repository with a known
+// state
 func WithLog(log string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		opts.Log = ParseLog(log)
 	}
 }
 
-// InitRepo ...
-func InitRepo(t *testing.T, opts ...RepositoryOption) {
+// InitRepository will attempt to initialize a test repository capable of
+// supporting any git operation. Options can be provided to customize the
+// initialization process, changing the default configuration used.
+//
+// Repository creation consists of two phases. First, a bare repository
+// is initialized, before being cloned locally. This ensures a fully
+// working remote. Without customization, the test repository will
+// consist of single commit:
+//
+//	initialized repository
+func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	t.Helper()
 
 	// Track our current directory
@@ -82,7 +100,7 @@ func InitRepo(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
 	// Initialize the repository so that it is ready for use
-	Exec(t, `git commit --allow-empty -m "initialize repository"`)
+	Exec(t, `git commit --allow-empty -m "initialized repository"`)
 	Exec(t, fmt.Sprintf("git push origin %s", DefaultBranch))
 
 	// Process any provided options to ensure repository is initialized as required
@@ -134,7 +152,8 @@ func setConfig(key, value string) error {
 	return err
 }
 
-// Exec ...
+// Exec will execute any given git command (expecting no failures) and
+// return any received output back to the caller
 func Exec(t *testing.T, cmd string) string {
 	t.Helper()
 
@@ -166,13 +185,20 @@ func exec(cmd string) (string, error) {
 	return buf.String(), nil
 }
 
-// Tags ...
+// Tags returns a list of all local tags associated with the current
+// repository. Raw output is returned from the git command:
+//
+//	git for-each-ref refs/tags
 func Tags(t *testing.T) string {
 	t.Helper()
 	return Exec(t, "git for-each-ref refs/tags")
 }
 
-// RemoteTags ...
+// RemoteTags returns a list of all tags that have been pushed to the
+// remote origin of the current repository. Raw output is returned from
+// the git command:
+//
+//	git ls-remote --tags
 func RemoteTags(t *testing.T) string {
 	t.Helper()
 	return Exec(t, "git ls-remote --tags")

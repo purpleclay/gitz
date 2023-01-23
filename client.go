@@ -36,7 +36,7 @@ import (
 // Client ...
 type Client struct{}
 
-// NewClient ...
+// NewClient returns a new instance of the git client
 func NewClient() *Client {
 	return &Client{}
 }
