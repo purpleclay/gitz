@@ -1,0 +1,65 @@
+# Copyright (c) 2022 Purple Clay
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# in the Software without restriction, including without limitation the rights
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+version: "3"
+
+vars:
+  REPORTDIR: reports
+
+tasks:
+  default:
+    desc: Runs all of the default tasks
+    cmds:
+      - task: lint
+      - task: test
+
+  reports-dir:
+    desc: Creates the report directory if it doesn't exist
+    cmds:
+      - mkdir -p {{.REPORTDIR}}
+    status:
+      - test -d {{.REPORTDIR}}
+
+  test:
+    desc: Run the tests
+    deps: [reports-dir]
+    cmds:
+      - go test -short -race -vet=off -p 1 -covermode=atomic -coverprofile={{.REPORTDIR}}/unittest.out -json ./... | tee {{.REPORTDIR}}/unittest.json
+
+  lint:
+    desc: Lint the code using golangci
+    deps: [reports-dir]
+    cmds:
+      - golangci-lint run --timeout 5m0s --out-format checkstyle | tee {{.REPORTDIR}}/golangci-lint.xml
+
+  format:
+    desc: Format the code using Gofumpt
+    cmds:
+      - gofumpt -w -l .
+
+  clean:
+    desc: Delete all artefacts from recent build
+    cmds:
+      - task: remove-reports
+
+  remove-reports:
+    desc: Delete an existing reports directory
+    cmds:
+      - rm -rf {{.REPORTDIR}}
