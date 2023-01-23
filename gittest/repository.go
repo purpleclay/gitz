@@ -119,7 +119,8 @@ func importLog(log []LogEntry) error {
 		}
 
 		pushCmd := fmt.Sprintf(`git push --atomic origin %s "%s"`, DefaultBranch, log[i].Tag)
-		if _, err := exec(pushCmd); err != nil {
+		if out, err := exec(pushCmd); err != nil {
+			fmt.Println(out)
 			return err
 		}
 	}

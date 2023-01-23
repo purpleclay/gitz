@@ -35,8 +35,7 @@ import (
 func TestInitRepositoryConfigSet(t *testing.T) {
 	gittest.InitRepo(t)
 
-	cmd := exec.Command("git", "config", "--list")
-	out, err := cmd.CombinedOutput()
+	out, err := exec.Command("git", "config", "--list").CombinedOutput()
 	require.NoError(t, err)
 
 	assert.Contains(t, string(out), fmt.Sprintf("user.name=%s", gittest.DefaultAuthorName))
@@ -46,8 +45,7 @@ func TestInitRepositoryConfigSet(t *testing.T) {
 func TestInitRepositoryDefaultBranchSet(t *testing.T) {
 	gittest.InitRepo(t)
 
-	cmd := exec.Command("git", "branch")
-	out, err := cmd.CombinedOutput()
+	out, err := exec.Command("git", "branch").CombinedOutput()
 	require.NoError(t, err)
 
 	assert.Equal(t, fmt.Sprintf("* %s\n", gittest.DefaultBranch), string(out))
@@ -57,8 +55,7 @@ func TestInitRepositoryWithLog(t *testing.T) {
 	log := "feat: this is a brand new feature"
 	gittest.InitRepo(t, gittest.WithLog(log))
 
-	cmd := exec.Command("git", "log", "--oneline")
-	out, err := cmd.CombinedOutput()
+	out, err := exec.Command("git", "log", "--oneline").CombinedOutput()
 	require.NoError(t, err)
 
 	assert.Contains(t, string(out), "feat: this is a brand new feature")
@@ -70,14 +67,25 @@ func TestExecHasRawGitOutput(t *testing.T) {
 	assert.Contains(t, out, "git version")
 }
 
-// TODO: maybe clone a repository from purpleclay that has some tags and basic log
-
 func TestTags(t *testing.T) {
-	gittest.Tags(t)
+	gittest.InitRepo(t)
+
+	_, err := exec.Command("git", "tag", "0.1.0").CombinedOutput()
+	require.NoError(t, err)
+
+	out := gittest.Tags(t)
+	assert.Contains(t, out, "refs/tags/0.1.0")
 }
 
 func TestRemoteTags(t *testing.T) {
-	gittest.RemoteTags(t)
-}
+	gittest.InitRepo(t)
 
-// TODO: function to create a temporary directory, initialize it with a repo, add a couple of tags, then check
+	_, err := exec.Command("git", "tag", "0.2.0").CombinedOutput()
+	require.NoError(t, err)
+
+	_, err = exec.Command("git", "push", "origin", "0.2.0").CombinedOutput()
+	require.NoError(t, err)
+
+	out := gittest.RemoteTags(t)
+	assert.Contains(t, out, "refs/tags/0.2.0")
+}
