@@ -48,6 +48,10 @@ const (
 	// DefaultAuthorEmail contains the author email written to local git
 	// config when initializing the test repository
 	DefaultAuthorEmail = "batman@dc.com"
+
+	// DefaultAuthorLog contains the default git representation of an author
+	// and can be used for matching against entries within a git log
+	DefaultAuthorLog = "batman <batman@dc.com>"
 )
 
 // RepositoryOption provides a utility for setting repository options during
@@ -202,4 +206,22 @@ func Tags(t *testing.T) string {
 func RemoteTags(t *testing.T) string {
 	t.Helper()
 	return Exec(t, "git ls-remote --tags")
+}
+
+// StageFile will attempt to use the provided path to stage a file that
+// has been modified. The following git command is executed:
+//
+//	git add '<path>'
+func StageFile(t *testing.T, path string) {
+	t.Helper()
+	Exec(t, fmt.Sprintf("git add '%s'", path))
+}
+
+// LastCommit returns the last commit from the git log of the current
+// repository. Raw output is returned from the git command:
+//
+//	git log -n1
+func LastCommit(t *testing.T) string {
+	t.Helper()
+	return Exec(t, "git log -n1")
 }

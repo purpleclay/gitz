@@ -24,7 +24,9 @@ package gittest_test
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/purpleclay/gitz/gittest"
@@ -67,8 +69,6 @@ func TestExecHasRawGitOutput(t *testing.T) {
 	assert.Contains(t, out, "git version")
 }
 
-// TODO: use an external repository and clone
-
 func TestTags(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -90,4 +90,44 @@ func TestRemoteTags(t *testing.T) {
 
 	out := gittest.RemoteTags(t)
 	assert.Contains(t, out, "refs/tags/0.2.0")
+}
+
+func TestStageFile(t *testing.T) {
+	gittest.InitRepository(t)
+	tempFile(t, "test.txt", "this is a test")
+
+	gittest.StageFile(t, "test.txt")
+
+	out, err := exec.Command("git", "diff", "--staged", "--name-only").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), "test.txt")
+}
+
+func TestLastCommit(t *testing.T) {
+	gittest.InitRepository(t)
+
+	_, err := exec.Command("git", "commit", "--allow-empty", "-m", "this is a test").CombinedOutput()
+	require.NoError(t, err)
+
+	log := gittest.LastCommit(t)
+	assert.Contains(t, log, "this is a test")
+}
+
+func tempFile(t *testing.T, path, content string) {
+	t.Helper()
+
+	err := os.MkdirAll(filepath.Dir(path), 0o755)
+	require.NoError(t, err)
+
+	err = os.WriteFile(path, []byte(content), 0o644)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		// Check for the files existence before attempting to remove it. Depending
+		// on cleanup order, it may have already been removed
+		if _, err := os.Stat(path); err != nil {
+			require.NoError(t, os.RemoveAll(path))
+		}
+	})
 }
