@@ -82,7 +82,21 @@ func WithLog(log string) RepositoryOption {
 	}
 }
 
-// WithFiles ...
+// WithFiles ensures the repository will be initialized with a given set
+// of named files. Both relative and full file paths are supported. Each
+// file will be generated using default data, but will remain untracked
+// by the repository.
+//
+// For example:
+//
+//	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
+//
+// This will result in a repository containing two untracked files. Which
+// can be verified by checking the git status:
+//
+//	$ git status --porcelain
+//	?? file1.txt
+//	?? file2.txt
 func WithFiles(files ...string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		for _, f := range files {
@@ -91,7 +105,21 @@ func WithFiles(files ...string) RepositoryOption {
 	}
 }
 
-// WithStagedFiles ...
+// WithStagedFiles ensures the repository will be initialized with a given
+// set of named files. Both relative and full file paths are supported. Each
+// file will be generated using default data, and will be staged within the
+// repository.
+//
+// For example:
+//
+//	gittest.InitRepository(t, gittest.WithStagedFiles("file1.txt", "file2.txt"))
+//
+// This will result in a repository containing two staged files. Which
+// can be verified by checking the git status:
+//
+//	$ git status --porcelain
+//	A  file1.txt
+//	A  file2.txt
 func WithStagedFiles(files ...string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		for _, f := range files {

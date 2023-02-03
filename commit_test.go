@@ -23,8 +23,6 @@ SOFTWARE.
 package git_test
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -33,33 +31,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: this should be deleted
-
-func tempFile(t *testing.T, path, content string) {
-	t.Helper()
-
-	err := os.MkdirAll(filepath.Dir(path), 0o755)
-	require.NoError(t, err)
-
-	err = os.WriteFile(path, []byte(content), 0o644)
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		// Check for the files existence before attempting to remove it. Depending
-		// on cleanup order, it may have already been removed
-		if _, err := os.Stat(path); err != nil {
-			require.NoError(t, os.RemoveAll(path))
-		}
-	})
-}
-
 func TestCommit(t *testing.T) {
-	gittest.InitRepository(t)
-	// TODO: add a new option to create the repository with temporary files, this can also be staged
-	// WithFiles
-	// WithStagedFiles
-	tempFile(t, "test.txt", "this is a test")
-	gittest.StageFile(t, "test.txt")
+	gittest.InitRepository(t, gittest.WithStagedFiles("test.txt"))
 
 	client := git.NewClient()
 	err := client.Commit("this is an example commit message")
@@ -71,7 +44,7 @@ func TestCommit(t *testing.T) {
 	assert.Contains(t, out, "this is an example commit message")
 }
 
-func TestCommitCleanWorkingTree(t *testing.T) {
+func TestCommitCleanWorkingTreeError(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client := git.NewClient()

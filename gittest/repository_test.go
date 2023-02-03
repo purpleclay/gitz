@@ -32,6 +32,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Creates the expected git status message of an untracked file, as based
+// on the official git documentation: https://git-scm.com/docs/git-status#_short_format
+//
+//	?? file
+func statusUntracked(file string) string {
+	return fmt.Sprintf("?? %s", file)
+}
+
+// Creates the expected git status message of a staged file, as based
+// on the official git documentation: https://git-scm.com/docs/git-status#_short_format
+//
+//	A  file
+func statusAdded(file string) string {
+	return fmt.Sprintf("A  %s", file)
+}
+
 func TestInitRepositoryConfigSet(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -39,7 +55,7 @@ func TestInitRepositoryConfigSet(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Contains(t, string(out), fmt.Sprintf("user.name=%s", gittest.DefaultAuthorName))
-	assert.Contains(t, string(out), fmt.Sprintf("user.email=%s", gittest.DefaultAuthorName))
+	assert.Contains(t, string(out), fmt.Sprintf("user.email=%s", gittest.DefaultAuthorEmail))
 }
 
 func TestInitRepositoryDefaultBranchSet(t *testing.T) {
@@ -62,11 +78,23 @@ func TestInitRepositoryWithLog(t *testing.T) {
 }
 
 func TestInitRepositoryWithFiles(t *testing.T) {
-	// TODO
+	gittest.InitRepository(t, gittest.WithFiles("a.txt", "b.txt"))
+
+	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), statusUntracked("a.txt"))
+	assert.Contains(t, string(out), statusUntracked("b.txt"))
 }
 
 func TestInitRepositoryWithStagedFiles(t *testing.T) {
-	// TODO
+	gittest.InitRepository(t, gittest.WithStagedFiles("c.txt", "d.txt"))
+
+	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), statusAdded("c.txt"))
+	assert.Contains(t, string(out), statusAdded("d.txt"))
 }
 
 func TestExecHasRawGitOutput(t *testing.T) {
@@ -103,10 +131,10 @@ func TestStageFile(t *testing.T) {
 
 	gittest.StageFile(t, "test.txt")
 
-	out, err := exec.Command("git", "diff", "--staged", "--name-only").CombinedOutput()
+	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
 	require.NoError(t, err)
 
-	assert.Contains(t, string(out), "test.txt")
+	assert.Contains(t, string(out), "A  test.txt")
 }
 
 func TestLastCommit(t *testing.T) {
