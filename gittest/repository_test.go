@@ -32,6 +32,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Creates the expected git status message of an untracked file, as based
+// on the official git documentation: https://git-scm.com/docs/git-status#_short_format
+//
+//	?? file
+func statusUntracked(file string) string {
+	return fmt.Sprintf("?? %s", file)
+}
+
+// Creates the expected git status message of a staged file, as based
+// on the official git documentation: https://git-scm.com/docs/git-status#_short_format
+//
+//	A  file
+func statusAdded(file string) string {
+	return fmt.Sprintf("A  %s", file)
+}
+
 func TestInitRepositoryConfigSet(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -39,7 +55,7 @@ func TestInitRepositoryConfigSet(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Contains(t, string(out), fmt.Sprintf("user.name=%s", gittest.DefaultAuthorName))
-	assert.Contains(t, string(out), fmt.Sprintf("user.email=%s", gittest.DefaultAuthorName))
+	assert.Contains(t, string(out), fmt.Sprintf("user.email=%s", gittest.DefaultAuthorEmail))
 }
 
 func TestInitRepositoryDefaultBranchSet(t *testing.T) {
@@ -61,13 +77,31 @@ func TestInitRepositoryWithLog(t *testing.T) {
 	assert.Contains(t, string(out), "feat: this is a brand new feature")
 }
 
+func TestInitRepositoryWithFiles(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("a.txt", "b.txt"))
+
+	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), statusUntracked("a.txt"))
+	assert.Contains(t, string(out), statusUntracked("b.txt"))
+}
+
+func TestInitRepositoryWithStagedFiles(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithStagedFiles("c.txt", "d.txt"))
+
+	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), statusAdded("c.txt"))
+	assert.Contains(t, string(out), statusAdded("d.txt"))
+}
+
 func TestExecHasRawGitOutput(t *testing.T) {
 	out := gittest.Exec(t, "git --version")
 
 	assert.Contains(t, out, "git version")
 }
-
-// TODO: use an external repository and clone
 
 func TestTags(t *testing.T) {
 	gittest.InitRepository(t)
@@ -90,4 +124,25 @@ func TestRemoteTags(t *testing.T) {
 
 	out := gittest.RemoteTags(t)
 	assert.Contains(t, out, "refs/tags/0.2.0")
+}
+
+func TestStageFile(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("test.txt"))
+
+	gittest.StageFile(t, "test.txt")
+
+	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), "A  test.txt")
+}
+
+func TestLastCommit(t *testing.T) {
+	gittest.InitRepository(t)
+
+	_, err := exec.Command("git", "commit", "--allow-empty", "-m", "this is a test").CombinedOutput()
+	require.NoError(t, err)
+
+	log := gittest.LastCommit(t)
+	assert.Contains(t, log, "this is a test")
 }

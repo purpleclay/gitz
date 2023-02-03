@@ -28,6 +28,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -48,6 +49,13 @@ const (
 	// DefaultAuthorEmail contains the author email written to local git
 	// config when initializing the test repository
 	DefaultAuthorEmail = "batman@dc.com"
+
+	// DefaultAuthorLog contains the default git representation of an author
+	// and can be used for matching against entries within a git log
+	DefaultAuthorLog = "batman <batman@dc.com>"
+
+	// grabbed from: https://loremipsum.io/
+	fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 )
 
 // RepositoryOption provides a utility for setting repository options during
@@ -56,7 +64,13 @@ const (
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
-	Log []LogEntry
+	Log   []LogEntry
+	Files []file
+}
+
+type file struct {
+	Path   string
+	Staged bool
 }
 
 // WithLog ensures the repository will be initialized with a given snapshot
@@ -65,6 +79,52 @@ type repositoryOptions struct {
 func WithLog(log string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		opts.Log = ParseLog(log)
+	}
+}
+
+// WithFiles ensures the repository will be initialized with a given set
+// of named files. Both relative and full file paths are supported. Each
+// file will be generated using default data, but will remain untracked
+// by the repository.
+//
+// For example:
+//
+//	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
+//
+// This will result in a repository containing two untracked files. Which
+// can be verified by checking the git status:
+//
+//	$ git status --porcelain
+//	?? file1.txt
+//	?? file2.txt
+func WithFiles(files ...string) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		for _, f := range files {
+			opts.Files = append(opts.Files, file{Path: f, Staged: false})
+		}
+	}
+}
+
+// WithStagedFiles ensures the repository will be initialized with a given
+// set of named files. Both relative and full file paths are supported. Each
+// file will be generated using default data, and will be staged within the
+// repository.
+//
+// For example:
+//
+//	gittest.InitRepository(t, gittest.WithStagedFiles("file1.txt", "file2.txt"))
+//
+// This will result in a repository containing two staged files. Which
+// can be verified by checking the git status:
+//
+//	$ git status --porcelain
+//	A  file1.txt
+//	A  file2.txt
+func WithStagedFiles(files ...string) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		for _, f := range files {
+			opts.Files = append(opts.Files, file{Path: f, Staged: true})
+		}
 	}
 }
 
@@ -113,9 +173,28 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 		require.NoError(t, importLog(options.Log))
 	}
 
+	for _, f := range options.Files {
+		require.NoError(t, tempFile(f.Path, fileContent))
+		if f.Staged {
+			StageFile(t, f.Path)
+		}
+	}
+
 	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
 	})
+}
+
+func tempFile(path, content string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func importLog(log []LogEntry) error {
@@ -202,4 +281,22 @@ func Tags(t *testing.T) string {
 func RemoteTags(t *testing.T) string {
 	t.Helper()
 	return Exec(t, "git ls-remote --tags")
+}
+
+// StageFile will attempt to use the provided path to stage a file that
+// has been modified. The following git command is executed:
+//
+//	git add '<path>'
+func StageFile(t *testing.T, path string) {
+	t.Helper()
+	Exec(t, fmt.Sprintf("git add '%s'", path))
+}
+
+// LastCommit returns the last commit from the git log of the current
+// repository. Raw output is returned from the git command:
+//
+//	git log -n1
+func LastCommit(t *testing.T) string {
+	t.Helper()
+	return Exec(t, "git log -n1")
 }
