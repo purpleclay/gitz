@@ -24,9 +24,7 @@ package gittest_test
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"testing"
 
 	"github.com/purpleclay/gitz/gittest"
@@ -63,6 +61,14 @@ func TestInitRepositoryWithLog(t *testing.T) {
 	assert.Contains(t, string(out), "feat: this is a brand new feature")
 }
 
+func TestInitRepositoryWithFiles(t *testing.T) {
+	// TODO
+}
+
+func TestInitRepositoryWithStagedFiles(t *testing.T) {
+	// TODO
+}
+
 func TestExecHasRawGitOutput(t *testing.T) {
 	out := gittest.Exec(t, "git --version")
 
@@ -93,8 +99,7 @@ func TestRemoteTags(t *testing.T) {
 }
 
 func TestStageFile(t *testing.T) {
-	gittest.InitRepository(t)
-	tempFile(t, "test.txt", "this is a test")
+	gittest.InitRepository(t, gittest.WithFiles("test.txt"))
 
 	gittest.StageFile(t, "test.txt")
 
@@ -112,22 +117,4 @@ func TestLastCommit(t *testing.T) {
 
 	log := gittest.LastCommit(t)
 	assert.Contains(t, log, "this is a test")
-}
-
-func tempFile(t *testing.T, path, content string) {
-	t.Helper()
-
-	err := os.MkdirAll(filepath.Dir(path), 0o755)
-	require.NoError(t, err)
-
-	err = os.WriteFile(path, []byte(content), 0o644)
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		// Check for the files existence before attempting to remove it. Depending
-		// on cleanup order, it may have already been removed
-		if _, err := os.Stat(path); err != nil {
-			require.NoError(t, os.RemoveAll(path))
-		}
-	})
 }
