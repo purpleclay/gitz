@@ -41,7 +41,7 @@ tasks:
     desc: Run the tests
     deps: [reports-dir]
     cmds:
-      - go test -short -race -vet=off -p 1 -covermode=atomic -coverprofile={{.REPORTDIR}}/unittest.out -json ./... | tee {{.REPORTDIR}}/unittest.json
+      - go test -short -race -vet=off -shuffle=on -p 1 -covermode=atomic -coverprofile={{.REPORTDIR}}/unittest.out -json ./... | tee {{.REPORTDIR}}/unittest.json
 
   lint:
     desc: Lint the code using golangci
