@@ -146,3 +146,10 @@ func TestLastCommit(t *testing.T) {
 	log := gittest.LastCommit(t)
 	assert.Contains(t, log, "this is a test")
 }
+
+func TestPorcelainStatus(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
+
+	status := gittest.PorcelainStatus(t)
+	assert.Equal(t, "?? file1.txt\n?? file2.txt\n", status)
+}
