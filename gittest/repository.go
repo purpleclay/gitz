@@ -300,3 +300,13 @@ func LastCommit(t *testing.T) string {
 	t.Helper()
 	return Exec(t, "git log -n1")
 }
+
+// PorcelainStatus returns a snapshot of the current status of a
+// repository (working directory) in an easy to parse format.
+// Raw output is returned from the git command:
+//
+//	git status --porcelain
+func PorcelainStatus(t *testing.T) string {
+	t.Helper()
+	return Exec(t, "git status --porcelain")
+}
