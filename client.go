@@ -45,11 +45,10 @@ func (e ErrGitMissing) Error() string {
 	return fmt.Sprintf("git is not installed under the PATH environment variable. PATH resolves to %s", e.PathEnv)
 }
 
-// Client provides a way of performing fluent operations against an
-// existing git client. Any git operation exposed by this client is
-// effectively handed-off to an installed git client on the current
-// OS. Git operations will be mapped as closely as possible to the
-// official Git specification
+// Client provides a way of performing fluent operations against git.
+// Any git operation exposed by this client are effectively handed-off
+// to an installed git client on the current OS. Git operations will be
+// mapped as closely as possible to the official Git specification
 type Client struct {
 	gitVersion string
 }
