@@ -31,23 +31,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStage(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("file.txt"))
-
-	client, _ := git.NewClient()
-	err := client.Stage("file.txt")
+func TestNewClientGitFound(t *testing.T) {
+	client, err := git.NewClient()
 
 	require.NoError(t, err)
-	status := gittest.PorcelainStatus(t)
-
-	assert.Equal(t, "A  file.txt\n", status)
+	expected := gittest.Exec(t, "git --version")
+	assert.Equal(t, expected, client.Version())
 }
 
-func TestStageMissingFileError(t *testing.T) {
-	gittest.InitRepository(t)
+func TestNewClientGitMissingError(t *testing.T) {
+	// Temporarily remove git from the PATH
+	t.Setenv("PATH", "/fake")
 
-	client, _ := git.NewClient()
-	err := client.Stage("missing.txt")
+	client, err := git.NewClient()
 
-	require.ErrorContains(t, err, "pathspec 'missing.txt' did not match any files")
+	require.ErrorAs(t, err, &git.ErrGitMissing{})
+	assert.EqualError(t, err, "git is not installed under the PATH environment variable. PATH resolves to /fake")
+	assert.Nil(t, client)
 }

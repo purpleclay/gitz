@@ -32,6 +32,7 @@ import (
 )
 
 func TestLog(t *testing.T) {
+	t.Parallel()
 	log := `fix: parsing error when input string is too long
 ci: extend the existing build workflow to include integration tests
 docs: create initial mkdocs material documentation
@@ -40,7 +41,7 @@ feat: add first operation to library`
 
 	gittest.InitRepository(t, gittest.WithLog(log))
 
-	client := git.NewClient()
+	client, _ := git.NewClient()
 	out, err := client.Log()
 
 	require.NoError(t, err)

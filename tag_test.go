@@ -40,7 +40,7 @@ func refs(tag string) string {
 func TestTag(t *testing.T) {
 	gittest.InitRepository(t)
 
-	client := git.NewClient()
+	client, _ := git.NewClient()
 	err := client.Tag("0.1.0")
 
 	require.NoError(t, err)
@@ -57,7 +57,7 @@ func TestTagWithInvalidName(t *testing.T) {
 
 	// See https://git-scm.com/docs/git-check-ref-format for details on what
 	// constitutes an invalid tag (ref)
-	client := git.NewClient()
+	client, _ := git.NewClient()
 	err := client.Tag("[0.1.0]")
 
 	assert.ErrorContains(t, err, "'[0.1.0]' is not a valid tag name")
@@ -68,7 +68,7 @@ func TestDeleteTag(t *testing.T) {
 
 	gittest.InitRepository(t, gittest.WithLog(log))
 
-	client := git.NewClient()
+	client, _ := git.NewClient()
 	err := client.DeleteTag("0.1.0")
 
 	require.NoError(t, err)
@@ -83,7 +83,7 @@ func TestDeleteTag(t *testing.T) {
 func TestDeleteMissingLocalTag(t *testing.T) {
 	gittest.InitRepository(t)
 
-	client := git.NewClient()
+	client, _ := git.NewClient()
 	err := client.DeleteTag("0.1.0")
 
 	assert.ErrorContains(t, err, "tag '0.1.0' not found")

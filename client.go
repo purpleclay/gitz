@@ -26,6 +26,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -33,31 +34,56 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
-// Client ...
-type Client struct{}
-
-// NewClient returns a new instance of the git client
-func NewClient() *Client {
-	return &Client{}
+// ErrGitMissing is raised when no git client was identified
+// within the PATH environment variable on the current OS
+type ErrGitMissing struct {
+	PathEnv string
 }
 
-func (c *Client) exec(cmd string) (string, error) {
+// Error returns a formatted message of the current error
+func (e ErrGitMissing) Error() string {
+	return fmt.Sprintf("git is not installed under the PATH environment variable. PATH resolves to %s", e.PathEnv)
+}
+
+// Client provides a way of performing fluent operations against an
+// existing git client. Any git operation exposed by this client is
+// effectively handed-off to an installed git client on the current
+// OS. Git operations will be mapped as closely as possible to the
+// official Git specification
+type Client struct {
+	gitVersion string
+}
+
+// NewClient returns a new instance of the git client
+func NewClient() (*Client, error) {
+	if _, err := exec("type git"); err != nil {
+		return nil, ErrGitMissing{PathEnv: os.Getenv("PATH")}
+	}
+
+	c := &Client{}
+	c.gitVersion, _ = exec("git --version")
+	return c, nil
+}
+
+// Version of git used by the client
+func (c *Client) Version() string {
+	return c.gitVersion
+}
+
+func exec(cmd string) (string, error) {
 	p, err := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 	if err != nil {
 		return "", err
 	}
 
 	var buf bytes.Buffer
-	r, err := interp.New(
+	r, _ := interp.New(
 		interp.StdIO(os.Stdin, &buf, &buf),
 	)
-	// TODO: will this happen
-	if err != nil {
-		return "", err
-	}
 
 	if err := r.Run(context.Background(), p); err != nil {
 		return "", errors.New(buf.String())
 	}
+
 	return buf.String(), nil
 }

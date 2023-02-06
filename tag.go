@@ -27,20 +27,20 @@ import "fmt"
 // Tag a repository with a lightweight tag and push it to the configured
 // remote origin
 func (c *Client) Tag(tag string) error {
-	if _, err := c.exec(fmt.Sprintf("git tag '%s'", tag)); err != nil {
+	if _, err := exec(fmt.Sprintf("git tag '%s'", tag)); err != nil {
 		return err
 	}
 
-	_, err := c.exec(fmt.Sprintf("git push origin '%s'", tag))
+	_, err := exec(fmt.Sprintf("git push origin '%s'", tag))
 	return err
 }
 
 // DeleteTag a tag both locally and from the remote origin
 func (c *Client) DeleteTag(tag string) error {
-	if _, err := c.exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
+	if _, err := exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
 		return err
 	}
 
-	_, err := c.exec(fmt.Sprintf("git push --delete origin '%s'", tag))
+	_, err := exec(fmt.Sprintf("git push --delete origin '%s'", tag))
 	return err
 }
