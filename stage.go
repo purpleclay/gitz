@@ -27,7 +27,7 @@ import "fmt"
 // Stage changes to a particular file within the current repository (working
 // directory) ready for inclusion in the next commit
 func (c *Client) Stage(path string) error {
-	if _, err := c.exec(fmt.Sprintf("git add '%s'", path)); err != nil {
+	if _, err := exec(fmt.Sprintf("git add '%s'", path)); err != nil {
 		return err
 	}
 

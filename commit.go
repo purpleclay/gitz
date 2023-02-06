@@ -27,7 +27,7 @@ import "fmt"
 // Commit a snapshot of changes within the current repository (working directory)
 // and describe those changes with a given log message
 func (c *Client) Commit(msg string) error {
-	if _, err := c.exec(fmt.Sprintf("git commit -m '%s'", msg)); err != nil {
+	if _, err := exec(fmt.Sprintf("git commit -m '%s'", msg)); err != nil {
 		return err
 	}
 

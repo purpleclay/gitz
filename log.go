@@ -28,5 +28,5 @@ package git
 //
 //	git log --pretty=oneline --abbrev-commit --no-decorate --no-color
 func (c *Client) Log() (string, error) {
-	return c.exec("git log --pretty=oneline --abbrev-commit --no-decorate --no-color")
+	return exec("git log --pretty=oneline --abbrev-commit --no-decorate --no-color")
 }
