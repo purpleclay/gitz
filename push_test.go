@@ -31,22 +31,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLog(t *testing.T) {
-	log := `fix: parsing error when input string is too long
-ci: extend the existing build workflow to include integration tests
-docs: create initial mkdocs material documentation
-feat: add second operation to library
-feat: add first operation to library`
-
-	gittest.InitRepository(t, gittest.WithLog(log))
+func TestPushCommit(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithLocalCommits("testing git push"))
 
 	client, _ := git.NewClient()
-	out, err := client.Log()
+	_, err := client.Push()
 
 	require.NoError(t, err)
-	assert.Contains(t, out, "fix: parsing error when input string is too long")
-	assert.Contains(t, out, "ci: extend the existing build workflow to include integration tests")
-	assert.Contains(t, out, "docs: create initial mkdocs material documentation")
-	assert.Contains(t, out, "feat: add second operation to library")
-	assert.Contains(t, out, "feat: add first operation to library")
+	remoteLog := gittest.LogRemote(t)
+	require.Contains(t, remoteLog, "testing git push")
+}
+
+func TestPushTag(t *testing.T) {
+	gittest.InitRepository(t)
+	gittest.TagLocal(t, "0.1.0")
+
+	client, _ := git.NewClient()
+	_, err := client.PushTag("0.1.0")
+
+	require.NoError(t, err)
+	out := gittest.RemoteTags(t)
+	assert.Contains(t, out, refs("0.1.0"))
 }

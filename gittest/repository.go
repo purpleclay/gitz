@@ -42,6 +42,10 @@ const (
 	// initializing the test repository
 	DefaultBranch = "main"
 
+	// DefaultRemoteBranch contains the name of the default branch when
+	// initializing the remote bare repository
+	DefaultRemoteBranch = "origin/main"
+
 	// DefaultAuthorName contains the author name written to local git
 	// config when initializing the test repository
 	DefaultAuthorName = "batman"
@@ -64,8 +68,9 @@ const (
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
-	Log   []LogEntry
-	Files []file
+	Log     []LogEntry
+	Files   []file
+	Commits []string
 }
 
 type file struct {
@@ -128,9 +133,23 @@ func WithStagedFiles(files ...string) RepositoryOption {
 	}
 }
 
+// WithLocalCommits ensures the repository will be initialized with a set
+// of local empty commits, which will not have been pushed back to the remote
+func WithLocalCommits(commits ...string) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		opts.Commits = commits
+	}
+}
+
 // InitRepository will attempt to initialize a test repository capable of
 // supporting any git operation. Options can be provided to customize the
 // initialization process, changing the default configuration used.
+//
+// It is important to note, that options will be executed within a
+// particular order:
+//  1. Log history will be imported
+//  2. All local empty commits are made without pushing back to the remote
+//  3. All named files will be created and staged if required
 //
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
@@ -171,6 +190,10 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 
 	if len(options.Log) > 0 {
 		require.NoError(t, importLog(options.Log))
+	}
+
+	for _, commit := range options.Commits {
+		Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, commit))
 	}
 
 	for _, f := range options.Files {
@@ -249,13 +272,9 @@ func exec(cmd string) (string, error) {
 	}
 
 	var buf bytes.Buffer
-	r, err := interp.New(
+	r, _ := interp.New(
 		interp.StdIO(os.Stdin, &buf, &buf),
 	)
-	// TODO: will this happen??
-	if err != nil {
-		return "", errors.New(buf.String())
-	}
 
 	if err := r.Run(context.Background(), p); err != nil {
 		return "", errors.New(buf.String())
@@ -309,4 +328,25 @@ func LastCommit(t *testing.T) string {
 func PorcelainStatus(t *testing.T) string {
 	t.Helper()
 	return Exec(t, "git status --porcelain")
+}
+
+// LogRemote returns the log history of a repository (working directory)
+// as it currently exists on the remote. Any local commit that are not
+// pushed, will not appear within this log history. Raw output is
+// returned from this command:
+//
+//	git log --oneline origin/main
+func LogRemote(t *testing.T) string {
+	t.Helper()
+	return Exec(t, fmt.Sprintf("git log --oneline %s", DefaultRemoteBranch))
+}
+
+// TagLocal creates a tag that is only tracked locally and will not have
+// been pushed back to the remote repository. The following git command
+// is executed:
+//
+//	git tag '<tag>'
+func TagLocal(t *testing.T, tag string) {
+	t.Helper()
+	Exec(t, fmt.Sprintf("git tag '%s'", tag))
 }
