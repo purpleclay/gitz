@@ -20,33 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package git_test
+package git
 
-import (
-	"testing"
+import "fmt"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
+// Push (or upload) all local changes to the remote repository
+func (c *Client) Push() (string, error) {
+	return exec("git push origin main")
+}
 
-func TestLog(t *testing.T) {
-	log := `fix: parsing error when input string is too long
-ci: extend the existing build workflow to include integration tests
-docs: create initial mkdocs material documentation
-feat: add second operation to library
-feat: add first operation to library`
-
-	gittest.InitRepository(t, gittest.WithLog(log))
-
-	client, _ := git.NewClient()
-	out, err := client.Log()
-
-	require.NoError(t, err)
-	assert.Contains(t, out, "fix: parsing error when input string is too long")
-	assert.Contains(t, out, "ci: extend the existing build workflow to include integration tests")
-	assert.Contains(t, out, "docs: create initial mkdocs material documentation")
-	assert.Contains(t, out, "feat: add second operation to library")
-	assert.Contains(t, out, "feat: add first operation to library")
+// PushTag will push an individual tag reference to the remote repository
+func (c *Client) PushTag(tag string) (string, error) {
+	return exec(fmt.Sprintf("git push origin '%s'", tag))
 }

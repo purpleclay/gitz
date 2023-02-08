@@ -97,6 +97,22 @@ func TestInitRepositoryWithStagedFiles(t *testing.T) {
 	assert.Contains(t, string(out), statusAdded("d.txt"))
 }
 
+func TestInitRepositoryWithLocalCommits(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithLocalCommits("local commit 1", "local commit 2"))
+
+	out, err := exec.Command("git", "log", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(out), "local commit 1")
+	assert.Contains(t, string(out), "local commit 2")
+
+	out, err = exec.Command("git", "log", "--oneline", gittest.DefaultRemoteBranch).CombinedOutput()
+	require.NoError(t, err)
+
+	assert.NotContains(t, string(out), "local commit 1")
+	assert.NotContains(t, string(out), "local commit 2")
+}
+
 func TestExecHasRawGitOutput(t *testing.T) {
 	out := gittest.Exec(t, "git --version")
 
@@ -152,4 +168,41 @@ func TestPorcelainStatus(t *testing.T) {
 
 	status := gittest.PorcelainStatus(t)
 	assert.Equal(t, "?? file1.txt\n?? file2.txt\n", status)
+}
+
+func TestLogRemote(t *testing.T) {
+	gittest.InitRepository(t)
+
+	_, err := exec.Command("git", "commit", "--allow-empty", "-m", "this commit is on the remote").CombinedOutput()
+	require.NoError(t, err)
+
+	_, err = exec.Command("git", "push", "origin", gittest.DefaultBranch).CombinedOutput()
+	require.NoError(t, err)
+
+	log := gittest.LogRemote(t)
+	require.Contains(t, log, "this commit is on the remote")
+}
+
+func TestLogRemoteDoesNotContainLocalCommits(t *testing.T) {
+	gittest.InitRepository(t)
+
+	_, err := exec.Command("git", "commit", "--allow-empty", "-m", "this commit is not on the remote").CombinedOutput()
+	require.NoError(t, err)
+
+	log := gittest.LogRemote(t)
+	require.NotContains(t, log, "this commit is not on the remote")
+}
+
+func TestTagLocal(t *testing.T) {
+	gittest.InitRepository(t)
+
+	gittest.TagLocal(t, "0.1.0")
+
+	out, err := exec.Command("git", "for-each-ref", "refs/tags").CombinedOutput()
+	require.NoError(t, err)
+	assert.Contains(t, string(out), "refs/tags/0.1.0")
+
+	out, err = exec.Command("git", "ls-remote", "--tags").CombinedOutput()
+	require.NoError(t, err)
+	assert.NotContains(t, string(out), "refs/tags/0.1.0")
 }
