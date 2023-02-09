@@ -206,3 +206,10 @@ func TestTagLocal(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotContains(t, string(out), "refs/tags/0.1.0")
 }
+
+func TestShow(t *testing.T) {
+	gittest.InitRepository(t)
+
+	out := gittest.Show(t, gittest.DefaultBranch)
+	assert.Contains(t, out, gittest.InitialCommit)
+}
