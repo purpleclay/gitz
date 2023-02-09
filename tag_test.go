@@ -63,6 +63,48 @@ func TestTagWithInvalidName(t *testing.T) {
 	assert.ErrorContains(t, err, "'[0.1.0]' is not a valid tag name")
 }
 
+func TestTagWithAnnotation(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	err := client.Tag("0.1.0", git.WithAnnotation("created tag 0.1.0"))
+
+	require.NoError(t, err)
+
+	out := gittest.Show(t, "0.1.0")
+	assert.Contains(t, out, fmt.Sprintf("Tagger: %s", gittest.DefaultAuthorLog))
+	assert.Contains(t, out, "created tag 0.1.0")
+}
+
+func TestTagWithAnnotationIgnores(t *testing.T) {
+	tests := []struct {
+		name    string
+		message string
+	}{
+		{
+			name:    "EmptyString",
+			message: "",
+		},
+		{
+			name:    "StringWithOnlyWhitespace",
+			message: "     ",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gittest.InitRepository(t)
+
+			client, _ := git.NewClient()
+			err := client.Tag("0.1.0", git.WithAnnotation(tt.message))
+
+			require.NoError(t, err)
+
+			out := gittest.Show(t, "0.1.0")
+			assert.NotContains(t, out, fmt.Sprintf("Tagger: %s", gittest.DefaultAuthorLog))
+		})
+	}
+}
+
 func TestDeleteTag(t *testing.T) {
 	log := "(tag: 0.1.0) feat: a brand new feature"
 

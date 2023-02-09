@@ -58,6 +58,10 @@ const (
 	// and can be used for matching against entries within a git log
 	DefaultAuthorLog = "batman <batman@dc.com>"
 
+	// InitialCommit contains the first commit message used to initialize
+	// the test repository
+	InitialCommit = "initialized repository"
+
 	// grabbed from: https://loremipsum.io/
 	fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 )
@@ -179,7 +183,7 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 
 	// Initialize the repository so that it is ready for use
-	Exec(t, `git commit --allow-empty -m "initialized repository"`)
+	Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
 	Exec(t, fmt.Sprintf("git push origin %s", DefaultBranch))
 
 	// Process any provided options to ensure repository is initialized as required
@@ -349,4 +353,19 @@ func LogRemote(t *testing.T) string {
 func TagLocal(t *testing.T, tag string) {
 	t.Helper()
 	Exec(t, fmt.Sprintf("git tag '%s'", tag))
+}
+
+// Show will display information about a specific git object. The output
+// will vary based on the type of object being shown:
+//   - For commits it shows the log message and textual diff
+//   - For tags, it shows the tag message and the referenced objects
+//   - For trees, it shows the names
+//   - For plain blobs, it shows the plain contents
+//
+// Raw output is returned from this command:
+//
+//	git show '<object>'
+func Show(t *testing.T, object string) string {
+	t.Helper()
+	return Exec(t, fmt.Sprintf("git show '%s'", object))
 }

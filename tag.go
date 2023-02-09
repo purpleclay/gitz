@@ -22,12 +22,56 @@ SOFTWARE.
 
 package git
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// Tag a repository with a lightweight tag and push it to the configured
-// remote origin
-func (c *Client) Tag(tag string) error {
-	if _, err := exec(fmt.Sprintf("git tag '%s'", tag)); err != nil {
+// TagOption provides a way for setting specific options during a tag operation.
+// Each supported option can customize the way the tag is applied against
+// the current repository (working directory)
+type TagOption func(*tagOptions)
+
+type tagOptions struct {
+	Annotation string
+}
+
+// WithAnnotation ensures the created tag is annotated with the provided
+// message. This ultimately converts the standard lightweight tag into
+// an annotated tag which is stored as a full object within the git
+// database. Any leading and trailing whitespace will automatically be
+// trimmed from the message. This allows empty messages to be ignored
+func WithAnnotation(message string) TagOption {
+	return func(opts *tagOptions) {
+		opts.Annotation = strings.TrimSpace(message)
+	}
+}
+
+// Tag a specific point within a repositories history and push it to the
+// configured remote. Tagging comes in two flavours:
+//   - A lightweight tag, which points to a specific commit within
+//     the history and marks a specific point in time
+//   - An annotated tag, which is treated as a full object within
+//     git, and must include a tagging message (or annotation)
+//
+// By default, a lightweight tag will be created, unless specific tag
+// options are provided
+func (c *Client) Tag(tag string, opts ...TagOption) error {
+	options := &tagOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	// Build command based on the provided options
+	var tagCmd strings.Builder
+	tagCmd.WriteString("git tag ")
+
+	if options.Annotation != "" {
+		tagCmd.WriteString(fmt.Sprintf("-m '%s' -a ", options.Annotation))
+	}
+	tagCmd.WriteString(fmt.Sprintf("'%s'", tag))
+
+	if _, err := exec(tagCmd.String()); err != nil {
 		return err
 	}
 
