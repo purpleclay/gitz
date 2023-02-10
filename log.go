@@ -22,11 +22,70 @@ SOFTWARE.
 
 package git
 
+import (
+	"fmt"
+	"strings"
+)
+
+// TagOption provides a way for setting specific options during a tag operation.
+// Each supported option can customize the way the tag is applied against
+// the current repository (working directory)
+
+// LogOption ...
+type LogOption func(*logOptions)
+
+type logOptions struct {
+	RefRange string
+}
+
+// TODO: Mutually exclusive WithRef and WithRefRange overwrite each other
+
+// WithRef ...
+func WithRef(ref string) LogOption {
+	return func(opts *logOptions) {
+		opts.RefRange = strings.TrimSpace(ref)
+	}
+}
+
+// WithRefRange ...
+func WithRefRange(fromRef string, toRef string) LogOption {
+	return func(opts *logOptions) {
+		from := strings.TrimSpace(fromRef)
+		if from == "" {
+			from = "HEAD"
+		}
+
+		to := strings.TrimSpace(toRef)
+		if to != "" {
+			to = fmt.Sprintf("...%s", to)
+		}
+
+		opts.RefRange = fmt.Sprintf("%s%s", from, to)
+	}
+}
+
+// TODO: rewrite function docs
+
 // Log retrieves the commit log of the current repository (working directory)
 // in an easy to parse format. The logs are generated using the default
 // git options:
 //
 //	git log --pretty=oneline --abbrev-commit --no-decorate --no-color
-func (c *Client) Log() (string, error) {
-	return exec("git log --pretty=oneline --abbrev-commit --no-decorate --no-color")
+func (c *Client) Log(opts ...LogOption) (string, error) {
+	options := &logOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	// Build command based on the provided options
+	var logCmd strings.Builder
+	logCmd.WriteString("git log ")
+
+	if options.RefRange != "" {
+		logCmd.WriteString(options.RefRange)
+	}
+
+	logCmd.WriteString(" --pretty=oneline --abbrev-commit --no-decorate --no-color")
+
+	return exec(logCmd.String())
 }
