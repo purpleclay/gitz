@@ -24,6 +24,7 @@ package git_test
 
 import (
 	"bufio"
+	"os"
 	"strings"
 	"testing"
 
@@ -160,4 +161,36 @@ feat: build exciting new library`
 			}
 		})
 	}
+}
+
+// TODO: Log should return Raw and Parsed Output (Parsed Output is optional)
+
+func TestLogWithPaths(t *testing.T) {
+	gittest.InitRepository(t,
+		gittest.WithLocalCommits("this should not appear in the log"),
+		gittest.WithStagedFiles("dir1/a.txt", "dir2/b.txt"))
+
+	gittest.Commit(t, "include both dir1/a.txt and dir2/b.txt")
+	overwriteFile(t, "dir1/a.txt", "Help, I have been overwritten!")
+	gittest.StageFile(t, "dir1/a.txt")
+	gittest.Commit(t, "changed file dir1/a.txt")
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithPaths("dir1"))
+	require.NoError(t, err)
+
+	lines := countLogLines(t, out)
+	require.Equal(t, 2, lines)
+	assert.Contains(t, out, "changed file dir1/a.txt")
+	assert.Contains(t, out, "include both dir1/a.txt and dir2/b.txt")
+}
+
+func overwriteFile(t *testing.T, path, content string) {
+	t.Helper()
+
+	fi, err := os.Create(path)
+	require.NoError(t, err)
+	defer fi.Close()
+
+	fi.WriteString(content)
 }

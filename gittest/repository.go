@@ -315,6 +315,16 @@ func StageFile(t *testing.T, path string) {
 	Exec(t, fmt.Sprintf("git add '%s'", path))
 }
 
+// Commit a snapshot of all changes within the current repository (working directory)
+// without pushing it to the remote. The commit will be associated with the
+// provided message. The following git command is executed:
+//
+//	git commit -m '<message>'
+func Commit(t *testing.T, message string) {
+	t.Helper()
+	Exec(t, fmt.Sprintf("git commit -m '%s'", message))
+}
+
 // LastCommit returns the last commit from the git log of the current
 // repository. Raw output is returned from the git command:
 //

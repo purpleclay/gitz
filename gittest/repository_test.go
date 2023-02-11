@@ -153,6 +153,16 @@ func TestStageFile(t *testing.T) {
 	assert.Contains(t, string(out), "A  test.txt")
 }
 
+func TestCommit(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithStagedFiles("file.txt"))
+
+	gittest.Commit(t, "include file.txt")
+
+	out, err := exec.Command("git", "log", "-n1", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+	assert.Contains(t, string(out), "include file.txt")
+}
+
 func TestLastCommit(t *testing.T) {
 	gittest.InitRepository(t)
 
