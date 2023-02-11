@@ -80,7 +80,6 @@ func TestLogWithRef(t *testing.T) {
 (tag: 0.1.0) docs: create initial mkdocs material documentation
 feat: build exciting new library`
 
-	// TODO: include instructions on how to structure git log
 	gittest.InitRepository(t, gittest.WithLog(log))
 
 	client, _ := git.NewClient()
@@ -163,17 +162,15 @@ feat: build exciting new library`
 	}
 }
 
-// TODO: Log should return Raw and Parsed Output (Parsed Output is optional)
-
 func TestLogWithPaths(t *testing.T) {
 	gittest.InitRepository(t,
 		gittest.WithLocalCommits("this should not appear in the log"),
 		gittest.WithStagedFiles("dir1/a.txt", "dir2/b.txt"))
 
-	gittest.Commit(t, "include both dir1/a.txt and dir2/b.txt")
+	gittest.Commit(t, "feat: include both dir1/a.txt and dir2/b.txt")
 	overwriteFile(t, "dir1/a.txt", "Help, I have been overwritten!")
 	gittest.StageFile(t, "dir1/a.txt")
-	gittest.Commit(t, "changed file dir1/a.txt")
+	gittest.Commit(t, "fix: changed file dir1/a.txt")
 
 	client, _ := git.NewClient()
 	out, err := client.Log(git.WithPaths("dir1"))
@@ -181,8 +178,8 @@ func TestLogWithPaths(t *testing.T) {
 
 	lines := countLogLines(t, out)
 	require.Equal(t, 2, lines)
-	assert.Contains(t, out, "changed file dir1/a.txt")
-	assert.Contains(t, out, "include both dir1/a.txt and dir2/b.txt")
+	assert.Contains(t, out, "fix: changed file dir1/a.txt")
+	assert.Contains(t, out, "feat: include both dir1/a.txt and dir2/b.txt")
 }
 
 func overwriteFile(t *testing.T, path, content string) {

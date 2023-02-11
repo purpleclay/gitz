@@ -84,7 +84,15 @@ type file struct {
 
 // WithLog ensures the repository will be initialized with a given snapshot
 // of commits and tags. Ideal for initializing a repository with a known
-// state
+// state. The provided log is parsed using [gittest.ParseLog] and expects
+// the log in the following format:
+//
+//	(tag: 0.1.0) feat: improve existing cli documentation
+//	docs: create initial mkdocs material documentation
+//
+// This is the equivalent to the format produced using the git command:
+//
+//	git log --pretty='format:%d %s'
 func WithLog(log string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		opts.Log = ParseLog(log)
