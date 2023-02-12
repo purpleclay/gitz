@@ -23,6 +23,7 @@ SOFTWARE.
 package git
 
 import (
+	"bufio"
 	"fmt"
 	"strings"
 )
@@ -87,6 +88,27 @@ func WithPaths(paths ...string) LogOption {
 	}
 }
 
+// Log represents a snapshot of commit history from a repository
+type Log struct {
+	// Raw contains the raw commit log
+	Raw string
+
+	// Commits contains the optionally parsed commit log. By default
+	// the parsed history will always be present, unless the
+	// [git.WithRawOnly] option is provided during retrieval
+	Commits []LogEntry
+}
+
+// LogEntry represents a single parsed entry from within the commit
+// history of a repository
+type LogEntry struct {
+	// AbbrevHash contains the seven character abbreviated commit hash
+	AbbrevHash string
+
+	// Message contains the message associated with the commit
+	Message string
+}
+
 // Log retrieves the commit log of the current repository (working directory)
 // in an easy to parse format. Options can be provided to customize log
 // retrieval, creating a targeted snapshot. By default, the entire history
@@ -94,7 +116,7 @@ func WithPaths(paths ...string) LogOption {
 // are generated using the default git options:
 //
 //	git log --pretty=oneline --abbrev-commit --no-decorate --no-color
-func (c *Client) Log(opts ...LogOption) (string, error) {
+func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -117,5 +139,31 @@ func (c *Client) Log(opts ...LogOption) (string, error) {
 		}
 	}
 
-	return exec(logCmd.String())
+	out, err := exec(logCmd.String())
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: if parse log then parse it and assign to Log{}
+
+	return &Log{Raw: out, Commits: parseLog(out)}, nil
+}
+
+func parseLog(log string) []LogEntry {
+	var entries []LogEntry
+
+	scanner := bufio.NewScanner(strings.NewReader(log))
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		// Expected format of log from using the --online format is: <abbrev_hash><space><message>
+		if hash, msg, found := strings.Cut(scanner.Text(), " "); found {
+			entries = append(entries, LogEntry{
+				AbbrevHash: hash,
+				Message:    msg,
+			})
+		}
+	}
+
+	return entries
 }
