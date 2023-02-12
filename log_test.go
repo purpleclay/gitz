@@ -47,32 +47,107 @@ feat: add first operation to library`
 	out, err := client.Log()
 	require.NoError(t, err)
 
-	lines := countLogLines(t, out)
-	require.Equal(t, 5, lines)
+	lines := countLogLines(t, out.Raw)
+	require.Equal(t, 6, lines)
+	require.Equal(t, 6, len(out.Commits))
 
-	assert.Contains(t, out, "fix: parsing error when input string is too long")
-	assert.Contains(t, out, "ci: extend the existing build workflow to include integration tests")
-	assert.Contains(t, out, "docs: create initial mkdocs material documentation")
-	assert.Contains(t, out, "feat: add second operation to library")
-	assert.Contains(t, out, "feat: add first operation to library")
+	assert.Contains(t, out.Raw, "fix: parsing error when input string is too long")
+	assert.Equal(t, "fix: parsing error when input string is too long", out.Commits[0].Message)
+
+	assert.Contains(t, out.Raw, "ci: extend the existing build workflow to include integration tests")
+	assert.Equal(t, "ci: extend the existing build workflow to include integration tests", out.Commits[1].Message)
+
+	assert.Contains(t, out.Raw, "docs: create initial mkdocs material documentation")
+	assert.Equal(t, "docs: create initial mkdocs material documentation", out.Commits[2].Message)
+
+	assert.Contains(t, out.Raw, "feat: add second operation to library")
+	assert.Equal(t, "feat: add second operation to library", out.Commits[3].Message)
+
+	assert.Contains(t, out.Raw, "feat: add first operation to library")
+	assert.Equal(t, "feat: add first operation to library", out.Commits[4].Message)
+
+	assert.Contains(t, out.Raw, gittest.InitialCommit)
+	assert.Equal(t, gittest.InitialCommit, out.Commits[5].Message)
 }
 
-// A utility function that will count all of the returned log lines
-// with the exception of the main commit, used to initialize the
-// repository
+// A utility function that will scan the raw output from a git log and
+// count all of the returned log lines. It is important to note, that
+// in some scenarios the log will contain the [gittest.InitialCommit]
+// used to initialize the repository
 func countLogLines(t *testing.T, log string) int {
+	t.Helper()
 	scanner := bufio.NewScanner(strings.NewReader(log))
 	scanner.Split(bufio.ScanLines)
 
 	count := 0
 	for scanner.Scan() {
-		if strings.HasSuffix(scanner.Text(), gittest.InitialCommit) {
-			continue
-		}
 		count++
 	}
 
 	return count
+}
+
+func TestLogValidateParsing(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	out, err := client.Log()
+
+	require.NoError(t, err)
+	require.Len(t, out.Commits, 1)
+
+	assert.Equal(t, gittest.InitialCommit, out.Commits[0].Message)
+
+	longHash := latestCommitHash(t)
+	assert.Equal(t, longHash, out.Commits[0].Hash)
+	assert.Equal(t, longHash[:7], out.Commits[0].AbbrevHash)
+}
+
+func TestLogError(t *testing.T) {
+	nonWorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Log()
+
+	require.Error(t, err)
+}
+
+func nonWorkingDirectory(t *testing.T) {
+	t.Helper()
+
+	current, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpDir := t.TempDir()
+	require.NoError(t, os.Chdir(tmpDir))
+
+	t.Cleanup(func() {
+		require.NoError(t, os.Chdir(current))
+	})
+}
+
+// A utility function that is a wrapper around [gittest.LastCommit]
+// and parses the hash from the output. This will be a hash in its
+// long format
+func latestCommitHash(t *testing.T) string {
+	t.Helper()
+
+	// e.g. commit e22a94c1cac6c4da71cd766530a0950edfc58e56 (HEAD -> main, origin/main)
+	commit := gittest.LastCommit(t)
+	commit = strings.TrimPrefix(commit, "commit ")
+
+	// A git hash is always 40 characters in length
+	return commit[:40]
+}
+
+func TestLogWithRawOnly(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithRawOnly())
+
+	require.NoError(t, err)
+	assert.Empty(t, out.Commits)
 }
 
 func TestLogWithRef(t *testing.T) {
@@ -86,11 +161,12 @@ feat: build exciting new library`
 	out, err := client.Log(git.WithRef("0.1.0"))
 	require.NoError(t, err)
 
-	lines := countLogLines(t, out)
-	require.Equal(t, 2, lines)
+	lines := countLogLines(t, out.Raw)
+	require.Equal(t, 3, lines)
 
-	assert.Contains(t, out, "docs: create initial mkdocs material documentation")
-	assert.Contains(t, out, "feat: build exciting new library")
+	assert.Contains(t, out.Raw, "docs: create initial mkdocs material documentation")
+	assert.Contains(t, out.Raw, "feat: build exciting new library")
+	assert.Contains(t, out.Raw, gittest.InitialCommit)
 }
 
 func TestLogWithRefRange(t *testing.T) {
@@ -120,10 +196,11 @@ feat: build exciting new library`
 		{
 			name:          "FromRefOnly",
 			fromRef:       "0.1.0",
-			expectedLines: 2,
+			expectedLines: 3,
 			expectedCommits: []string{
 				"docs: create initial mkdocs material documentation",
 				"feat: build exciting new library",
+				gittest.InitialCommit,
 			},
 		},
 		{
@@ -152,11 +229,11 @@ feat: build exciting new library`
 			out, err := client.Log(git.WithRefRange(tt.fromRef, tt.toRef))
 			require.NoError(t, err)
 
-			lines := countLogLines(t, out)
+			lines := countLogLines(t, out.Raw)
 			require.Equal(t, tt.expectedLines, lines)
 
 			for _, commit := range tt.expectedCommits {
-				require.Contains(t, out, commit)
+				require.Contains(t, out.Raw, commit)
 			}
 		})
 	}
@@ -176,10 +253,10 @@ func TestLogWithPaths(t *testing.T) {
 	out, err := client.Log(git.WithPaths("dir1"))
 	require.NoError(t, err)
 
-	lines := countLogLines(t, out)
+	lines := countLogLines(t, out.Raw)
 	require.Equal(t, 2, lines)
-	assert.Contains(t, out, "fix: changed file dir1/a.txt")
-	assert.Contains(t, out, "feat: include both dir1/a.txt and dir2/b.txt")
+	assert.Contains(t, out.Raw, "fix: changed file dir1/a.txt")
+	assert.Contains(t, out.Raw, "feat: include both dir1/a.txt and dir2/b.txt")
 }
 
 func overwriteFile(t *testing.T, path, content string) {
