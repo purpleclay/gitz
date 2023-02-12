@@ -52,22 +52,22 @@ feat: add first operation to library`
 	require.Equal(t, 6, len(out.Commits))
 
 	assert.Contains(t, out.Raw, "fix: parsing error when input string is too long")
-	assert.Equal(t, out.Commits[0].Message, "fix: parsing error when input string is too long")
+	assert.Equal(t, "fix: parsing error when input string is too long", out.Commits[0].Message)
 
 	assert.Contains(t, out.Raw, "ci: extend the existing build workflow to include integration tests")
-	assert.Equal(t, out.Commits[1].Message, "ci: extend the existing build workflow to include integration tests")
+	assert.Equal(t, "ci: extend the existing build workflow to include integration tests", out.Commits[1].Message)
 
 	assert.Contains(t, out.Raw, "docs: create initial mkdocs material documentation")
-	assert.Equal(t, out.Commits[2].Message, "docs: create initial mkdocs material documentation")
+	assert.Equal(t, "docs: create initial mkdocs material documentation", out.Commits[2].Message)
 
 	assert.Contains(t, out.Raw, "feat: add second operation to library")
-	assert.Equal(t, out.Commits[3].Message, "feat: add second operation to library")
+	assert.Equal(t, "feat: add second operation to library", out.Commits[3].Message)
 
 	assert.Contains(t, out.Raw, "feat: add first operation to library")
-	assert.Equal(t, out.Commits[4].Message, "feat: add first operation to library")
+	assert.Equal(t, "feat: add first operation to library", out.Commits[4].Message)
 
 	assert.Contains(t, out.Raw, gittest.InitialCommit)
-	assert.Equal(t, out.Commits[5].Message, gittest.InitialCommit)
+	assert.Equal(t, gittest.InitialCommit, out.Commits[5].Message)
 }
 
 // A utility function that will scan the raw output from a git log and
@@ -75,6 +75,7 @@ feat: add first operation to library`
 // in some scenarios the log will contain the [gittest.InitialCommit]
 // used to initialize the repository
 func countLogLines(t *testing.T, log string) int {
+	t.Helper()
 	scanner := bufio.NewScanner(strings.NewReader(log))
 	scanner.Split(bufio.ScanLines)
 
@@ -86,9 +87,68 @@ func countLogLines(t *testing.T, log string) int {
 	return count
 }
 
-// TODO: test function is parsing log line correctly. Use initial repository and verify the hash
+func TestLogValidateParsing(t *testing.T) {
+	gittest.InitRepository(t)
 
-// TestLogWithRawOnly
+	client, _ := git.NewClient()
+	out, err := client.Log()
+
+	require.NoError(t, err)
+	require.Len(t, out.Commits, 1)
+
+	assert.Equal(t, gittest.InitialCommit, out.Commits[0].Message)
+
+	longHash := latestCommitHash(t)
+	assert.Equal(t, longHash, out.Commits[0].Hash)
+	assert.Equal(t, longHash[:7], out.Commits[0].AbbrevHash)
+}
+
+func TestLogError(t *testing.T) {
+	nonWorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Log()
+
+	require.Error(t, err)
+}
+
+func nonWorkingDirectory(t *testing.T) {
+	t.Helper()
+
+	current, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpDir := t.TempDir()
+	require.NoError(t, os.Chdir(tmpDir))
+
+	t.Cleanup(func() {
+		require.NoError(t, os.Chdir(current))
+	})
+}
+
+// A utility function that is a wrapper around [gittest.LastCommit]
+// and parses the hash from the output. This will be a hash in its
+// long format
+func latestCommitHash(t *testing.T) string {
+	t.Helper()
+
+	// e.g. commit e22a94c1cac6c4da71cd766530a0950edfc58e56 (HEAD -> main, origin/main)
+	commit := gittest.LastCommit(t)
+	commit = strings.TrimPrefix(commit, "commit ")
+
+	// A git hash is always 40 characters in length
+	return commit[:40]
+}
+
+func TestLogWithRawOnly(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithRawOnly())
+
+	require.NoError(t, err)
+	assert.Empty(t, out.Commits)
+}
 
 func TestLogWithRef(t *testing.T) {
 	log := `(tag: 0.1.1) fix: unexpected bytes in message while parsing

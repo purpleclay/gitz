@@ -34,8 +34,9 @@ import (
 type LogOption func(*logOptions)
 
 type logOptions struct {
-	RefRange string
-	LogPaths []string
+	RefRange  string
+	LogPaths  []string
+	SkipParse bool
 }
 
 // WithRef provides a starting point other than HEAD (most recent commit)
@@ -43,7 +44,7 @@ type logOptions struct {
 // directory). Typically a reference can be either a commit hash, branch
 // name or tag. The output of this option will typically be a shorter,
 // fine tuned history. This option is mutually exclusive with
-// [git.WithRefRange]. All leading and trailing whitespace are trimmed
+// [WithRefRange]. All leading and trailing whitespace are trimmed
 // from the reference, allowing empty references to be ignored
 func WithRef(ref string) LogOption {
 	return func(opts *logOptions) {
@@ -56,7 +57,7 @@ func WithRef(ref string) LogOption {
 // (working directory). Typically a reference can be either a commit
 // hash, branch name or tag. The output of this option will be a shorter,
 // fine tuned history, for example, the history between two tags.
-// This option is mutually exclusive with [git.WithRef]. All leading
+// This option is mutually exclusive with [WithRef]. All leading
 // and trailing whitespace are trimmed from the references, allowing
 // empty references to be ignored
 func WithRefRange(fromRef string, toRef string) LogOption {
@@ -88,6 +89,15 @@ func WithPaths(paths ...string) LogOption {
 	}
 }
 
+// WithRawOnly ensures only the raw output from the git log of the current
+// repository (working directory) is retrieved. No post-processing is
+// carried out, resulting in an empty [Log.Commits] slice
+func WithRawOnly() LogOption {
+	return func(opts *logOptions) {
+		opts.SkipParse = true
+	}
+}
+
 // Log represents a snapshot of commit history from a repository
 type Log struct {
 	// Raw contains the raw commit log
@@ -95,13 +105,16 @@ type Log struct {
 
 	// Commits contains the optionally parsed commit log. By default
 	// the parsed history will always be present, unless the
-	// [git.WithRawOnly] option is provided during retrieval
+	// [WithRawOnly] option is provided during retrieval
 	Commits []LogEntry
 }
 
 // LogEntry represents a single parsed entry from within the commit
 // history of a repository
 type LogEntry struct {
+	// Hash contains the unique identifier associated with the commit
+	Hash string
+
 	// AbbrevHash contains the seven character abbreviated commit hash
 	AbbrevHash string
 
@@ -115,7 +128,7 @@ type LogEntry struct {
 // from the repository HEAD (most recent commit) will be retrieved. The logs
 // are generated using the default git options:
 //
-//	git log --pretty=oneline --abbrev-commit --no-decorate --no-color
+//	git log --pretty=oneline --no-decorate --no-color
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{}
 	for _, opt := range opts {
@@ -130,7 +143,7 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		logCmd.WriteString(options.RefRange)
 	}
 
-	logCmd.WriteString(" --pretty=oneline --abbrev-commit --no-decorate --no-color")
+	logCmd.WriteString(" --pretty=oneline --no-decorate --no-color")
 
 	if len(options.LogPaths) > 0 {
 		logCmd.WriteString(" --")
@@ -144,9 +157,13 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		return nil, err
 	}
 
-	// TODO: if parse log then parse it and assign to Log{}
+	log := &Log{Raw: out}
+	// Support the option to skip parsing of the log into a structured format
+	if !options.SkipParse {
+		log.Commits = parseLog(out)
+	}
 
-	return &Log{Raw: out, Commits: parseLog(out)}, nil
+	return log, nil
 }
 
 func parseLog(log string) []LogEntry {
@@ -156,10 +173,11 @@ func parseLog(log string) []LogEntry {
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
-		// Expected format of log from using the --online format is: <abbrev_hash><space><message>
+		// Expected format of log from using the --online format is: <hash><space><message>
 		if hash, msg, found := strings.Cut(scanner.Text(), " "); found {
 			entries = append(entries, LogEntry{
-				AbbrevHash: hash,
+				Hash:       hash,
+				AbbrevHash: hash[:7],
 				Message:    msg,
 			})
 		}
