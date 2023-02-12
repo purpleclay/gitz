@@ -25,7 +25,6 @@ package git
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -37,12 +36,30 @@ import (
 // ErrGitMissing is raised when no git client was identified
 // within the PATH environment variable on the current OS
 type ErrGitMissing struct {
+	// PathEnv contains the value of the PATH environment variable
 	PathEnv string
 }
 
-// Error returns a formatted message of the current error
+// Error returns a friendly formatted message of the current error
 func (e ErrGitMissing) Error() string {
 	return fmt.Sprintf("git is not installed under the PATH environment variable. PATH resolves to %s", e.PathEnv)
+}
+
+// ErrGitExecCommand is raised when a git command fails to execute
+type ErrGitExecCommand struct {
+	// Cmd contains the command that caused the git client to error
+	Cmd string
+
+	// Out contains any raw output from the git client as a result
+	// of the error
+	Out string
+}
+
+// Error returns a friendly formatted message of the current error
+func (e ErrGitExecCommand) Error() string {
+	return fmt.Sprintf(`failed to execute git command: %s
+
+%s`, e.Cmd, e.Out)
 }
 
 // Client provides a way of performing fluent operations against git.
@@ -70,10 +87,7 @@ func (c *Client) Version() string {
 }
 
 func exec(cmd string) (string, error) {
-	p, err := syntax.NewParser().Parse(strings.NewReader(cmd), "")
-	if err != nil {
-		return "", err
-	}
+	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
 	var buf bytes.Buffer
 	r, _ := interp.New(
@@ -81,7 +95,7 @@ func exec(cmd string) (string, error) {
 	)
 
 	if err := r.Run(context.Background(), p); err != nil {
-		return "", errors.New(buf.String())
+		return "", ErrGitExecCommand{Cmd: cmd, Out: buf.String()}
 	}
 
 	return buf.String(), nil

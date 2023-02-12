@@ -50,5 +50,9 @@ func TestCommitCleanWorkingTreeError(t *testing.T) {
 	client, _ := git.NewClient()
 	err := client.Commit("this is an example commit message")
 
-	require.ErrorContains(t, err, "nothing to commit, working tree clean")
+	var errGit git.ErrGitExecCommand
+	require.ErrorAs(t, err, &errGit)
+
+	assert.Equal(t, "git commit -m 'this is an example commit message'", errGit.Cmd)
+	assert.Contains(t, errGit.Out, "nothing to commit, working tree clean")
 }
