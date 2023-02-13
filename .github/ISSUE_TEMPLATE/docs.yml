@@ -23,7 +23,7 @@ description: Suggest an edit to the documentation
 title: "[Docs]: "
 labels: [documentation, triage]
 assignees:
-  - ga-paul-t
+  - purpleclay
 body:
   - type: markdown
     attributes:
