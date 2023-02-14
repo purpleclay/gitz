@@ -234,6 +234,10 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 		Exec(t, "git clone ./test.git test-remote")
 		require.NoError(t, os.Chdir("./test-remote"))
 
+		// Ensure default config is set on the repository
+		require.NoError(t, setConfig("user.name", DefaultAuthorName))
+		require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+
 		require.NoError(t, importLog(options.RemoteLog))
 		require.NoError(t, os.Chdir(localClone))
 	}
