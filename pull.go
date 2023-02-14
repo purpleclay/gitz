@@ -20,34 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package git_test
+package git
 
-import (
-	"testing"
-
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-func TestStage(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("file.txt"))
-
-	client, _ := git.NewClient()
-	_, err := client.Stage("file.txt")
-
-	require.NoError(t, err)
-	status := gittest.PorcelainStatus(t)
-
-	assert.Equal(t, "A  file.txt\n", status)
-}
-
-func TestStageMissingFileError(t *testing.T) {
-	gittest.InitRepository(t)
-
-	client, _ := git.NewClient()
-	_, err := client.Stage("missing.txt")
-
-	require.ErrorContains(t, err, "pathspec 'missing.txt' did not match any files")
+// Pull all changes from a remote repository and immediately update the current
+// repository (current working) directory with those changes. This ensures
+// that your current repository keeps track of remote changes and stays in sync
+func (c *Client) Pull() (string, error) {
+	return exec("git pull")
 }

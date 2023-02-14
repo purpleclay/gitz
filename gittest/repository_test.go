@@ -68,13 +68,19 @@ func TestInitRepositoryDefaultBranchSet(t *testing.T) {
 }
 
 func TestInitRepositoryWithLog(t *testing.T) {
-	log := "feat: this is a brand new feature"
+	log := `(tag: 0.1.0) feat: this is a brand new feature
+ci: include github workflow`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
-	out, err := exec.Command("git", "log", "--oneline").CombinedOutput()
+	out, err := exec.Command("git", "log", "-n2", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+
+	tag, err := exec.Command("git", "tag").CombinedOutput()
 	require.NoError(t, err)
 
 	assert.Contains(t, string(out), "feat: this is a brand new feature")
+	assert.Contains(t, string(out), "ci: include github workflow")
+	assert.Contains(t, string(tag), "0.1.0")
 }
 
 func TestInitRepositoryWithFiles(t *testing.T) {
@@ -111,6 +117,22 @@ func TestInitRepositoryWithLocalCommits(t *testing.T) {
 
 	assert.NotContains(t, string(out), "local commit 1")
 	assert.NotContains(t, string(out), "local commit 2")
+}
+
+func TestWithRemoteLog(t *testing.T) {
+	log := "this is a remote commit"
+	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+
+	localLog, err := exec.Command("git", "log", "-n1", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+	assert.NotContains(t, string(localLog), log)
+
+	_, err = exec.Command("git", "pull").CombinedOutput()
+	require.NoError(t, err)
+
+	localLog, err = exec.Command("git", "log", "-n1", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+	assert.Contains(t, string(localLog), log)
 }
 
 func TestExecHasRawGitOutput(t *testing.T) {

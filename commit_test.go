@@ -35,7 +35,7 @@ func TestCommit(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithStagedFiles("test.txt"))
 
 	client, _ := git.NewClient()
-	err := client.Commit("this is an example commit message")
+	_, err := client.Commit("this is an example commit message")
 
 	require.NoError(t, err)
 
@@ -48,7 +48,7 @@ func TestCommitCleanWorkingTreeError(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	err := client.Commit("this is an example commit message")
+	_, err := client.Commit("this is an example commit message")
 
 	var errGit git.ErrGitExecCommand
 	require.ErrorAs(t, err, &errGit)

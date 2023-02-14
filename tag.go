@@ -56,7 +56,7 @@ func WithAnnotation(message string) TagOption {
 //
 // By default, a lightweight tag will be created, unless specific tag
 // options are provided
-func (c *Client) Tag(tag string, opts ...TagOption) error {
+func (c *Client) Tag(tag string, opts ...TagOption) (string, error) {
 	options := &tagOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -71,20 +71,18 @@ func (c *Client) Tag(tag string, opts ...TagOption) error {
 	}
 	tagCmd.WriteString(fmt.Sprintf("'%s'", tag))
 
-	if _, err := exec(tagCmd.String()); err != nil {
-		return err
+	if out, err := exec(tagCmd.String()); err != nil {
+		return out, err
 	}
 
-	_, err := exec(fmt.Sprintf("git push origin '%s'", tag))
-	return err
+	return exec(fmt.Sprintf("git push origin '%s'", tag))
 }
 
 // DeleteTag a tag both locally and from the remote origin
-func (c *Client) DeleteTag(tag string) error {
-	if _, err := exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
-		return err
+func (c *Client) DeleteTag(tag string) (string, error) {
+	if out, err := exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
+		return out, err
 	}
 
-	_, err := exec(fmt.Sprintf("git push --delete origin '%s'", tag))
-	return err
+	return exec(fmt.Sprintf("git push --delete origin '%s'", tag))
 }

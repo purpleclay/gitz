@@ -31,23 +31,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStage(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("file.txt"))
+func TestPull(t *testing.T) {
+	log := "(tag: 0.1.0) feat: a new exciting feature"
+	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+
+	lastCommit := gittest.LastCommit(t)
+	require.NotContains(t, lastCommit, "feat: a new exciting feature")
 
 	client, _ := git.NewClient()
-	_, err := client.Stage("file.txt")
-
+	_, err := client.Pull()
 	require.NoError(t, err)
-	status := gittest.PorcelainStatus(t)
 
-	assert.Equal(t, "A  file.txt\n", status)
-}
-
-func TestStageMissingFileError(t *testing.T) {
-	gittest.InitRepository(t)
-
-	client, _ := git.NewClient()
-	_, err := client.Stage("missing.txt")
-
-	require.ErrorContains(t, err, "pathspec 'missing.txt' did not match any files")
+	lastCommit = gittest.LastCommit(t)
+	assert.Contains(t, lastCommit, "feat: a new exciting feature")
+	tags := gittest.Tags(t)
+	assert.Contains(t, tags, "0.1.0")
 }
