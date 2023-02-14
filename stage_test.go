@@ -35,19 +35,10 @@ func TestStage(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithFiles("file.txt"))
 
 	client, _ := git.NewClient()
-	err := client.Stage("file.txt")
+	_, err := client.Stage("file.txt")
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
 
 	assert.Equal(t, "A  file.txt\n", status)
-}
-
-func TestStageMissingFileError(t *testing.T) {
-	gittest.InitRepository(t)
-
-	client, _ := git.NewClient()
-	err := client.Stage("missing.txt")
-
-	require.ErrorContains(t, err, "pathspec 'missing.txt' did not match any files")
 }

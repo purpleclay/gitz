@@ -41,7 +41,7 @@ func TestTag(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	err := client.Tag("0.1.0")
+	_, err := client.Tag("0.1.0")
 
 	require.NoError(t, err)
 
@@ -58,7 +58,7 @@ func TestTagWithInvalidName(t *testing.T) {
 	// See https://git-scm.com/docs/git-check-ref-format for details on what
 	// constitutes an invalid tag (ref)
 	client, _ := git.NewClient()
-	err := client.Tag("[0.1.0]")
+	_, err := client.Tag("[0.1.0]")
 
 	assert.ErrorContains(t, err, "'[0.1.0]' is not a valid tag name")
 }
@@ -67,7 +67,7 @@ func TestTagWithAnnotation(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	err := client.Tag("0.1.0", git.WithAnnotation("created tag 0.1.0"))
+	_, err := client.Tag("0.1.0", git.WithAnnotation("created tag 0.1.0"))
 
 	require.NoError(t, err)
 
@@ -95,7 +95,7 @@ func TestTagWithAnnotationIgnores(t *testing.T) {
 			gittest.InitRepository(t)
 
 			client, _ := git.NewClient()
-			err := client.Tag("0.1.0", git.WithAnnotation(tt.message))
+			_, err := client.Tag("0.1.0", git.WithAnnotation(tt.message))
 
 			require.NoError(t, err)
 
@@ -111,7 +111,7 @@ func TestDeleteTag(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithLog(log))
 
 	client, _ := git.NewClient()
-	err := client.DeleteTag("0.1.0")
+	_, err := client.DeleteTag("0.1.0")
 
 	require.NoError(t, err)
 
@@ -126,7 +126,7 @@ func TestDeleteMissingLocalTag(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	err := client.DeleteTag("0.1.0")
+	_, err := client.DeleteTag("0.1.0")
 
 	assert.ErrorContains(t, err, "tag '0.1.0' not found")
 }

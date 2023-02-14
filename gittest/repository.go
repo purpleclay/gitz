@@ -64,6 +64,9 @@ const (
 
 	// grabbed from: https://loremipsum.io/
 	fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+	// an internal template for pushing changes back to a remote origin
+	gitPushTemplate = "git push origin %s"
 )
 
 // RepositoryOption provides a utility for setting repository options during
@@ -72,9 +75,10 @@ const (
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
-	Log     []LogEntry
-	Files   []file
-	Commits []string
+	Log       []LogEntry
+	RemoteLog []LogEntry
+	Files     []file
+	Commits   []string
 }
 
 type file struct {
@@ -84,8 +88,8 @@ type file struct {
 
 // WithLog ensures the repository will be initialized with a given snapshot
 // of commits and tags. Ideal for initializing a repository with a known
-// state. The provided log is parsed using [gittest.ParseLog] and expects
-// the log in the following format:
+// state. The provided log is parsed using [ParseLog] and expects the log
+// in the following format:
 //
 //	(tag: 0.1.0) feat: improve existing cli documentation
 //	docs: create initial mkdocs material documentation
@@ -96,6 +100,25 @@ type file struct {
 func WithLog(log string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		opts.Log = ParseLog(log)
+	}
+}
+
+// WithRemoteLog ensures the remote origin of the repository will be
+// initialized with a given snapshot of commits and tags. Ideal for
+// simulating a delta between the current repository (working directory)
+// and the remote. Use with caution, as this can result in conflicts.
+// The provided log is parsed using [ParseLog] and expects the log
+// in the following format:
+//
+//	(tag: 0.1.0) feat: improve existing cli documentation
+//	docs: create initial mkdocs material documentation
+//
+// This is the equivalent to the format produced using the git command:
+//
+//	git log --pretty='format:%d %s'
+func WithRemoteLog(log string) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		opts.RemoteLog = ParseLog(log)
 	}
 }
 
@@ -159,9 +182,11 @@ func WithLocalCommits(commits ...string) RepositoryOption {
 //
 // It is important to note, that options will be executed within a
 // particular order:
-//  1. Log history will be imported
-//  2. All local empty commits are made without pushing back to the remote
-//  3. All named files will be created and staged if required
+//  1. Log history will be imported (local and remote are in sync)
+//  2. Remote log history will be imported, creating a delta between
+//     the current repository (working directory) and the remote
+//  3. All local empty commits are made without pushing back to the remote
+//  4. All named files will be created and staged if required
 //
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
@@ -183,21 +208,31 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, os.Chdir(tmpDir))
 
 	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s test.git", DefaultBranch))
-	Exec(t, "git clone ./test.git")
-	require.NoError(t, os.Chdir("./test"))
-
-	// Ensure default config is set on the repository
-	require.NoError(t, setConfig("user.name", DefaultAuthorName))
-	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+	cloneRemoteAndInit(t, "test-local")
 
 	// Initialize the repository so that it is ready for use
 	Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
-	Exec(t, fmt.Sprintf("git push origin %s", DefaultBranch))
+	Exec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
 	for _, opt := range opts {
 		opt(options)
+	}
+
+	// To ensure a successful delta is created, an additional clone is made of the
+	// bare (remote) repository. The remote log is then imported, ensuring the
+	// local clone is out of sync
+	if len(options.RemoteLog) > 0 {
+		localClone, err := os.Getwd()
+		require.NoError(t, err)
+
+		// Clone and switch before importing. Then switch back
+		require.NoError(t, os.Chdir(tmpDir))
+		cloneRemoteAndInit(t, "test-remote")
+
+		require.NoError(t, importLog(options.RemoteLog))
+		require.NoError(t, os.Chdir(localClone))
 	}
 
 	if len(options.Log) > 0 {
@@ -218,6 +253,15 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
 	})
+}
+
+func cloneRemoteAndInit(t *testing.T, cloneName string) {
+	Exec(t, fmt.Sprintf("git clone ./test.git %s", cloneName))
+	require.NoError(t, os.Chdir(cloneName))
+
+	// Ensure default config is set on the repository
+	require.NoError(t, setConfig("user.name", DefaultAuthorName))
+	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 }
 
 func tempFile(path, content string) error {
@@ -241,18 +285,23 @@ func importLog(log []LogEntry) error {
 			return err
 		}
 
+		commitPushCmd := fmt.Sprintf(gitPushTemplate, DefaultBranch)
+		if _, err := exec(commitPushCmd); err != nil {
+			return err
+		}
+
+		// If there is no tag, continue onto the next log entry
 		if log[i].Tag == "" {
 			continue
 		}
 
-		tagCmd := fmt.Sprintf(`git tag "%s"`, log[i].Tag)
+		tagCmd := fmt.Sprintf("git tag %s", log[i].Tag)
 		if _, err := exec(tagCmd); err != nil {
 			return err
 		}
 
-		pushCmd := fmt.Sprintf(`git push --atomic origin %s "%s"`, DefaultBranch, log[i].Tag)
-		if out, err := exec(pushCmd); err != nil {
-			fmt.Println(out)
+		pushTagCmd := fmt.Sprintf(gitPushTemplate, log[i].Tag)
+		if _, err := exec(pushTagCmd); err != nil {
 			return err
 		}
 	}
@@ -278,10 +327,7 @@ func Exec(t *testing.T, cmd string) string {
 }
 
 func exec(cmd string) (string, error) {
-	p, err := syntax.NewParser().Parse(strings.NewReader(cmd), "")
-	if err != nil {
-		return "", err
-	}
+	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
 	var buf bytes.Buffer
 	r, _ := interp.New(

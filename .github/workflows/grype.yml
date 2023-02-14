@@ -18,14 +18,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: grype
+name: grype-scan
 on:
   push:
     branches:
       - main
     tags:
       - "v*.*.*"
+    paths:
+      - "**/*.go"
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
   pull_request:
+    paths:
+      - "**/*.go"
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
 jobs:
   scan-source:
     runs-on: ubuntu-latest

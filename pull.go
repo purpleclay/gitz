@@ -22,10 +22,9 @@ SOFTWARE.
 
 package git
 
-import "fmt"
-
-// Commit a snapshot of changes within the current repository (working directory)
-// and describe those changes with a given log message
-func (c *Client) Commit(msg string) (string, error) {
-	return exec(fmt.Sprintf("git commit -m '%s'", msg))
+// Pull all changes from a remote repository and immediately update the current
+// repository (current working) directory with those changes. This ensures
+// that your current repository keeps track of remote changes and stays in sync
+func (c *Client) Pull() (string, error) {
+	return exec("git pull")
 }
