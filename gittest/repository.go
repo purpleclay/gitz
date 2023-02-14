@@ -64,6 +64,9 @@ const (
 
 	// grabbed from: https://loremipsum.io/
 	fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+	// an internal template for pushing changes back to a remote origin
+	gitPushTemplate = "git push origin %s"
 )
 
 // RepositoryOption provides a utility for setting repository options during
@@ -209,7 +212,7 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 
 	// Initialize the repository so that it is ready for use
 	Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
-	Exec(t, fmt.Sprintf("git push origin %s", DefaultBranch))
+	Exec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
@@ -282,7 +285,7 @@ func importLog(log []LogEntry) error {
 			return err
 		}
 
-		commitPushCmd := fmt.Sprintf("git push origin %s", DefaultBranch)
+		commitPushCmd := fmt.Sprintf(gitPushTemplate, DefaultBranch)
 		if _, err := exec(commitPushCmd); err != nil {
 			return err
 		}
@@ -297,7 +300,7 @@ func importLog(log []LogEntry) error {
 			return err
 		}
 
-		pushTagCmd := fmt.Sprintf("git push origin %s", log[i].Tag)
+		pushTagCmd := fmt.Sprintf(gitPushTemplate, log[i].Tag)
 		if _, err := exec(pushTagCmd); err != nil {
 			return err
 		}
