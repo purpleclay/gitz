@@ -205,12 +205,7 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	require.NoError(t, os.Chdir(tmpDir))
 
 	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s test.git", DefaultBranch))
-	Exec(t, "git clone ./test.git test-local")
-	require.NoError(t, os.Chdir("./test-local"))
-
-	// Ensure default config is set on the repository
-	require.NoError(t, setConfig("user.name", DefaultAuthorName))
-	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+	cloneRemoteAndInit(t, "test-local")
 
 	// Initialize the repository so that it is ready for use
 	Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
@@ -231,12 +226,7 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 
 		// Clone and switch before importing. Then switch back
 		require.NoError(t, os.Chdir(tmpDir))
-		Exec(t, "git clone ./test.git test-remote")
-		require.NoError(t, os.Chdir("./test-remote"))
-
-		// Ensure default config is set on the repository
-		require.NoError(t, setConfig("user.name", DefaultAuthorName))
-		require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+		cloneRemoteAndInit(t, "test-remote")
 
 		require.NoError(t, importLog(options.RemoteLog))
 		require.NoError(t, os.Chdir(localClone))
@@ -260,6 +250,15 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
 	})
+}
+
+func cloneRemoteAndInit(t *testing.T, cloneName string) {
+	Exec(t, fmt.Sprintf("git clone ./test.git %s", cloneName))
+	require.NoError(t, os.Chdir(cloneName))
+
+	// Ensure default config is set on the repository
+	require.NoError(t, setConfig("user.name", DefaultAuthorName))
+	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 }
 
 func tempFile(path, content string) error {
