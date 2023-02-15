@@ -1,0 +1,90 @@
+site_name: Gitz
+site_description: TODO
+copyright: Always thinking. Forever learning. 💡
+repo_name: purpleclay/gitz
+repo_url: https://github.com/purpleclay/gitz
+# Only set during a release to ensure htmltest doesn't break due to non existent directories
+site_url: ""
+edit_uri: ""
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    primary: deep purple
+    accent: purple
+  features:
+    - content.code.annotate
+    - content.tooltips
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Git Pull: git/pull.md
+      - Git Push: git/push.md
+      - Git Stage: git/stage.md
+      - Git Commit: git/commit.md
+      - Git Tag: git/tag.md
+      - Git Log: git/log.md
+      - License: license.md
+      - Installation:
+          - Package: install/package.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/purpleclay
+      name: Purple Clay on GitHub
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/purpleclaydev
+      name: Purple Clay on Twitter
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/u/purpleclay
+      name: Purple Clay on Docker Hub
+  status:
+    new: New Feature
+    deprecated: No Longer Supported
+
+plugins:
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - git-committers:
+      repository: purpleclay/gitz
+      token: !ENV GH_TOKEN
+  - minify:
+      minify_html: true
+  - search
+  - social
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - md_in_html
+  - meta
+  - toc:
+      permalink: true
