@@ -30,6 +30,9 @@ theme:
     text: Roboto
     code: Roboto Mono
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
   - Getting Started:
@@ -39,9 +42,12 @@ nav:
       - Git Commit: git/commit.md
       - Git Tag: git/tag.md
       - Git Log: git/log.md
-      - License: license.md
+      - Testing Framework:
+          - Git Test: testing/git-test.md
       - Installation:
           - Package: install/package.md
+      - Other Bits:
+          - License: license.md
 
 extra:
   social:
@@ -73,6 +79,7 @@ plugins:
 markdown_extensions:
   - admonition
   - attr_list
+  - def_list
   - footnotes
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
