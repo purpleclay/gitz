@@ -65,6 +65,6 @@ created tag 0.1.0
 ... # (1)!
 ```
 
-1. The associated commit has been replaced with a `...` for brevity
+1. The associated commit was replaced with a `...` for brevity
 
 [^1]: Gitz defers the validation of a tag name to the git client. Any error is captured and returned back to the caller

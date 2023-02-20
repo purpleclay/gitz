@@ -24,8 +24,9 @@ package git
 
 import "fmt"
 
-// Stage changes to a particular file within the current repository (working
-// directory) ready for inclusion in the next commit
+// Stage changes to a particular file or folder within the current
+// repository (working directory) ready for inclusion in the next
+// commit
 func (c *Client) Stage(path string) (string, error) {
 	return exec(fmt.Sprintf("git add '%s'", path))
 }
