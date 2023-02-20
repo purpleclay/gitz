@@ -35,3 +35,18 @@ func main() {
     }
 }
 ```
+
+And to verify the staged changes:
+
+```sh
+$ git status
+
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+    new file:   folder/a.txt
+    new file:   folder/b.txt
+    new file:   root.txt
+```
