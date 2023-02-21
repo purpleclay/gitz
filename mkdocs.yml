@@ -14,6 +14,7 @@ theme:
     primary: deep purple
     accent: purple
   features:
+    - announce.dismiss
     - content.code.annotate
     - content.code.copy
     - content.code.select
@@ -59,9 +60,15 @@ extra:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/purpleclaydev
       name: Purple Clay on Twitter
+    - icon: fontawesome/brands/mastodon
+      link: https://fosstodon.org/@purpleclaydev
+      name: Purple Clay on Fosstodon
     - icon: fontawesome/brands/docker
       link: https://hub.docker.com/u/purpleclay
       name: Purple Clay on Docker Hub
+    - icon: fontawesome/brands/golang
+      link: https://pkg.go.dev/github.com/purpleclay/gitz
+      name: Gitz on Go Docs
   status:
     new: New Feature
     deprecated: No Longer Supported
