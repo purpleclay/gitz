@@ -8,7 +8,7 @@ icon: material/arrow-left-bold-box-outline
 
 Pull all changes from a remote repository into the current branch. Ensures the existing repository keeps track of remote changes and stays in sync.
 
-## Pull latest changes from the current Branch
+## Pull the latest changes from the current Branch
 
 Calling `Pull` will attempt to sync the current branch with its counterpart from the remote:
 
