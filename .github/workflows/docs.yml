@@ -33,6 +33,10 @@ on:
       - "docs/**"
       - "mkdocs.yml"
   workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
   build-docs:
     runs-on: ubuntu-latest
