@@ -1,4 +1,9 @@
-/*
+---
+icon: material/file-key-outline
+---
+
+MIT License
+
 Copyright (c) 2023 Purple Clay
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,15 +23,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
-
-package git
-
-import "fmt"
-
-// Stage changes to a particular file or folder within the current
-// repository (working directory) ready for inclusion in the next
-// commit
-func (c *Client) Stage(path string) (string, error) {
-	return exec(fmt.Sprintf("git add '%s'", path))
-}

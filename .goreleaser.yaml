@@ -49,4 +49,5 @@ release:
   footer: |
     **Full Changelog**: https://github.com/purpleclay/gitz/compare/{{ .PreviousTag }}...{{ .Tag }}
     ## What to do next?
-    - Follow us on [Twitter](https://twitter.com/purpleclaydev)
+    - Follow me on [Twitter](https://twitter.com/purpleclaydev)
+    - Follow me on [Fosstodon](https://fosstodon.org/@purpleclaydev)

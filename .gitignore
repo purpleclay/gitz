@@ -16,3 +16,10 @@
 
 # Built dependencies
 reports/
+
+# Mkdocs
+.cache/
+site/
+
+# VSCode
+.vscode/

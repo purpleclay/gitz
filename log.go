@@ -43,7 +43,7 @@ type logOptions struct {
 // when retrieving the log history of the current repository (working
 // directory). Typically a reference can be either a commit hash, branch
 // name or tag. The output of this option will typically be a shorter,
-// fine tuned history. This option is mutually exclusive with
+// fine-tuned history. This option is mutually exclusive with
 // [WithRefRange]. All leading and trailing whitespace are trimmed
 // from the reference, allowing empty references to be ignored
 func WithRef(ref string) LogOption {
@@ -56,7 +56,7 @@ func WithRef(ref string) LogOption {
 // focused snapshot of the log history from the current repository
 // (working directory). Typically a reference can be either a commit
 // hash, branch name or tag. The output of this option will be a shorter,
-// fine tuned history, for example, the history between two tags.
+// fine-tuned history, for example, the history between two tags.
 // This option is mutually exclusive with [WithRef]. All leading
 // and trailing whitespace are trimmed from the references, allowing
 // empty references to be ignored
@@ -123,7 +123,7 @@ type LogEntry struct {
 }
 
 // Log retrieves the commit log of the current repository (working directory)
-// in an easy to parse format. Options can be provided to customize log
+// in an easy-to-parse format. Options can be provided to customize log
 // retrieval, creating a targeted snapshot. By default, the entire history
 // from the repository HEAD (most recent commit) will be retrieved. The logs
 // are generated using the default git options:

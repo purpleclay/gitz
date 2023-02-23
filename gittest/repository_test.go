@@ -94,13 +94,13 @@ func TestInitRepositoryWithFiles(t *testing.T) {
 }
 
 func TestInitRepositoryWithStagedFiles(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithStagedFiles("c.txt", "d.txt"))
+	gittest.InitRepository(t, gittest.WithStagedFiles("c.txt", "dir/d.txt"))
 
 	out, err := exec.Command("git", "status", "--porcelain").CombinedOutput()
 	require.NoError(t, err)
 
 	assert.Contains(t, string(out), statusAdded("c.txt"))
-	assert.Contains(t, string(out), statusAdded("d.txt"))
+	assert.Contains(t, string(out), statusAdded("dir/d.txt"))
 }
 
 func TestInitRepositoryWithLocalCommits(t *testing.T) {
