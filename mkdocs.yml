@@ -76,7 +76,7 @@ plugins:
       type: timeago
   - git-committers:
       repository: purpleclay/gitz
-      token: !ENV GH_TOKEN
+      branch: main
   - minify:
       minify_html: true
   - search
