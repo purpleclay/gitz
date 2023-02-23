@@ -66,9 +66,6 @@ extra:
     - icon: fontawesome/brands/docker
       link: https://hub.docker.com/u/purpleclay
       name: Purple Clay on Docker Hub
-    - icon: fontawesome/brands/golang
-      link: https://pkg.go.dev/github.com/purpleclay/gitz
-      name: Gitz on Go Docs
   status:
     new: New Feature
     deprecated: No Longer Supported
