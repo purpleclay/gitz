@@ -41,7 +41,7 @@ By default, `gitz` parses the log into a structured output accessible through th
 
 ### Return only raw output from the log
 
-Use the `git.WithRawOnly` option to skip parsing of the log into the structured `Commits` property, improving performance. Perfect if you want to carry out any custom processing.
+Use the `WithRawOnly` option to skip parsing of the log into the structured `Commits` property, improving performance. Perfect if you want to carry out any custom processing.
 
 ```{ .go .select linenums="1" }
 package main
@@ -66,7 +66,7 @@ Printing the `Commits` property should now be an empty slice:
 
 ## View the log from a point in time
 
-The `git.WithRef` option provides a starting point other than HEAD (_most recent commit_) when retrieving the log history. A reference can be a `Commit Hash`, `Branch Name`, or `Tag`. Output from this option will be a shorter, fine-tuned log.
+The `WithRef` option provides a starting point other than HEAD (_most recent commit_) when retrieving the log history. A reference can be a `Commit Hash`, `Branch Name`, or `Tag`. Output from this option will be a shorter, fine-tuned log.
 
 ```{ .go .select linenums="1" }
 package main
@@ -85,7 +85,7 @@ func main() {
 
 ## View a snapshot of the log
 
-The `git.WithRefRange` option provides a start and end point for retrieving a snapshot of the log history between two points in time. A reference can be a `Commit Hash`, `Branch Name`, or `Tag`. Output from this option will be a shorter, fine-tuned log.
+The `WithRefRange` option provides a start and end point for retrieving a snapshot of the log history between two points in time. A reference can be a `Commit Hash`, `Branch Name`, or `Tag`. Output from this option will be a shorter, fine-tuned log.
 
 ```{ .go .select linenums="1" }
 package main
@@ -104,7 +104,7 @@ func main() {
 
 ## View the log of any files or folders
 
-Fine-tune the log history further with the `git.WithPaths` option. Providing a set of relative paths to any files and folders within the repository will include only commits related to their history.
+Fine-tune the log history further with the `WithPaths` option. Providing a set of relative paths to any files and folders within the repository will include only commits related to their history.
 
 ```{ .go .select linenums="1" }
 package main

@@ -36,7 +36,7 @@ func main() {
 
 ## Creating an Annotated Tag
 
-Use the `git.WithAnnotation` option to switch to annotated tag creation mode:
+Use the `WithAnnotation` option to switch to annotated tag creation mode:
 
 ```{ .go .select linenums="1" hl_lines="6" }
 package main
