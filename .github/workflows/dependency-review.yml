@@ -20,7 +20,16 @@
 
 name: dependency-review
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "go.mod"
+      - "go.sum"
   pull_request:
+    paths:
+      - "go.mod"
+      - "go.sum"
 
 permissions:
   contents: read
