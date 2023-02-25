@@ -268,3 +268,111 @@ func overwriteFile(t *testing.T, path, content string) {
 
 	fi.WriteString(content)
 }
+
+func TestLogWithSkip(t *testing.T) {
+	log := `feat: add options to support skipping of log entries
+ci: improve github workflow
+docs: update documentation to include new option`
+
+	tests := []struct {
+		name            string
+		skipCount       int
+		expectedLines   int
+		expectedCommits []string
+	}{
+		{
+			name:          "IsIgnored",
+			skipCount:     0,
+			expectedLines: 4,
+			expectedCommits: []string{
+				"feat: add options to support skipping of log entries",
+				"ci: improve github workflow",
+				"docs: update documentation to include new option",
+				gittest.InitialCommit,
+			},
+		},
+		{
+			name:          "SkipFirstEntry",
+			skipCount:     1,
+			expectedLines: 3,
+			expectedCommits: []string{
+				"ci: improve github workflow",
+				"docs: update documentation to include new option",
+				gittest.InitialCommit,
+			},
+		},
+		{
+			name:          "SkipExceedsLogLength",
+			skipCount:     10,
+			expectedLines: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gittest.InitRepository(t, gittest.WithLog(log))
+
+			client, _ := git.NewClient()
+			out, err := client.Log(git.WithSkip(tt.skipCount))
+			require.NoError(t, err)
+
+			lines := countLogLines(t, out.Raw)
+			require.Equal(t, tt.expectedLines, lines)
+
+			for _, commit := range tt.expectedCommits {
+				require.Contains(t, out.Raw, commit)
+			}
+		})
+	}
+}
+
+func TestLogWithTake(t *testing.T) {
+	log := `feat: add options to support taking n number of log entries
+docs: update documentation to include new option`
+
+	tests := []struct {
+		name            string
+		takeCount       int
+		expectedLines   int
+		expectedCommits []string
+	}{
+		{
+			name:          "TakeZero",
+			takeCount:     0,
+			expectedLines: 0,
+		},
+		{
+			name:          "TakeLatestEntry",
+			takeCount:     1,
+			expectedLines: 1,
+			expectedCommits: []string{
+				"feat: add options to support taking n number of log entries",
+			},
+		},
+		{
+			name:          "TakeExceedsLogLength",
+			takeCount:     10,
+			expectedLines: 3,
+			expectedCommits: []string{
+				"feat: add options to support taking n number of log entries",
+				"docs: update documentation to include new option",
+				gittest.InitialCommit,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gittest.InitRepository(t, gittest.WithLog(log))
+
+			client, _ := git.NewClient()
+			out, err := client.Log(git.WithTake(tt.takeCount))
+			require.NoError(t, err)
+
+			lines := countLogLines(t, out.Raw)
+			require.Equal(t, tt.expectedLines, lines)
+
+			for _, commit := range tt.expectedCommits {
+				require.Contains(t, out.Raw, commit)
+			}
+		})
+	}
+}

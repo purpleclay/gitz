@@ -37,6 +37,8 @@ type logOptions struct {
 	RefRange  string
 	LogPaths  []string
 	SkipParse bool
+	SkipCount int
+	TakeCount int
 }
 
 // WithRef provides a starting point other than HEAD (most recent commit)
@@ -104,6 +106,20 @@ func WithRawOnly() LogOption {
 	}
 }
 
+// WithSkip ...
+func WithSkip(n int) LogOption {
+	return func(opts *logOptions) {
+		opts.SkipCount = n
+	}
+}
+
+// WithTake ...
+func WithTake(n int) LogOption {
+	return func(opts *logOptions) {
+		opts.TakeCount = n
+	}
+}
+
 // Log represents a snapshot of commit history from a repository
 type Log struct {
 	// Raw contains the raw commit log
@@ -136,7 +152,11 @@ type LogEntry struct {
 //
 //	git log --pretty=oneline --no-decorate --no-color
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
-	options := &logOptions{}
+	options := &logOptions{
+		// Disable both counts by default
+		SkipCount: -1,
+		TakeCount: -1,
+	}
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -145,7 +165,18 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	var logCmd strings.Builder
 	logCmd.WriteString("git log ")
 
+	if options.SkipCount > 0 {
+		logCmd.WriteString(" ")
+		logCmd.WriteString(fmt.Sprintf("--skip %d", options.SkipCount))
+	}
+
+	if options.TakeCount > -1 {
+		logCmd.WriteString(" ")
+		logCmd.WriteString(fmt.Sprintf("-n%d", options.TakeCount))
+	}
+
 	if options.RefRange != "" {
+		logCmd.WriteString(" ")
 		logCmd.WriteString(options.RefRange)
 	}
 
