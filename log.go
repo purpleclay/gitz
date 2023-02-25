@@ -84,8 +84,14 @@ func WithRefRange(fromRef string, toRef string) LogOption {
 // trimmed from the file paths, allowing empty paths to be ignored
 func WithPaths(paths ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.LogPaths = make([]string, 0, len(paths))
-		opts.LogPaths = append(opts.LogPaths, paths...)
+		opts.LogPaths = make([]string, 0)
+
+		for _, path := range paths {
+			cleaned := strings.TrimSpace(path)
+			if cleaned != "" {
+				opts.LogPaths = append(opts.LogPaths, cleaned)
+			}
+		}
 	}
 }
 
