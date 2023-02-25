@@ -23,6 +23,9 @@ SOFTWARE.
 package git_test
 
 import (
+	"bufio"
+	"fmt"
+	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -32,13 +35,77 @@ import (
 )
 
 func TestStage(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("file.txt"))
+	gittest.InitRepository(t, gittest.WithFiles("file.txt", "dir1/file.txt", "dir2/file.txt"))
 
 	client, _ := git.NewClient()
-	_, err := client.Stage("file.txt")
+	_, err := client.Stage()
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
 
-	assert.Equal(t, "A  file.txt\n", status)
+	statusLines := parsePorcelainStatus(t, status)
+	require.Len(t, statusLines, 3)
+
+	assert.ElementsMatch(t, statusLines, []string{
+		"A  file.txt",
+		"A  dir1/file.txt",
+		"A  dir2/file.txt",
+	})
+}
+
+func parsePorcelainStatus(t *testing.T, status string) []string {
+	t.Helper()
+
+	scanner := bufio.NewScanner(strings.NewReader(status))
+	scanner.Split(bufio.ScanLines)
+
+	lines := []string{}
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	return lines
+}
+
+func TestStageWithPathSpecs(t *testing.T) {
+	files := []string{
+		"file.txt",
+		"dir1/file.txt",
+		"dir1/file.gif",
+		"dir2/file.txt",
+	}
+	gittest.InitRepository(t, gittest.WithFiles(files...))
+
+	client, _ := git.NewClient()
+	_, err := client.Stage(git.WithPathSpecs("file.txt", "dir1/*.gif"))
+
+	require.NoError(t, err)
+	status := gittest.PorcelainStatus(t)
+	fmt.Println(status)
+
+	statusLines := parsePorcelainStatus(t, status)
+	require.Len(t, statusLines, 4)
+
+	assert.ElementsMatch(t, statusLines, []string{
+		"A  file.txt",
+		"?? dir1/file.txt",
+		"A  dir1/file.gif",
+		"?? dir2/",
+	})
+}
+
+func TestStageWithPathSpecsIgnoresEmptyPathSpecs(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
+
+	client, _ := git.NewClient()
+	_, err := client.Stage(git.WithPathSpecs(" ", "   file2.txt   "))
+
+	require.NoError(t, err)
+	status := gittest.PorcelainStatus(t)
+	fmt.Println(status)
+
+	statusLines := parsePorcelainStatus(t, status)
+	require.Len(t, statusLines, 2)
+
+	assert.ElementsMatch(t, statusLines, []string{"?? file1.txt", "A  file2.txt"})
 }
