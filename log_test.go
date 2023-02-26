@@ -270,11 +270,9 @@ func overwriteFile(t *testing.T, path, content string) {
 }
 
 func TestLogWithSkip(t *testing.T) {
-	log := `fix: parsing error when input string is too long
-ci: extend the existing build workflow to include integration tests
-docs: create initial mkdocs material documentation
-feat: add second operation to library
-feat: add first operation to library`
+	log := `feat: add options to support skipping of log entries
+ci: improve github workflow
+docs: update documentation to include new option`
 
 	tests := []struct {
 		name            string
@@ -402,4 +400,54 @@ chore: configure basic structure of project`
 	require.Equal(t, 2, lines)
 	assert.Contains(t, out.Raw, "feat: detect if git is available when creating a new client")
 	assert.Contains(t, out.Raw, "chore: simplify feature request issue")
+}
+
+func TestWithGrep(t *testing.T) {
+	log := `feat: add option to match commits by regex
+docs: document how to use new option for commit matching
+chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6`
+
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithGrep("regex$", "option"))
+	require.NoError(t, err)
+
+	lines := countLogLines(t, out.Raw)
+	require.Equal(t, 2, lines)
+	assert.Contains(t, out.Raw, "feat: add option to match commits by regex")
+	assert.Contains(t, out.Raw, "docs: document how to use new option for commit matching")
+}
+
+func TestWithGrepAndMatchAll(t *testing.T) {
+	log := `feat: add option to match commits by regex
+docs: document how to use new option for commit matching
+chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6`
+
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithGrep("regex$", "option"), git.WithMatchAll())
+	require.NoError(t, err)
+
+	lines := countLogLines(t, out.Raw)
+	require.Equal(t, 1, lines)
+	assert.Contains(t, out.Raw, "feat: add option to match commits by regex")
+}
+
+func TestWithInvertGrep(t *testing.T) {
+	log := `feat: add option to match commits by regex
+docs: document how to use new option for commit matching
+chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6`
+
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithInvertGrep("regex$", "option"))
+	require.NoError(t, err)
+
+	lines := countLogLines(t, out.Raw)
+	require.Equal(t, 2, lines)
+	assert.Contains(t, out.Raw, "chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6")
+	assert.Contains(t, out.Raw, gittest.InitialCommit)
 }
