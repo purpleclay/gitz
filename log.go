@@ -135,7 +135,10 @@ func WithTake(n int) LogOption {
 	}
 }
 
-// WithGrep ...
+// WithGrep limits the number of commits that will be output within the
+// log history to any with a log message that contains one of the provided
+// matches (regular expressions). All leading and trailing whitespace
+// will be trimmed, allowing empty matches to be ignored
 func WithGrep(matches ...string) LogOption {
 	return func(opts *logOptions) {
 		opts.Matches = make([]string, 0)
@@ -149,7 +152,10 @@ func WithGrep(matches ...string) LogOption {
 	}
 }
 
-// WithInvertGrep ...
+// WithInvertGrep limits the number of commits that will be output within
+// the log history to any with a log message that does not contain one of
+// the provided matches (regular expressions). All leading and trailing
+// whitespace will be trimmed, allowing empty matches to be ignored
 func WithInvertGrep(matches ...string) LogOption {
 	return func(opts *logOptions) {
 		WithGrep(matches...)(opts)
@@ -157,7 +163,9 @@ func WithInvertGrep(matches ...string) LogOption {
 	}
 }
 
-// WithMatchAll ...
+// WithMatchAll when used in combination with [git.WithGrep] will limit
+// the number of returned commits to those whose log message contains all
+// of the provided matches (regular expressions)
 func WithMatchAll() LogOption {
 	return func(opts *logOptions) {
 		opts.MatchAll = true
