@@ -28,6 +28,10 @@ import (
 	"strings"
 )
 
+// const MagicNumber that disables Skip and Take (-1)
+
+const disabledNumbericOption = -1
+
 // LogOption provides a way for setting specific options during a log operation.
 // Each supported option can customize the way the log history of the current
 // repository (working directory) is processed before retrieval
@@ -37,6 +41,8 @@ type logOptions struct {
 	RefRange  string
 	LogPaths  []string
 	SkipParse bool
+	SkipCount int
+	TakeCount int
 }
 
 // WithRef provides a starting point other than HEAD (most recent commit)
@@ -104,6 +110,28 @@ func WithRawOnly() LogOption {
 	}
 }
 
+// WithSkip skips any number of most recent commits from within the log
+// history. A positive number (greater than zero) is expected. Skipping
+// more commits than exists, will result in no history being retrieved.
+// Skipping zero commits, will retrieve the entire log. The option can
+// has a higher order of precedence than [git.WithTake]
+func WithSkip(n int) LogOption {
+	return func(opts *logOptions) {
+		opts.SkipCount = n
+	}
+}
+
+// WithTake limits the number of commits that will be output within the
+// log history. A positive number (greater than zero) is expected. Taking
+// more commits than exists, has the same effect as retrieving the entire
+// log. Taking zero commits, will retrieve an empty log. This option has
+// a lower order of precedence than [git.WithSkip]
+func WithTake(n int) LogOption {
+	return func(opts *logOptions) {
+		opts.TakeCount = n
+	}
+}
+
 // Log represents a snapshot of commit history from a repository
 type Log struct {
 	// Raw contains the raw commit log
@@ -136,7 +164,11 @@ type LogEntry struct {
 //
 //	git log --pretty=oneline --no-decorate --no-color
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
-	options := &logOptions{}
+	options := &logOptions{
+		// Disable both counts by default
+		SkipCount: disabledNumbericOption,
+		TakeCount: disabledNumbericOption,
+	}
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -145,7 +177,18 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	var logCmd strings.Builder
 	logCmd.WriteString("git log ")
 
+	if options.SkipCount > 0 {
+		logCmd.WriteString(" ")
+		logCmd.WriteString(fmt.Sprintf("--skip %d", options.SkipCount))
+	}
+
+	if options.TakeCount > disabledNumbericOption {
+		logCmd.WriteString(" ")
+		logCmd.WriteString(fmt.Sprintf("-n%d", options.TakeCount))
+	}
+
 	if options.RefRange != "" {
+		logCmd.WriteString(" ")
 		logCmd.WriteString(options.RefRange)
 	}
 
