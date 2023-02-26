@@ -38,11 +38,14 @@ const disabledNumbericOption = -1
 type LogOption func(*logOptions)
 
 type logOptions struct {
-	RefRange  string
-	LogPaths  []string
-	SkipParse bool
-	SkipCount int
-	TakeCount int
+	RefRange     string
+	LogPaths     []string
+	SkipParse    bool
+	SkipCount    int
+	TakeCount    int
+	Matches      []string
+	InverseMatch bool
+	MatchAll     bool
 }
 
 // WithRef provides a starting point other than HEAD (most recent commit)
@@ -132,6 +135,35 @@ func WithTake(n int) LogOption {
 	}
 }
 
+// WithGrep ...
+func WithGrep(matches ...string) LogOption {
+	return func(opts *logOptions) {
+		opts.Matches = make([]string, 0)
+
+		for _, match := range matches {
+			cleaned := strings.TrimSpace(match)
+			if cleaned != "" {
+				opts.Matches = append(opts.Matches, cleaned)
+			}
+		}
+	}
+}
+
+// WithInvertGrep ...
+func WithInvertGrep(matches ...string) LogOption {
+	return func(opts *logOptions) {
+		WithGrep(matches...)(opts)
+		opts.InverseMatch = true
+	}
+}
+
+// WithMatchAll ...
+func WithMatchAll() LogOption {
+	return func(opts *logOptions) {
+		opts.MatchAll = true
+	}
+}
+
 // Log represents a snapshot of commit history from a repository
 type Log struct {
 	// Raw contains the raw commit log
@@ -185,6 +217,21 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	if options.TakeCount > disabledNumbericOption {
 		logCmd.WriteString(" ")
 		logCmd.WriteString(fmt.Sprintf("-n%d", options.TakeCount))
+	}
+
+	if len(options.Matches) > 0 {
+		for _, match := range options.Matches {
+			logCmd.WriteString(" ")
+			logCmd.WriteString(fmt.Sprintf("--grep %s", match))
+		}
+	}
+
+	if options.InverseMatch {
+		logCmd.WriteString(" --invert-grep")
+	}
+
+	if options.MatchAll {
+		logCmd.WriteString(" --all-match")
 	}
 
 	if options.RefRange != "" {
