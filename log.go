@@ -28,6 +28,10 @@ import (
 	"strings"
 )
 
+// const MagicNumber that disables Skip and Take (-1)
+
+const disabledNumbericOption = -1
+
 // LogOption provides a way for setting specific options during a log operation.
 // Each supported option can customize the way the log history of the current
 // repository (working directory) is processed before retrieval
@@ -106,14 +110,22 @@ func WithRawOnly() LogOption {
 	}
 }
 
-// WithSkip ...
+// WithSkip skips any number of most recent commits from within the log
+// history. A positive number (greater than zero) is expected. Skipping
+// more commits than exists, will result in no history being retrieved.
+// Skipping zero commits, will retrieve the entire log. The option can
+// has a higher order of precedence than [git.WithTake]
 func WithSkip(n int) LogOption {
 	return func(opts *logOptions) {
 		opts.SkipCount = n
 	}
 }
 
-// WithTake ...
+// WithTake limits the number of commits that will be output within the
+// log history. A positive number (greater than zero) is expected. Taking
+// more commits than exists, has the same effect as retrieving the entire
+// log. Taking zero commits, will retrieve an empty log. This option has
+// a lower order of precedence than [git.WithSkip]
 func WithTake(n int) LogOption {
 	return func(opts *logOptions) {
 		opts.TakeCount = n
@@ -154,8 +166,8 @@ type LogEntry struct {
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{
 		// Disable both counts by default
-		SkipCount: -1,
-		TakeCount: -1,
+		SkipCount: disabledNumbericOption,
+		TakeCount: disabledNumbericOption,
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -170,7 +182,7 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		logCmd.WriteString(fmt.Sprintf("--skip %d", options.SkipCount))
 	}
 
-	if options.TakeCount > -1 {
+	if options.TakeCount > disabledNumbericOption {
 		logCmd.WriteString(" ")
 		logCmd.WriteString(fmt.Sprintf("-n%d", options.TakeCount))
 	}
