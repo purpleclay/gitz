@@ -270,9 +270,11 @@ func overwriteFile(t *testing.T, path, content string) {
 }
 
 func TestLogWithSkip(t *testing.T) {
-	log := `feat: add options to support skipping of log entries
-ci: improve github workflow
-docs: update documentation to include new option`
+	log := `fix: parsing error when input string is too long
+ci: extend the existing build workflow to include integration tests
+docs: create initial mkdocs material documentation
+feat: add second operation to library
+feat: add first operation to library`
 
 	tests := []struct {
 		name            string
@@ -375,4 +377,29 @@ docs: update documentation to include new option`
 			}
 		})
 	}
+}
+
+func TestLogWithSkipAndTake(t *testing.T) {
+	log := `feat: include options to filter logs between points in time and from a specific directory
+feat: include option for generating an annotated tag
+feat: add basic git push support
+feat: detect if git is available when creating a new client
+chore: simplify feature request issue
+feat: add basic git log operation support
+feat: add support for a basic file staging operation
+feat: add basic support for git commit operations
+chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6
+feat: add basic support for git tag operations
+chore: configure basic structure of project`
+
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	out, err := client.Log(git.WithSkip(3), git.WithTake(2))
+	require.NoError(t, err)
+
+	lines := countLogLines(t, out.Raw)
+	require.Equal(t, 2, lines)
+	assert.Contains(t, out.Raw, "feat: detect if git is available when creating a new client")
+	assert.Contains(t, out.Raw, "chore: simplify feature request issue")
 }
