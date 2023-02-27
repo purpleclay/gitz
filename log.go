@@ -28,8 +28,7 @@ import (
 	"strings"
 )
 
-// const MagicNumber that disables Skip and Take (-1)
-
+// constant magic number that disables Skip and Take (-1)
 const disabledNumbericOption = -1
 
 // LogOption provides a way for setting specific options during a log operation.

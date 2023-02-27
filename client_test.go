@@ -63,13 +63,13 @@ func TestRepository(t *testing.T) {
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
-	// gittest.InitRepository(t, gittest.WithCloneDepth(1))
+	gittest.InitRepository(t, gittest.WithCloneDepth(1))
 
-	// client, _ := git.NewClient()
-	// repo, err := client.Repository()
+	client, _ := git.NewClient()
+	repo, err := client.Repository()
 
-	// require.NoError(t, err)
-	// assert.True(t, repo.ShallowClone)
+	require.NoError(t, err)
+	assert.True(t, repo.ShallowClone)
 }
 
 func TestRepositoryDetectsDetachedHead(t *testing.T) {

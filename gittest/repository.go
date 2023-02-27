@@ -75,10 +75,11 @@ const (
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
-	Log       []LogEntry
-	RemoteLog []LogEntry
-	Files     []file
-	Commits   []string
+	Log        []LogEntry
+	RemoteLog  []LogEntry
+	Files      []file
+	Commits    []string
+	CloneDepth int
 }
 
 type file struct {
@@ -176,6 +177,15 @@ func WithLocalCommits(commits ...string) RepositoryOption {
 	}
 }
 
+// WithCloneDepth ensures the repository will be cloned at a specific depth,
+// effectively truncating the history to the required number of commits.
+// The result will be a shallow repository
+func WithCloneDepth(depth int) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		opts.CloneDepth = depth
+	}
+}
+
 // InitRepository will attempt to initialize a test repository capable of
 // supporting any git operation. Options can be provided to customize the
 // initialization process, changing the default configuration used.
@@ -226,7 +236,17 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 		require.NoError(t, importLog(options.Log))
 	}
 
-	// TODO: Shallow Clone
+	if options.CloneDepth > 0 {
+		// TOOD: refactor this
+		require.NoError(t, os.Chdir(tmpDir))
+		os.RemoveAll("test-local")
+		Exec(t, fmt.Sprintf("git clone --depth %d file://$(pwd)/test.git test-local", options.CloneDepth))
+		require.NoError(t, os.Chdir("test-local"))
+
+		// Ensure default config is set on the repository
+		require.NoError(t, setConfig("user.name", DefaultAuthorName))
+		require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+	}
 
 	// To ensure a successful delta is created, an additional clone is made of the
 	// bare (remote) repository. The remote log is then imported, ensuring the

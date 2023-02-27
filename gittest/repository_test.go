@@ -136,6 +136,19 @@ func TestWithRemoteLog(t *testing.T) {
 }
 
 func TestWithCloneDepth(t *testing.T) {
+	log := `feat: this is commit number 3
+feat: this is commit number 2
+feat: this is commit number 1`
+
+	gittest.InitRepository(t, gittest.WithLog(log), gittest.WithCloneDepth(1))
+
+	localLog, err := exec.Command("git", "log", "-n4", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(localLog), "feat: this is commit number 3")
+	assert.NotContains(t, string(localLog), "feat: this is commit number 2")
+	assert.NotContains(t, string(localLog), "feat: this is commit number 1")
+	assert.NotContains(t, string(localLog), gittest.InitialCommit)
 }
 
 func TestExecHasRawGitOutput(t *testing.T) {
