@@ -183,15 +183,16 @@ func WithLocalCommits(commits ...string) RepositoryOption {
 // It is important to note, that options will be executed within a
 // particular order:
 //  1. Log history will be imported (local and remote are in sync)
-//  2. Remote log history will be imported, creating a delta between
+//  2. A shallow clone is made at the required clone depth
+//  3. Remote log history will be imported, creating a delta between
 //     the current repository (working directory) and the remote
-//  3. All local empty commits are made without pushing back to the remote
-//  4. All named files will be created and staged if required
+//  4. All local empty commits are made without pushing back to the remote
+//  5. All named files will be created and staged if required
 //
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
-// working remote. Without customization, the test repository will
-// consist of single commit:
+// working remote. Without customization (options), the test repository
+// will consist of single commit:
 //
 //	initialized repository
 func InitRepository(t *testing.T, opts ...RepositoryOption) {
@@ -213,12 +214,19 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	// Initialize the repository so that it is ready for use
 	Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
 	Exec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
+	Exec(t, "git remote set-head origin --auto")
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
+
+	if len(options.Log) > 0 {
+		require.NoError(t, importLog(options.Log))
+	}
+
+	// TODO: Shallow Clone
 
 	// To ensure a successful delta is created, an additional clone is made of the
 	// bare (remote) repository. The remote log is then imported, ensuring the
@@ -233,10 +241,6 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 
 		require.NoError(t, importLog(options.RemoteLog))
 		require.NoError(t, os.Chdir(localClone))
-	}
-
-	if len(options.Log) > 0 {
-		require.NoError(t, importLog(options.Log))
 	}
 
 	for _, commit := range options.Commits {
@@ -335,10 +339,10 @@ func exec(cmd string) (string, error) {
 	)
 
 	if err := r.Run(context.Background(), p); err != nil {
-		return "", errors.New(buf.String())
+		return "", errors.New(strings.TrimSuffix(buf.String(), "\n"))
 	}
 
-	return buf.String(), nil
+	return strings.TrimSuffix(buf.String(), "\n"), nil
 }
 
 // Tags returns a list of all local tags associated with the current
@@ -432,4 +436,21 @@ func TagLocal(t *testing.T, tag string) {
 func Show(t *testing.T, object string) string {
 	t.Helper()
 	return Exec(t, fmt.Sprintf("git show '%s'", object))
+}
+
+// Checkout will update the state of the repository (working directory)
+// by updating files in the tree to a specific point in time. Object
+// can be any one of the following:
+//   - Commit reference (long or abbreviated hash)
+//   - Tag reference
+//   - Branch name
+//
+// Be warned, checking out a tag or commit reference will cause a
+// detached HEAD for the current repository. Raw output is returned
+// from this command:
+//
+//	git checkout '<object>'
+func Checkout(t *testing.T, object string) string {
+	t.Helper()
+	return Exec(t, fmt.Sprintf("git checkout '%s'", object))
 }

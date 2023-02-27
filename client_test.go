@@ -49,3 +49,47 @@ func TestNewClientGitMissingError(t *testing.T) {
 	assert.EqualError(t, err, "git is not installed under the PATH environment variable. PATH resolves to /fake")
 	assert.Nil(t, client)
 }
+
+func TestRepository(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	repo, err := client.Repository()
+
+	require.NoError(t, err)
+	assert.False(t, repo.DetachedHead)
+	assert.False(t, repo.ShallowClone)
+	assert.Equal(t, gittest.DefaultBranch, repo.DefaultBranch)
+}
+
+func TestRepositoryDetectsShallowClone(t *testing.T) {
+	// gittest.InitRepository(t, gittest.WithCloneDepth(1))
+
+	// client, _ := git.NewClient()
+	// repo, err := client.Repository()
+
+	// require.NoError(t, err)
+	// assert.True(t, repo.ShallowClone)
+}
+
+func TestRepositoryDetectsDetachedHead(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithLocalCommits("chore: checking this out will force a detached head"))
+
+	hash := latestCommitHash(t)
+	gittest.Checkout(t, hash)
+
+	client, _ := git.NewClient()
+	repo, err := client.Repository()
+
+	require.NoError(t, err)
+	assert.True(t, repo.DetachedHead)
+}
+
+func TestRepositoryNotWorkingDirectory(t *testing.T) {
+	nonWorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Repository()
+
+	require.EqualError(t, err, "current working directory is not a git repository")
+}

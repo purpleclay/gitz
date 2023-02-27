@@ -135,6 +135,9 @@ func TestWithRemoteLog(t *testing.T) {
 	assert.Contains(t, string(localLog), log)
 }
 
+func TestWithCloneDepth(t *testing.T) {
+}
+
 func TestExecHasRawGitOutput(t *testing.T) {
 	out := gittest.Exec(t, "git --version")
 
@@ -199,7 +202,7 @@ func TestPorcelainStatus(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
 
 	status := gittest.PorcelainStatus(t)
-	assert.Equal(t, "?? file1.txt\n?? file2.txt\n", status)
+	assert.Equal(t, "?? file1.txt\n?? file2.txt", status)
 }
 
 func TestLogRemote(t *testing.T) {
@@ -244,4 +247,14 @@ func TestShow(t *testing.T) {
 
 	out := gittest.Show(t, gittest.DefaultBranch)
 	assert.Contains(t, out, gittest.InitialCommit)
+}
+
+func TestCheckout(t *testing.T) {
+	gittest.InitRepository(t)
+
+	_, err := exec.Command("git", "branch", "testing").CombinedOutput()
+	require.NoError(t, err)
+
+	out := gittest.Checkout(t, "testing")
+	assert.Equal(t, "Switched to branch 'testing'", out)
 }
