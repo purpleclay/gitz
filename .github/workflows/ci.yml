@@ -35,13 +35,6 @@ on:
     #   - "go.mod"
     #   - "go.sum"
 jobs:
-  testing:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    uses: purpleclay/github/.github/workflows/checkout.yml@main
-    with:
-      config-path: .github/labeler.yml
   build-and-test:
     strategy:
       matrix:
