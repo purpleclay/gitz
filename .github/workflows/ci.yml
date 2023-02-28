@@ -29,12 +29,11 @@ on:
       - "go.mod"
       - "go.sum"
   pull_request:
-    paths:
-      - "**/*.go"
-      - "*.go"
-      - "go.mod"
-      - "go.sum"
-  workflow_dispatch:
+    # paths:
+    #   - "**/*.go"
+    #   - "*.go"
+    #   - "go.mod"
+    #   - "go.sum"
 jobs:
   build-and-test:
     strategy:
