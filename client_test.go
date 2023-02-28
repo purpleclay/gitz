@@ -35,7 +35,7 @@ func TestNewClientGitFound(t *testing.T) {
 	client, err := git.NewClient()
 
 	require.NoError(t, err)
-	expected := gittest.Exec(t, "git --version")
+	expected := gittest.MustExec(t, "git --version")
 	assert.Equal(t, expected, client.Version())
 }
 

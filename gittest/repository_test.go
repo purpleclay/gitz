@@ -152,7 +152,20 @@ feat: this is commit number 1`
 }
 
 func TestExecHasRawGitOutput(t *testing.T) {
-	out := gittest.Exec(t, "git --version")
+	out, err := gittest.Exec(t, "git --version")
+
+	require.NoError(t, err)
+	assert.Contains(t, out, "git version")
+}
+
+func TestExecReturnsClientError(t *testing.T) {
+	_, err := gittest.Exec(t, "git unknown")
+
+	require.ErrorContains(t, err, "git: 'unknown' is not a git command")
+}
+
+func TestMustExecHasRawGitOutput(t *testing.T) {
+	out := gittest.MustExec(t, "git --version")
 
 	assert.Contains(t, out, "git version")
 }
