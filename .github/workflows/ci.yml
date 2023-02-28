@@ -78,6 +78,9 @@ jobs:
   lint:
     if: ${{ github.actor != 'dependabot[bot]' }}
     uses: purpleclay/github/.github/workflows/golangci-lint.yml@checkout-workflow
+    permissions:
+      contents: read
+      pull-requests: read
     with:
       version: v1.51.2
       go-version: 1.19.5
