@@ -283,15 +283,16 @@ func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
 	MustExec(t, fmt.Sprintf("git clone %s file://$(pwd)/%s %s", strings.Join(options, " "), bareRepositoryName, cloneName))
 	require.NoError(t, os.Chdir(cloneName))
 
+	// Ensure author details are set
+	require.NoError(t, setConfig("user.name", DefaultAuthorName))
+	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+
 	// Check if there any any commits, if not, initialize and push back first commit
 	if out := MustExec(t, "git rev-list -n1 --all"); out == "" {
 		MustExec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
 		MustExec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
 	}
 
-	// Ensure default config is set on the repository
-	require.NoError(t, setConfig("user.name", DefaultAuthorName))
-	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
 	MustExec(t, "git remote set-head origin --auto")
 }
 
