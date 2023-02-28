@@ -24,7 +24,6 @@ package git_test
 
 import (
 	"bufio"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -81,7 +80,6 @@ func TestStageWithPathSpecs(t *testing.T) {
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
-	fmt.Println(status)
 
 	statusLines := parsePorcelainStatus(t, status)
 	require.Len(t, statusLines, 4)
@@ -102,7 +100,6 @@ func TestStageWithPathSpecsIgnoresEmptyPathSpecs(t *testing.T) {
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
-	fmt.Println(status)
 
 	statusLines := parsePorcelainStatus(t, status)
 	require.Len(t, statusLines, 2)

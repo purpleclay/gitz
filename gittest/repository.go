@@ -62,6 +62,12 @@ const (
 	// the test repository
 	InitialCommit = "initialized repository"
 
+	// the name of the bare repository, used as the remote for all testing
+	bareRepositoryName = "test.git"
+
+	// the name of the repository (working directory) after cloning the bare repository
+	clonedRepositoryName = "test"
+
 	// grabbed from: https://loremipsum.io/
 	fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
@@ -75,10 +81,11 @@ const (
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
-	Log       []LogEntry
-	RemoteLog []LogEntry
-	Files     []file
-	Commits   []string
+	Log        []LogEntry
+	RemoteLog  []LogEntry
+	Files      []file
+	Commits    []string
+	CloneDepth int
 }
 
 type file struct {
@@ -176,6 +183,15 @@ func WithLocalCommits(commits ...string) RepositoryOption {
 	}
 }
 
+// WithCloneDepth ensures the repository will be cloned at a specific depth,
+// effectively truncating the history to the required number of commits.
+// The result will be a shallow repository
+func WithCloneDepth(depth int) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		opts.CloneDepth = depth
+	}
+}
+
 // InitRepository will attempt to initialize a test repository capable of
 // supporting any git operation. Options can be provided to customize the
 // initialization process, changing the default configuration used.
@@ -183,15 +199,16 @@ func WithLocalCommits(commits ...string) RepositoryOption {
 // It is important to note, that options will be executed within a
 // particular order:
 //  1. Log history will be imported (local and remote are in sync)
-//  2. Remote log history will be imported, creating a delta between
+//  2. A shallow clone is made at the required clone depth
+//  3. Remote log history will be imported, creating a delta between
 //     the current repository (working directory) and the remote
-//  3. All local empty commits are made without pushing back to the remote
-//  4. All named files will be created and staged if required
+//  4. All local empty commits are made without pushing back to the remote
+//  5. All named files will be created and staged if required
 //
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
-// working remote. Without customization, the test repository will
-// consist of single commit:
+// working remote. Without customization (options), the test repository
+// will consist of single commit:
 //
 //	initialized repository
 func InitRepository(t *testing.T, opts ...RepositoryOption) {
@@ -205,14 +222,10 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	// bare repository and becomes our filesystem based remote. The second
 	// is our working repository, which is a clone of the former
 	tmpDir := t.TempDir()
-	require.NoError(t, os.Chdir(tmpDir))
+	changeToDir(t, tmpDir)
 
-	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s test.git", DefaultBranch))
-	cloneRemoteAndInit(t, "test-local")
-
-	// Initialize the repository so that it is ready for use
-	Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
-	Exec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
+	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s %s", DefaultBranch, bareRepositoryName))
+	cloneRemoteAndInit(t, clonedRepositoryName)
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
@@ -220,23 +233,26 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 		opt(options)
 	}
 
+	if len(options.Log) > 0 {
+		importLog(t, options.Log)
+	}
+
+	if options.CloneDepth > 0 {
+		// Remove the existing local clone and clone again specifying the depth
+		changeToDir(t, tmpDir)
+		require.NoError(t, os.RemoveAll(clonedRepositoryName))
+		cloneRemoteAndInit(t, clonedRepositoryName, fmt.Sprintf("--depth %d", options.CloneDepth))
+	}
+
 	// To ensure a successful delta is created, an additional clone is made of the
 	// bare (remote) repository. The remote log is then imported, ensuring the
 	// local clone is out of sync
 	if len(options.RemoteLog) > 0 {
-		localClone, err := os.Getwd()
-		require.NoError(t, err)
+		localClone := changeToDir(t, tmpDir)
+		cloneRemoteAndInit(t, "remote-import")
 
-		// Clone and switch before importing. Then switch back
-		require.NoError(t, os.Chdir(tmpDir))
-		cloneRemoteAndInit(t, "test-remote")
-
-		require.NoError(t, importLog(options.RemoteLog))
+		importLog(t, options.RemoteLog)
 		require.NoError(t, os.Chdir(localClone))
-	}
-
-	if len(options.Log) > 0 {
-		require.NoError(t, importLog(options.Log))
 	}
 
 	for _, commit := range options.Commits {
@@ -244,7 +260,7 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	}
 
 	for _, f := range options.Files {
-		require.NoError(t, tempFile(f.Path, fileContent))
+		tempFile(t, f.Path, fileContent)
 		if f.Staged {
 			StageFile(t, f.Path)
 		}
@@ -255,40 +271,45 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	})
 }
 
-func cloneRemoteAndInit(t *testing.T, cloneName string) {
-	Exec(t, fmt.Sprintf("git clone ./test.git %s", cloneName))
+func changeToDir(t *testing.T, dir string) string {
+	changedFrom, err := os.Getwd()
+	require.NoError(t, err)
+
+	require.NoError(t, os.Chdir(dir))
+	return changedFrom
+}
+
+func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
+	MustExec(t, fmt.Sprintf("git clone %s file://$(pwd)/%s %s", strings.Join(options, " "), bareRepositoryName, cloneName))
 	require.NoError(t, os.Chdir(cloneName))
 
-	// Ensure default config is set on the repository
+	// Ensure author details are set
 	require.NoError(t, setConfig("user.name", DefaultAuthorName))
 	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
-}
 
-func tempFile(path, content string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
+	// Check if there any any commits, if not, initialize and push back first commit
+	if out := MustExec(t, "git rev-list -n1 --all"); out == "" {
+		MustExec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
+		MustExec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
 	}
 
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-		return err
-	}
-
-	return nil
+	MustExec(t, "git remote set-head origin --auto")
 }
 
-func importLog(log []LogEntry) error {
+func tempFile(t *testing.T, path, content string) {
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+}
+
+func importLog(t *testing.T, log []LogEntry) {
 	// It is important to reverse the list as we want to write the log back
 	// to the repository using oldest to latest
 	for i := len(log) - 1; i >= 0; i-- {
 		commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, log[i].Commit)
-		if _, err := exec(commitCmd); err != nil {
-			return err
-		}
+		MustExec(t, commitCmd)
 
 		commitPushCmd := fmt.Sprintf(gitPushTemplate, DefaultBranch)
-		if _, err := exec(commitPushCmd); err != nil {
-			return err
-		}
+		MustExec(t, commitPushCmd)
 
 		// If there is no tag, continue onto the next log entry
 		if log[i].Tag == "" {
@@ -296,17 +317,11 @@ func importLog(log []LogEntry) error {
 		}
 
 		tagCmd := fmt.Sprintf("git tag %s", log[i].Tag)
-		if _, err := exec(tagCmd); err != nil {
-			return err
-		}
+		MustExec(t, tagCmd)
 
 		pushTagCmd := fmt.Sprintf(gitPushTemplate, log[i].Tag)
-		if _, err := exec(pushTagCmd); err != nil {
-			return err
-		}
+		MustExec(t, pushTagCmd)
 	}
-
-	return nil
 }
 
 func setConfig(key, value string) error {
@@ -315,9 +330,16 @@ func setConfig(key, value string) error {
 	return err
 }
 
-// Exec will execute any given git command (expecting no failures) and
-// return any received output back to the caller
-func Exec(t *testing.T, cmd string) string {
+// Exec will execute any given git command and return the raw output and
+// error from the underlying git client
+func Exec(t *testing.T, cmd string) (string, error) {
+	t.Helper()
+	return exec(cmd)
+}
+
+// MustExec will execute any given git command, requiring no failure. Any
+// raw output will be returned from the underlying git client
+func MustExec(t *testing.T, cmd string) string {
 	t.Helper()
 
 	out, err := exec(cmd)
@@ -335,10 +357,10 @@ func exec(cmd string) (string, error) {
 	)
 
 	if err := r.Run(context.Background(), p); err != nil {
-		return "", errors.New(buf.String())
+		return "", errors.New(strings.TrimSuffix(buf.String(), "\n"))
 	}
 
-	return buf.String(), nil
+	return strings.TrimSuffix(buf.String(), "\n"), nil
 }
 
 // Tags returns a list of all local tags associated with the current
@@ -347,7 +369,7 @@ func exec(cmd string) (string, error) {
 //	git for-each-ref refs/tags
 func Tags(t *testing.T) string {
 	t.Helper()
-	return Exec(t, "git for-each-ref refs/tags")
+	return MustExec(t, "git for-each-ref refs/tags")
 }
 
 // RemoteTags returns a list of all tags that have been pushed to the
@@ -357,7 +379,7 @@ func Tags(t *testing.T) string {
 //	git ls-remote --tags
 func RemoteTags(t *testing.T) string {
 	t.Helper()
-	return Exec(t, "git ls-remote --tags")
+	return MustExec(t, "git ls-remote --tags")
 }
 
 // StageFile will attempt to use the provided path to stage a file that
@@ -366,7 +388,7 @@ func RemoteTags(t *testing.T) string {
 //	git add '<path>'
 func StageFile(t *testing.T, path string) {
 	t.Helper()
-	Exec(t, fmt.Sprintf("git add '%s'", path))
+	MustExec(t, fmt.Sprintf("git add '%s'", path))
 }
 
 // Commit a snapshot of all changes within the current repository (working directory)
@@ -376,7 +398,7 @@ func StageFile(t *testing.T, path string) {
 //	git commit -m '<message>'
 func Commit(t *testing.T, message string) {
 	t.Helper()
-	Exec(t, fmt.Sprintf("git commit -m '%s'", message))
+	MustExec(t, fmt.Sprintf("git commit -m '%s'", message))
 }
 
 // LastCommit returns the last commit from the git log of the current
@@ -385,7 +407,7 @@ func Commit(t *testing.T, message string) {
 //	git log -n1
 func LastCommit(t *testing.T) string {
 	t.Helper()
-	return Exec(t, "git log -n1")
+	return MustExec(t, "git log -n1")
 }
 
 // PorcelainStatus returns a snapshot of the current status of a
@@ -395,7 +417,7 @@ func LastCommit(t *testing.T) string {
 //	git status --porcelain
 func PorcelainStatus(t *testing.T) string {
 	t.Helper()
-	return Exec(t, "git status --porcelain")
+	return MustExec(t, "git status --porcelain")
 }
 
 // LogRemote returns the log history of a repository (working directory)
@@ -406,7 +428,7 @@ func PorcelainStatus(t *testing.T) string {
 //	git log --oneline origin/main
 func LogRemote(t *testing.T) string {
 	t.Helper()
-	return Exec(t, fmt.Sprintf("git log --oneline %s", DefaultRemoteBranch))
+	return MustExec(t, fmt.Sprintf("git log --oneline %s", DefaultRemoteBranch))
 }
 
 // TagLocal creates a tag that is only tracked locally and will not have
@@ -416,7 +438,7 @@ func LogRemote(t *testing.T) string {
 //	git tag '<tag>'
 func TagLocal(t *testing.T, tag string) {
 	t.Helper()
-	Exec(t, fmt.Sprintf("git tag '%s'", tag))
+	MustExec(t, fmt.Sprintf("git tag '%s'", tag))
 }
 
 // Show will display information about a specific git object. The output
@@ -431,5 +453,22 @@ func TagLocal(t *testing.T, tag string) {
 //	git show '<object>'
 func Show(t *testing.T, object string) string {
 	t.Helper()
-	return Exec(t, fmt.Sprintf("git show '%s'", object))
+	return MustExec(t, fmt.Sprintf("git show '%s'", object))
+}
+
+// Checkout will update the state of the repository (working directory)
+// by updating files in the tree to a specific point in time. Object
+// can be any one of the following:
+//   - Commit reference (long or abbreviated hash)
+//   - Tag reference
+//   - Branch name
+//
+// Be warned, checking out a tag or commit reference will cause a
+// detached HEAD for the current repository. Raw output is returned
+// from this command:
+//
+//	git checkout '<object>'
+func Checkout(t *testing.T, object string) string {
+	t.Helper()
+	return MustExec(t, fmt.Sprintf("git checkout '%s'", object))
 }

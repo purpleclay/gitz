@@ -25,6 +25,7 @@ package git
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -62,6 +63,13 @@ func (e ErrGitExecCommand) Error() string {
 %s`, e.Cmd, e.Out)
 }
 
+// Repository ...
+type Repository struct {
+	ShallowClone  bool
+	DetachedHead  bool
+	DefaultBranch string
+}
+
 // Client provides a way of performing fluent operations against git.
 // Any git operation exposed by this client are effectively handed-off
 // to an installed git client on the current OS. Git operations will be
@@ -86,6 +94,24 @@ func (c *Client) Version() string {
 	return c.gitVersion
 }
 
+// Repository ...
+func (c *Client) Repository() (Repository, error) {
+	isRepo, _ := exec("git rev-parse --is-inside-work-tree")
+	if strings.TrimSpace(isRepo) != "true" {
+		return Repository{}, errors.New("current working directory is not a git repository")
+	}
+
+	isShallow, _ := exec("git rev-parse --is-shallow-repository")
+	isDetached, _ := exec("git branch --show-current")
+	defaultBranch, _ := exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
+
+	return Repository{
+		ShallowClone:  strings.TrimSpace(isShallow) == "true",
+		DetachedHead:  strings.TrimSpace(isDetached) == "",
+		DefaultBranch: strings.TrimPrefix(defaultBranch, "origin/"),
+	}, nil
+}
+
 func exec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
@@ -95,8 +121,11 @@ func exec(cmd string) (string, error) {
 	)
 
 	if err := r.Run(context.Background(), p); err != nil {
-		return "", ErrGitExecCommand{Cmd: cmd, Out: buf.String()}
+		return "", ErrGitExecCommand{
+			Cmd: cmd,
+			Out: strings.TrimSuffix(buf.String(), "\n"),
+		}
 	}
 
-	return buf.String(), nil
+	return strings.TrimSuffix(buf.String(), "\n"), nil
 }

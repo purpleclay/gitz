@@ -135,8 +135,37 @@ func TestWithRemoteLog(t *testing.T) {
 	assert.Contains(t, string(localLog), log)
 }
 
+func TestWithCloneDepth(t *testing.T) {
+	log := `feat: this is commit number 3
+feat: this is commit number 2
+feat: this is commit number 1`
+
+	gittest.InitRepository(t, gittest.WithLog(log), gittest.WithCloneDepth(1))
+
+	localLog, err := exec.Command("git", "log", "-n4", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+
+	assert.Contains(t, string(localLog), "feat: this is commit number 3")
+	assert.NotContains(t, string(localLog), "feat: this is commit number 2")
+	assert.NotContains(t, string(localLog), "feat: this is commit number 1")
+	assert.NotContains(t, string(localLog), gittest.InitialCommit)
+}
+
 func TestExecHasRawGitOutput(t *testing.T) {
-	out := gittest.Exec(t, "git --version")
+	out, err := gittest.Exec(t, "git --version")
+
+	require.NoError(t, err)
+	assert.Contains(t, out, "git version")
+}
+
+func TestExecReturnsClientError(t *testing.T) {
+	_, err := gittest.Exec(t, "git unknown")
+
+	require.ErrorContains(t, err, "git: 'unknown' is not a git command")
+}
+
+func TestMustExecHasRawGitOutput(t *testing.T) {
+	out := gittest.MustExec(t, "git --version")
 
 	assert.Contains(t, out, "git version")
 }
@@ -199,7 +228,7 @@ func TestPorcelainStatus(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
 
 	status := gittest.PorcelainStatus(t)
-	assert.Equal(t, "?? file1.txt\n?? file2.txt\n", status)
+	assert.Equal(t, "?? file1.txt\n?? file2.txt", status)
 }
 
 func TestLogRemote(t *testing.T) {
@@ -244,4 +273,14 @@ func TestShow(t *testing.T) {
 
 	out := gittest.Show(t, gittest.DefaultBranch)
 	assert.Contains(t, out, gittest.InitialCommit)
+}
+
+func TestCheckout(t *testing.T) {
+	gittest.InitRepository(t)
+
+	_, err := exec.Command("git", "branch", "testing").CombinedOutput()
+	require.NoError(t, err)
+
+	out := gittest.Checkout(t, "testing")
+	assert.Equal(t, "Switched to branch 'testing'", out)
 }
