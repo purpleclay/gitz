@@ -39,9 +39,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    uses: purpleclay/github/.github/workflows/checkout.yml@checkout-workflow
+    uses: purpleclay/github/.github/workflows/checkout.yml@main
     with:
-      os: ${{ matrix.os }}
+      config-path: .github/labeler.yml
   build-and-test:
     strategy:
       matrix:
@@ -84,12 +84,10 @@ jobs:
 
   lint:
     if: ${{ github.actor != 'dependabot[bot]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.51.2
+    uses: purpleclay/github/.github/workflows/golangci-lint.yml@checkout-workflow
+    with:
+      version: v1.51.2
+      go-version: 1.19.5
 
   sonar-scan:
     if: ${{ github.actor != 'dependabot[bot]' }}
