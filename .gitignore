@@ -15,7 +15,7 @@
 # vendor/
 
 # Built dependencies
-reports/
+cover.txt
 
 # Mkdocs
 .cache/
