@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 run:
-  timeout: 2m
+  timeout: 5m
 
 linters:
   disable-all: true

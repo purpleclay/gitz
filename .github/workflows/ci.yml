@@ -76,21 +76,18 @@ jobs:
         run: task test
 
   lint:
-    uses: purpleclay/github/.github/workflows/golangci-lint.yml@checkout-workflow
+    uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
     permissions:
       contents: read
       pull-requests: read
     with:
-      go-version: 1.19.5
       version: v1.51.2
+      go-version: 1.19.5
 
-  sonar-scan:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: SonarCloud Scan
-        if: matrix.os == 'ubuntu-latest'
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  static-analysis:
+    uses: purpleclay/github/.github/workflows/sonarcloud.yml@sonar-workflow
+    permissions:
+      contents: read
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
