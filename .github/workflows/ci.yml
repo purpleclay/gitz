@@ -35,45 +35,18 @@ on:
     #   - "go.mod"
     #   - "go.sum"
 jobs:
-  build-and-test:
+  test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Set Git Line Endings
-        if: matrix.os == 'windows-latest'
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.19.5"
-
-      - name: Cache Go
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Install Task
-        uses: arduino/setup-task@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Test
-        run: task test
+    uses: purpleclay/github/.github/workflows/go-test.yml@go-test
+    permissions:
+      contents: read
+    with:
+      os: ${{ matrix.os }}
+      go-version: 1.19.5
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
     uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
@@ -83,6 +56,8 @@ jobs:
     with:
       version: v1.51.2
       go-version: 1.19.5
+
+  # TODO: need to pass coverage files to sonar for successful analysis
 
   static-analysis:
     uses: purpleclay/github/.github/workflows/sonarcloud.yml@sonar-workflow
