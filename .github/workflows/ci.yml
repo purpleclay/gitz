@@ -39,7 +39,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    uses: purpleclay/github/.github/workflows/go-test.yml@go-test
+    uses: purpleclay/github/.github/workflows/go-test.yml@main
     permissions:
       contents: read
     with:
