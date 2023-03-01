@@ -88,6 +88,6 @@ jobs:
     uses: purpleclay/github/.github/workflows/sonarcloud.yml@sonar-workflow
     permissions:
       contents: read
-    with:
+    secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
