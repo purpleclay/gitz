@@ -35,10 +35,20 @@ on:
     #   - "go.mod"
     #   - "go.sum"
 jobs:
+  test-linux:
+    uses: purpleclay/github/.github/workflows/go-test.yml@main
+    permissions:
+      contents: read
+    with:
+      os: ${{ matrix.os }}
+      go-version: 1.19.5
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
     uses: purpleclay/github/.github/workflows/go-test.yml@main
     permissions:
       contents: read
@@ -64,4 +74,4 @@ jobs:
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
-    needs: [test]
+    needs: [test-linux]
