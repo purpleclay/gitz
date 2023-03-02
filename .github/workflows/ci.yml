@@ -24,10 +24,10 @@ on:
     branches:
       - main
     paths:
-      - "**/*.go"
-      - "*.go"
-      - "go.mod"
-      - "go.sum"
+      # - "**/*.go"
+      # - "*.go"
+      # - "go.mod"
+      # - "go.sum"
   pull_request:
     # paths:
     #   - "**/*.go"
