@@ -24,10 +24,10 @@ on:
     branches:
       - main
     paths:
-      # - "**/*.go"
-      # - "*.go"
-      # - "go.mod"
-      # - "go.sum"
+      - "**/*.go"
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
   pull_request:
     # paths:
     #   - "**/*.go"
@@ -35,9 +35,10 @@ on:
     #   - "go.mod"
     #   - "go.sum"
 jobs:
-  # Separate into its own job to prevent SonarCloud from waiting for the entire
-  # matrix to complete
-  test-linux:
+  # By splitting testing into its own job will ensure the needs: clause for
+  # static-analysis runs without waiting on the entire matrix. Jobs that run
+  # against macos and windows are considerably slower
+  test:
     uses: purpleclay/github/.github/workflows/go-test.yml@main
     permissions:
       contents: read
@@ -46,7 +47,7 @@ jobs:
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  test:
+  test-by-os:
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -74,10 +75,10 @@ jobs:
       - run: echo $GITHUB_WORKSPACE
 
   static-analysis:
-    uses: purpleclay/github/.github/workflows/sonarcloud.yml@sonar-workflow
+    uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
     permissions:
       contents: read
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
-    needs: [test-linux, lint]
+    needs: [test, lint]
