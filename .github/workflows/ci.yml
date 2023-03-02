@@ -29,11 +29,11 @@ on:
       - "go.mod"
       - "go.sum"
   pull_request:
-    # paths:
-    #   - "**/*.go"
-    #   - "*.go"
-    #   - "go.mod"
-    #   - "go.sum"
+    paths:
+      - "**/*.go"
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
 jobs:
   # By splitting testing into its own job will ensure the needs: clause for
   # static-analysis runs without waiting on the entire matrix. Jobs that run
