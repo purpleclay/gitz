@@ -61,7 +61,7 @@ jobs:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
-    uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
+    uses: purpleclay/github/.github/workflows/golangci-lint.yml@fix-golangci-lint-sonar
     permissions:
       contents: read
       pull-requests: read

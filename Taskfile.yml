@@ -49,8 +49,10 @@ tasks:
 
   lint:
     desc: Lint the code using golangci-lint
+    vars:
+      REPORT_FORMAT: '{{default "colored-line-number" .TEST_FORMAT}}'
     cmds:
-      - golangci-lint run --timeout 5m0s --out-format checkstyle | tee {{.REPORTDIR}}/golangci-lint.xml
+      - golangci-lint run --timeout 5m0s --out-format {{.REPORT_FORMAT}}
 
   format:
     desc: Format the code using gofumpt
