@@ -68,6 +68,11 @@ jobs:
       version: v1.51.2
       go-version: 1.19.5
 
+  print:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo $GITHUB_WORKSPACE
+
   static-analysis:
     uses: purpleclay/github/.github/workflows/sonarcloud.yml@sonar-workflow
     permissions:
