@@ -43,8 +43,8 @@ jobs:
     permissions:
       contents: read
     with:
-      go-version: 1.19.5
       os: ${{ matrix.os }}
+      go-version: 1.19.5
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
