@@ -64,3 +64,4 @@ jobs:
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
+    needs: [test]
