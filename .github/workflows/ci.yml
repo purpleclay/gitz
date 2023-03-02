@@ -35,6 +35,8 @@ on:
     #   - "go.mod"
     #   - "go.sum"
 jobs:
+  # Separate into its own job to prevent SonarCloud from waiting for the entire
+  # matrix to complete
   test-linux:
     uses: purpleclay/github/.github/workflows/go-test.yml@main
     permissions:
@@ -65,11 +67,6 @@ jobs:
     with:
       version: v1.51.2
       go-version: 1.19.5
-
-  print-home:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo $HOME
 
   static-analysis:
     uses: purpleclay/github/.github/workflows/sonarcloud.yml@sonar-workflow
