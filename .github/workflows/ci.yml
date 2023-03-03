@@ -38,6 +38,9 @@ on:
 permissions:
   contents: read
 
+env:
+  GO_VERSION: 1.19.5
+
 jobs:
   # By splitting testing into its own job will ensure the needs: clause for
   # static-analysis runs without waiting on the entire matrix. Jobs that run
@@ -45,7 +48,7 @@ jobs:
   test:
     uses: purpleclay/github/.github/workflows/go-test.yml@main
     with:
-      go-version: 1.19.5
+      go-version: ${{ env.GO_VERSION }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -56,7 +59,7 @@ jobs:
     uses: purpleclay/github/.github/workflows/go-test.yml@main
     with:
       os: ${{ matrix.os }}
-      go-version: 1.19.5
+      go-version: ${{ env.GO_VERSION }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,7 +67,7 @@ jobs:
     uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
     with:
       version: v1.51.2
-      go-version: 1.19.5
+      go-version: ${{ env.GO_VERSION }}
 
   static-analysis:
     uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
