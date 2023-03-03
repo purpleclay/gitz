@@ -20,46 +20,41 @@
 
 version: "3"
 
-vars:
-  REPORTDIR: reports
-
 tasks:
   default:
     desc: Runs all of the default tasks
     cmds:
+      - task: ci
+
+  ci:
+    desc: Run all CI tasks
+    cmds:
+      - task: deps
+      - task: unit-test
       - task: lint
-      - task: test
 
-  reports-dir:
-    desc: Creates the report directory if it doesn't exist
+  deps:
+    desc: Install all dependencies
     cmds:
-      - mkdir -p {{.REPORTDIR}}
-    status:
-      - test -d {{.REPORTDIR}}
+      - go mod tidy
 
-  test:
-    desc: Run the tests
-    deps: [reports-dir]
+  unit-test:
+    desc: Run the unit tests
+    vars:
+      TEST_FORMAT: '{{default "" .TEST_FORMAT}}'
+      COVER_PROFILE: '{{default "unittest-cover.txt" .COVER_PROFILE}}'
+      TEST_OPTIONS: '{{default "-short -race -vet=off -shuffle=on -p 1" .TEST_OPTIONS}}'
     cmds:
-      - go test -short -race -vet=off -shuffle=on -p 1 -covermode=atomic -coverprofile={{.REPORTDIR}}/unittest.out -json ./... | tee {{.REPORTDIR}}/unittest.json
+      - go test {{.TEST_OPTIONS}} -covermode=atomic -coverprofile={{.COVER_PROFILE}} {{.TEST_FORMAT}} ./...
 
   lint:
-    desc: Lint the code using golangci
-    deps: [reports-dir]
+    desc: Lint the code using golangci-lint
+    vars:
+      REPORT_FORMAT: '{{default "colored-line-number" .REPORT_FORMAT}}'
     cmds:
-      - golangci-lint run --timeout 5m0s --out-format checkstyle | tee {{.REPORTDIR}}/golangci-lint.xml
+      - golangci-lint run --timeout 5m0s --out-format {{.REPORT_FORMAT}}
 
   format:
-    desc: Format the code using Gofumpt
+    desc: Format the code using gofumpt
     cmds:
       - gofumpt -w -l .
-
-  clean:
-    desc: Delete all artefacts from recent build
-    cmds:
-      - task: remove-reports
-
-  remove-reports:
-    desc: Delete an existing reports directory
-    cmds:
-      - rm -rf {{.REPORTDIR}}

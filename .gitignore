@@ -15,7 +15,7 @@
 # vendor/
 
 # Built dependencies
-reports/
+unittest-cover.txt
 
 # Mkdocs
 .cache/

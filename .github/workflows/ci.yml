@@ -34,62 +34,44 @@ on:
       - "*.go"
       - "go.mod"
       - "go.sum"
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: 1.19.5
+
 jobs:
-  ci:
+  # By splitting testing into its own job will ensure the needs: clause for
+  # static-analysis runs without waiting on the entire matrix. Jobs that run
+  # against macos and windows are considerably slower
+  test:
+    uses: purpleclay/github/.github/workflows/go-test.yml@main
+    with:
+      go-version: ${{ env.GO_VERSION }}
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  test-by-os:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Set Git Line Endings
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-        if: matrix.os == 'windows-latest'
+        os: [macos-latest, windows-latest]
+    uses: purpleclay/github/.github/workflows/go-test.yml@main
+    with:
+      os: ${{ matrix.os }}
+      go-version: ${{ env.GO_VERSION }}
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  lint:
+    uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
+    with:
+      version: v1.51.2
+      go-version: ${{ env.GO_VERSION }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-
-      - name: Cache Go
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Install Task
-        uses: arduino/setup-task@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Test
-        run: task test
-
-      # All static checks from this point should run on linux as it is the
-      # fastest platform
-
-      # Temporary workaround until the golangci-lint GitHub action supports 1.19
-      - name: Install golangci-lint
-        if: matrix.os == 'ubuntu-latest'
-        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-
-      - name: Lint Code
-        if: matrix.os == 'ubuntu-latest'
-        run: task lint
-
-      - name: SonarCloud Scan
-        if: matrix.os == 'ubuntu-latest'
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  static-analysis:
+    uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
+    needs: [test, lint]
