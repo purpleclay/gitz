@@ -34,14 +34,16 @@ on:
       - "*.go"
       - "go.mod"
       - "go.sum"
+
+permissions:
+  contents: read
+
 jobs:
   # By splitting testing into its own job will ensure the needs: clause for
   # static-analysis runs without waiting on the entire matrix. Jobs that run
   # against macos and windows are considerably slower
   test:
     uses: purpleclay/github/.github/workflows/go-test.yml@main
-    permissions:
-      contents: read
     with:
       go-version: 1.19.5
     secrets:
@@ -52,8 +54,6 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
     uses: purpleclay/github/.github/workflows/go-test.yml@main
-    permissions:
-      contents: read
     with:
       os: ${{ matrix.os }}
       go-version: 1.19.5
@@ -62,17 +62,12 @@ jobs:
 
   lint:
     uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
-    permissions:
-      contents: read
-      pull-requests: read
     with:
       version: v1.51.2
       go-version: 1.19.5
 
   static-analysis:
     uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
-    permissions:
-      contents: read
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
