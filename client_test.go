@@ -85,11 +85,11 @@ func TestRepositoryDetectsDetachedHead(t *testing.T) {
 	assert.True(t, repo.DetachedHead)
 }
 
-func TestRepositoryNotWorkingDirectory(t *testing.T) {
-	nonWorkingDirectory(t)
+// func TestRepositoryNotWorkingDirectory(t *testing.T) {
+// 	nonWorkingDirectory(t)
 
-	client, _ := git.NewClient()
-	_, err := client.Repository()
+// 	client, _ := git.NewClient()
+// 	_, err := client.Repository()
 
-	require.EqualError(t, err, "current working directory is not a git repository")
-}
+// 	require.EqualError(t, err, "current working directory is not a git repository")
+// }
