@@ -24,6 +24,7 @@ package gittest_test
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -283,4 +284,14 @@ func TestCheckout(t *testing.T) {
 
 	out := gittest.Checkout(t, "testing")
 	assert.Equal(t, "Switched to branch 'testing'", out)
+}
+
+func TestRemote(t *testing.T) {
+	gittest.InitRepository(t)
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	remote := gittest.Remote(t)
+	assert.Equal(t, fmt.Sprintf("file://%s.git", cwd), remote)
 }
