@@ -282,7 +282,10 @@ func changeToDir(t *testing.T, dir string) string {
 }
 
 func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
-	MustExec(t, fmt.Sprintf("git clone %s file://$(pwd)/%s %s", strings.Join(options, " "), BareRepositoryName, cloneName))
+	// Ensure the URL is OS agnostic
+	url := filepath.FromSlash(fmt.Sprintf("file://$(pwd)/%s", BareRepositoryName))
+
+	MustExec(t, fmt.Sprintf("git clone %s %s %s", strings.Join(options, " "), url, cloneName))
 	require.NoError(t, os.Chdir(cloneName))
 
 	// Ensure author details are set
