@@ -475,14 +475,18 @@ func Checkout(t *testing.T, object string) string {
 	return MustExec(t, fmt.Sprintf("git checkout '%s'", object))
 }
 
-// Remote will retrieve the URL of the remote configured for the
-// current repository (working directory). The raw URL will be
-// returned for the default remote, which is typically origin.
+// Remote will retrieve the URL of the remote (typically origin) configured
+// for the current repository (working directory). To prevent issues due
+// to OS dependent separators, the raw URL will be converted to use the
+// '/' separator which is compatible across OS when using the git client.
 //
-// Raw output is returned from this command:
+// Remote is queried using this command:
 //
 //	git ls-remote --get-url
 func Remote(t *testing.T) string {
 	t.Helper()
-	return MustExec(t, "git ls-remote --get-url")
+	remote := MustExec(t, "git ls-remote --get-url")
+
+	// Ensure path is escaped correctly when testing across different OS
+	return filepath.ToSlash(remote)
 }

@@ -295,7 +295,6 @@ func TestRemote(t *testing.T) {
 
 	remote := gittest.Remote(t)
 
-	fmt.Println(filepath.ToSlash(remote))
-
-	assert.Equal(t, fmt.Sprintf("file://%s.git", cwd), remote)
+	// Ensure path is sanitized before comparison
+	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("file://%s.git", cwd)), remote)
 }
