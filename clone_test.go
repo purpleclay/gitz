@@ -23,10 +23,7 @@ SOFTWARE.
 package git_test
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -41,10 +38,6 @@ func TestClone(t *testing.T) {
 
 	// Grab the remote for cloning later
 	remote := gittest.Remote(t)
-
-	fmt.Println(remote)
-	fmt.Println(filepath.FromSlash(remote))
-	remote = strings.Replace(remote, "/test.git", "\\test.git", 1)
 
 	// Clone the existing repository into a new temporary directory
 	dir := t.TempDir()
