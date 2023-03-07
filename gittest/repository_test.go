@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/purpleclay/gitz/gittest"
@@ -293,5 +294,8 @@ func TestRemote(t *testing.T) {
 	require.NoError(t, err)
 
 	remote := gittest.Remote(t)
+
+	fmt.Println(filepath.ToSlash(remote))
+
 	assert.Equal(t, fmt.Sprintf("file://%s.git", cwd), remote)
 }
