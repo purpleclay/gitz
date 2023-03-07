@@ -23,7 +23,9 @@ SOFTWARE.
 package git_test
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -39,12 +41,15 @@ func TestClone(t *testing.T) {
 	// Grab the remote for cloning later
 	remote := gittest.Remote(t)
 
+	fmt.Println(remote)
+	fmt.Println(filepath.FromSlash(remote))
+
 	// Clone the existing repository into a new temporary directory
 	dir := t.TempDir()
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote)
+	_, err := client.Clone(filepath.FromSlash(remote))
 	require.NoError(t, err)
 
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
