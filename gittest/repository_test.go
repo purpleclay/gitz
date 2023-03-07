@@ -293,7 +293,7 @@ func TestRemote(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 
-	fmt.Println(filepath.ToSlash(fmt.Sprintf("$(pwd)/%s", gittest.BareRepositoryName)))
+	fmt.Println(filepath.FromSlash(fmt.Sprintf("$(pwd)/%s", gittest.BareRepositoryName)))
 
 	remote := gittest.Remote(t)
 	assert.Equal(t, fmt.Sprintf("file://%s.git", cwd), remote)
