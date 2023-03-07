@@ -24,6 +24,7 @@ package git_test
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -44,7 +45,7 @@ func TestClone(t *testing.T) {
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote)
+	_, err := client.Clone(filepath.ToSlash(remote))
 	require.NoError(t, err)
 
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
