@@ -282,7 +282,7 @@ func changeToDir(t *testing.T, dir string) string {
 }
 
 func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
-	MustExec(t, fmt.Sprintf("git clone %s file:///$(pwd)/%s %s", strings.Join(options, " "), BareRepositoryName, cloneName))
+	MustExec(t, fmt.Sprintf("git clone %s file://$(pwd)/%s %s", strings.Join(options, " "), BareRepositoryName, cloneName))
 	require.NoError(t, os.Chdir(cloneName))
 
 	// Ensure author details are set
