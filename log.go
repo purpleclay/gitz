@@ -29,7 +29,7 @@ import (
 )
 
 // constant magic number that disables Skip and Take (-1)
-const disabledNumbericOption = -1
+const disabledNumericOption = -1
 
 // LogOption provides a way for setting specific options during a log operation.
 // Each supported option can customize the way the log history of the current
@@ -205,8 +205,8 @@ type LogEntry struct {
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{
 		// Disable both counts by default
-		SkipCount: disabledNumbericOption,
-		TakeCount: disabledNumbericOption,
+		SkipCount: disabledNumericOption,
+		TakeCount: disabledNumericOption,
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -221,7 +221,7 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		logCmd.WriteString(fmt.Sprintf("--skip %d", options.SkipCount))
 	}
 
-	if options.TakeCount > disabledNumbericOption {
+	if options.TakeCount > disabledNumericOption {
 		logCmd.WriteString(" ")
 		logCmd.WriteString(fmt.Sprintf("-n%d", options.TakeCount))
 	}

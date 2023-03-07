@@ -24,7 +24,9 @@ package gittest_test
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/purpleclay/gitz/gittest"
@@ -283,4 +285,16 @@ func TestCheckout(t *testing.T) {
 
 	out := gittest.Checkout(t, "testing")
 	assert.Equal(t, "Switched to branch 'testing'", out)
+}
+
+func TestRemote(t *testing.T) {
+	gittest.InitRepository(t)
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	remote := gittest.Remote(t)
+
+	// Ensure path is sanitized before comparison
+	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("file://%s.git", cwd)), remote)
 }

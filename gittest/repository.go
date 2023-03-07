@@ -62,11 +62,13 @@ const (
 	// the test repository
 	InitialCommit = "initialized repository"
 
-	// the name of the bare repository, used as the remote for all testing
-	bareRepositoryName = "test.git"
+	// BareRepositoryName the name of the bare repository, used as the
+	// remote for all testing
+	BareRepositoryName = "test.git"
 
-	// the name of the repository (working directory) after cloning the bare repository
-	clonedRepositoryName = "test"
+	// ClonedRepositoryName the name of the repository (working directory)
+	// after cloning the bare repository
+	ClonedRepositoryName = "test"
 
 	// grabbed from: https://loremipsum.io/
 	fileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -224,8 +226,8 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	tmpDir := t.TempDir()
 	changeToDir(t, tmpDir)
 
-	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s %s", DefaultBranch, bareRepositoryName))
-	cloneRemoteAndInit(t, clonedRepositoryName)
+	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s %s", DefaultBranch, BareRepositoryName))
+	cloneRemoteAndInit(t, ClonedRepositoryName)
 
 	// Process any provided options to ensure repository is initialized as required
 	options := &repositoryOptions{}
@@ -240,8 +242,8 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	if options.CloneDepth > 0 {
 		// Remove the existing local clone and clone again specifying the depth
 		changeToDir(t, tmpDir)
-		require.NoError(t, os.RemoveAll(clonedRepositoryName))
-		cloneRemoteAndInit(t, clonedRepositoryName, fmt.Sprintf("--depth %d", options.CloneDepth))
+		require.NoError(t, os.RemoveAll(ClonedRepositoryName))
+		cloneRemoteAndInit(t, ClonedRepositoryName, fmt.Sprintf("--depth %d", options.CloneDepth))
 	}
 
 	// To ensure a successful delta is created, an additional clone is made of the
@@ -280,7 +282,7 @@ func changeToDir(t *testing.T, dir string) string {
 }
 
 func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
-	MustExec(t, fmt.Sprintf("git clone %s file://$(pwd)/%s %s", strings.Join(options, " "), bareRepositoryName, cloneName))
+	MustExec(t, fmt.Sprintf("git clone %s file://$(pwd)/%s %s", strings.Join(options, " "), BareRepositoryName, cloneName))
 	require.NoError(t, os.Chdir(cloneName))
 
 	// Ensure author details are set
@@ -471,4 +473,20 @@ func Show(t *testing.T, object string) string {
 func Checkout(t *testing.T, object string) string {
 	t.Helper()
 	return MustExec(t, fmt.Sprintf("git checkout '%s'", object))
+}
+
+// Remote will retrieve the URL of the remote (typically origin) configured
+// for the current repository (working directory). To prevent issues due
+// to OS dependent separators, the raw URL will be converted to use the
+// '/' separator which is compatible across OS when using the git client.
+//
+// Remote is queried using this command:
+//
+//	git ls-remote --get-url
+func Remote(t *testing.T) string {
+	t.Helper()
+	remote := MustExec(t, "git ls-remote --get-url")
+
+	// Ensure path is escaped correctly when testing across different OS
+	return filepath.ToSlash(remote)
 }
