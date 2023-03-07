@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -43,13 +44,14 @@ func TestClone(t *testing.T) {
 
 	fmt.Println(remote)
 	fmt.Println(filepath.FromSlash(remote))
+	remote = strings.Replace(remote, "/test.git", "\\test.git", 1)
 
 	// Clone the existing repository into a new temporary directory
 	dir := t.TempDir()
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(filepath.FromSlash(remote))
+	_, err := client.Clone(remote)
 	require.NoError(t, err)
 
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
