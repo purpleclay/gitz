@@ -63,7 +63,8 @@ func (e ErrGitExecCommand) Error() string {
 %s`, e.Cmd, e.Out)
 }
 
-// Repository ...
+// Repository provides a snapshot of the current state of a repository
+// (working directory)
 type Repository struct {
 	ShallowClone  bool
 	DetachedHead  bool
@@ -94,7 +95,9 @@ func (c *Client) Version() string {
 	return c.gitVersion
 }
 
-// Repository ...
+// Repository returns details about the current repository (working directory),
+// by carrying out a series of checks. Answers to which are returned as a
+// snapshot for querying
 func (c *Client) Repository() (Repository, error) {
 	isRepo, _ := exec("git rev-parse --is-inside-work-tree")
 	if strings.TrimSpace(isRepo) != "true" {

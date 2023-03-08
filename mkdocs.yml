@@ -1,6 +1,6 @@
 site_name: Gitz
-site_description: TODO
-copyright: Always thinking. Forever learning. 💡
+site_description: Write fluent interactions to Git using the gitz library. Programmatically crafting git commands becomes a breeze!
+copyright: Building tools to make developers' lives easier
 repo_name: purpleclay/gitz
 repo_url: https://github.com/purpleclay/gitz
 # Only set during a release to ensure htmltest doesn't break due to non existent directories
@@ -39,6 +39,7 @@ extra_css:
 nav:
   - Home: index.md
   - Getting Started:
+      - Git Checks: git/checks.md
       - Git Pull: git/pull.md
       - Git Push: git/push.md
       - Git Stage: git/stage.md
@@ -66,6 +67,9 @@ extra:
     - icon: fontawesome/brands/docker
       link: https://hub.docker.com/u/purpleclay
       name: Purple Clay on Docker Hub
+    - icon: fontawesome/brands/golang
+      link: https://pkg.go.dev/github.com/purpleclay/gitz
+      name: Gitz GoDocs
   status:
     new: New Feature
     deprecated: No Longer Supported
