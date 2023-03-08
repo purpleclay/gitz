@@ -3,7 +3,28 @@ icon: material/clipboard-check-outline
 status: new
 ---
 
-# Checking the Integrity of a Repository
+# Git checks and how to use them
+
+`gitz` comes with a series of inbuilt checks for inspecting the environment and current repository.
+
+## Checking for the existence of a Git Client
+
+When creating a new client, `gitz` will check for the existence of git using the `PATH` environment variable. An error is returned if no client exists.
+
+```{ .go .select linenums="1" }
+package main
+
+func main() {
+    client, err := git.NewClient()
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+
+    fmt.Println(client.Version())
+}
+```
+
+## Checking the Integrity of a Repository
 
 Check the integrity of a repository by running a series of tests and capturing the results for inspection.
 
