@@ -21,3 +21,18 @@
 .md-typeset a:hover>span * {
     filter: brightness(85%);
 }
+
+@keyframes new-feature {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+    }
+    
+    50% {
+        transform: scale(1.15) rotate(10deg);
+    }
+}
+
+.new-feature {
+    color: #006C39;
+    animation: new-feature 2000ms infinite;
+}

@@ -9,7 +9,7 @@ status: new
 
 Clone a repository by its provided URL into a newly created directory and check out an initial branch forked from the cloned repository’s default branch.
 
-## Clone everything :material-new-box:{title="Feature added on the 10th March 2023"}
+## Clone everything :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
 
 Calling `Clone` will result in a repository containing all remote-tracking branches, tags, and a complete history.
 

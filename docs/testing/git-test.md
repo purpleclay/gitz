@@ -122,7 +122,7 @@ func TestGreatFeature(t *testing.T) {
 }
 ```
 
-### With clone depth :material-new-box:{title="Feature added on the 10th March 2023"}
+### With clone depth :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
 
 Shallow clone a repository by truncating its history to a set depth.
 
