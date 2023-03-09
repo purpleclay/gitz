@@ -24,7 +24,7 @@ func main() {
 }
 ```
 
-## Checking the Integrity of a Repository
+## Checking the integrity of a Repository :material-alert-decagram:{title="Feature added on the 10th March 2023"}
 
 Check the integrity of a repository by running a series of tests and capturing the results for inspection.
 
