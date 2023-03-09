@@ -138,7 +138,7 @@ d611a22c1a009bd74bc2c691b331b9df38828dae fix: typos in file content
 9b342465255d1a8ec4f5517eef6049e5bcc8fb45 feat: a brand new feature
 ```
 
-## Cherry-picking a section of the log :material-alert-decagram:{title="Feature added on the 10th March 2023"}
+## Cherry-picking a section of the log :material-new-box:{title="Feature added on the 10th March 2023"}
 
 Cherry-pick a section of the log by skipping and taking a set number of entries using the respective `WithSkip` and `WithTake` options. If combined, skipping has a higher order of precedence:
 
@@ -171,7 +171,7 @@ Printing the `Raw` output from this command:
 1b1f4a725cfe44d5c9bd992be59f1130ed9d9911 docs: create docs using material mkdocs
 ```
 
-## Filtering the log with pattern matching :material-alert-decagram:{title="Feature added on the 10th March 2023"}
+## Filtering the log with pattern matching :material-new-box:{title="Feature added on the 10th March 2023"}
 
 Filter the commit log to only contain entries that match any set of patterns (_regular expressions_) using the `WithGrep` option:
 

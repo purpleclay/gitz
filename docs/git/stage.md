@@ -9,7 +9,7 @@ status: new
 
 Stage changes to a particular file or folder within the current repository for inclusion within the next commit. Staging is a prerequisite to committing and pushing changes back to the repository remote.
 
-## Staging all changes :material-alert-decagram:{title="Feature added on the 10th March 2023"}
+## Staging all changes :material-new-box:{title="Feature added on the 10th March 2023"}
 
 By default, all files (`tracked` and `untracked`) within the current repository are staged automatically unless explicitly ignored through a `.gitignore` file:
 

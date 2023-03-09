@@ -1,5 +1,6 @@
 ---
 icon: material/test-tube
+status: new
 ---
 
 # Testing your Interactions with Git
@@ -121,11 +122,36 @@ func TestGreatFeature(t *testing.T) {
 }
 ```
 
+### With clone depth :material-new-box:{title="Feature added on the 10th March 2023"}
+
+Shallow clone a repository by truncating its history to a set depth.
+
+```{ .go .select linenums="1" }
+func TestGreatFeature(t *testing.T) {
+    log := `(tag: 0.1.0) feat: this is a brand new feature
+docs: write amazing material mkdocs documentation
+ci: include github release workflow`
+    gittest.InitRepository(t,
+        gittest.WithLog(log), gittest.WithCloneDepth(1))
+
+    // test logic and assertions to follow ...
+}
+```
+
+Querying the repository log:
+
+```text
+$ git log --pretty=oneline --no-decorate --no-color
+
+e03726d3c24bbbab106bd1ac6231c030e1296eb9 feat: this is a brand new feature
+```
+
 ### Option initialization order
 
 You can use any combination of options during repository initialization, but a strict order is applied.
 
 1. `WithLog`: log history imported, both local and remote are in sync.
+1. `WithCloneDepth`: shallow clone at the required depth.
 1. `WithRemoteLog`: remote log history imported, creating a delta between local and remote.
 1. `WithLocalCommits`: local commits created and not pushed back to remote.
 1. `WithFiles` and `WithStagedFiles`: files generated and staged if needed.

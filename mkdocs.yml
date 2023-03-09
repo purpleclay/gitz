@@ -73,7 +73,7 @@ extra:
       link: https://pkg.go.dev/github.com/purpleclay/gitz
       name: Gitz GoDocs
   status:
-    new: New Feature
+    new: New Features Added
     deprecated: No Longer Supported
 
 plugins:
