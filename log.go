@@ -115,8 +115,8 @@ func WithRawOnly() LogOption {
 // WithSkip skips any number of most recent commits from within the log
 // history. A positive number (greater than zero) is expected. Skipping
 // more commits than exists, will result in no history being retrieved.
-// Skipping zero commits, will retrieve the entire log. The option can
-// has a higher order of precedence than [git.WithTake]
+// Skipping zero commits, will retrieve the entire log. This option has
+// a higher order of precedence than [git.WithTake]
 func WithSkip(n int) LogOption {
 	return func(opts *logOptions) {
 		opts.SkipCount = n

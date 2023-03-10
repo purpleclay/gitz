@@ -1,5 +1,6 @@
 ---
 icon: material/list-box-outline
+status: new
 ---
 
 # Inspecting the Commit Log of a Repository
@@ -66,7 +67,7 @@ Printing the `Commits` property should now be an empty slice:
 
 ## View the log from a point in time
 
-The `WithRef` option provides a starting point other than HEAD (_most recent commit_) when retrieving the log history. A reference can be a `Commit Hash`, `Branch Name`, or `Tag`. Output from this option will be a shorter, fine-tuned log.
+When retrieving the log history, the `WithRef` option provides a starting point other than HEAD (_most recent commit_). A reference can be a `Commit Hash`, `Branch Name`, or `Tag`. Output from this option will be a shorter, fine-tuned log.
 
 ```{ .go .select linenums="1" }
 package main
@@ -136,3 +137,76 @@ Printing the `Raw` output from this command:
 d611a22c1a009bd74bc2c691b331b9df38828dae fix: typos in file content
 9b342465255d1a8ec4f5517eef6049e5bcc8fb45 feat: a brand new feature
 ```
+
+## Cherry-picking a section of the log :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+
+Cherry-pick a section of the log by skipping and taking a set number of entries using the respective `WithSkip` and `WithTake` options. If combined, skipping has a higher order of precedence:
+
+```{ .go .select linenums="1" }
+package main
+
+func main() {
+    client, _ := git.NewClient()
+
+    // assuming the repository has the current history:
+    //  ~ docs: document fix
+    //  ~ fix: filtering on unsupported prefixes
+    //  ~ docs: create docs using material mkdocs
+    //  ~ feat: add new support for filtering based on prefixes
+    //  ~ initialized the repository
+
+    log, err := client.Log(git.WithSkip(1), git.WithTake(2))
+    if err != nil {
+        log.Fatal("failed to retrieve log using custom paths")
+    }
+
+    fmt.Println(log.Raw)
+}
+```
+
+Printing the `Raw` output from this command:
+
+```text
+9967e3c6196422a6a97afa4b6fca9f609bb5490b fix: filtering on unsupported prefixes
+1b1f4a725cfe44d5c9bd992be59f1130ed9d9911 docs: create docs using material mkdocs
+```
+
+## Filtering the log with pattern matching :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+
+Filter the commit log to only contain entries that match any set of patterns (_regular expressions_) using the `WithGrep` option:
+
+```{ .go .select linenums="1" }
+package main
+
+func main() {
+    client, _ := git.NewClient()
+
+    // assuming the repository has the current history:
+    //  ~ fix: forgot to trim whitespace from patterns
+    //  ~ docs: document pattern matching option
+    //  ~ feat: filter log with pattern matching
+    //  ~ initialized the repository
+
+    log, err := client.Log(git.WithGrep("^docs", "matching$"))
+    if err != nil {
+        log.Fatal("failed to retrieve log with pattern matching")
+    }
+
+    fmt.Println(log.Raw)
+}
+```
+
+Printing the `Raw` output from this command, with matches highlighted for reference only:
+
+```text
+2d68a506fe7d5148db0a10ea143752991a65c26d {==docs==}: document pattern matching option
+5bfd532328ed2e9ea6d3062eb3a331f42468a7e3 feat: filter log with pattern {==matching==}
+```
+
+### Filter entries that do not match
+
+Combining the `WithInvertGrep` and `WithGrep` options will inverse pattern matching and filter on log entries that do not contain any of the provided patterns.
+
+### Filter entries that match all patterns
+
+Pattern matching uses `or` semantics by default, matching on log entries that satisfy any of the defined patterns. You can change this behavior to match against all patterns using `and` semantics with the `WithMatchAll` option.

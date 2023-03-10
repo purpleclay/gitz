@@ -53,10 +53,10 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_GHCR }}
 
-      - run: docker pull ghcr.io/purpleclay/mkdocs-material-insiders
+      - run: docker pull ghcr.io/purpleclay/mkdocs-material-insiders:9.0.13-insiders-4.32.0
 
       - name: Build
-        run: docker run --rm -i -v ${PWD}:/docs ghcr.io/purpleclay/mkdocs-material-insiders build
+        run: docker run --rm -i -v ${PWD}:/docs ghcr.io/purpleclay/mkdocs-material-insiders:9.0.13-insiders-4.32.0 build
 
       - name: HTML Test
         uses: wjdp/htmltest-action@master
@@ -84,4 +84,4 @@ jobs:
 
       - name: Deploy documentation
         if: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch') }}
-        run: docker run --rm -i -v ${PWD}:/docs ghcr.io/purpleclay/mkdocs-material-insiders gh-deploy --force
+        run: docker run --rm -i -v ${PWD}:/docs ghcr.io/purpleclay/mkdocs-material-insiders:9.0.13-insiders-4.32.0 gh-deploy --force
