@@ -42,6 +42,7 @@ permissions:
   contents: read
   security-events: write
 
+# maybe this will skip the error
 jobs:
   security-checks:
     uses: purpleclay/github/.github/workflows/code-security.yml@dependency-scanning-workflow
