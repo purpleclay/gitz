@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-name: code-quality
+name: codeql
 
 on:
   push:
@@ -27,12 +27,8 @@ on:
     paths:
       - "**/*.go"
       - "*.go"
-  pull_request:
-    paths:
-      - "**/*.go"
-      - "*.go"
-  schedule:
-    - cron: "36 4 * * 6"
+      - "go.mod"
+      - "go.sum"
 
 jobs:
   analyze:
