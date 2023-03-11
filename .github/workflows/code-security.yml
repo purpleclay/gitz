@@ -43,7 +43,7 @@ permissions:
   security-events: write
 
 jobs:
-  code-security:
+  security-checks:
     uses: purpleclay/github/.github/workflows/code-security.yml@dependency-scanning-workflow
     with:
       go-version: ${{ vars.GO_VERSION }}
