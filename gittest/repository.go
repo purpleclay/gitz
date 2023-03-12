@@ -42,9 +42,16 @@ const (
 	// initializing the test repository
 	DefaultBranch = "main"
 
+	// DefaultOrigin contains the name of the default origin that connects
+	// the local repository back to its remote counterpart
+	DefaultOrigin = "origin"
+
 	// DefaultRemoteBranch contains the name of the default branch when
 	// initializing the remote bare repository
 	DefaultRemoteBranch = "origin/main"
+
+	// DefaultRemoteBranchAlias ...
+	DefaultRemoteBranchAlias = "origin/HEAD"
 
 	// DefaultAuthorName contains the author name written to local git
 	// config when initializing the test repository
@@ -489,4 +496,41 @@ func Remote(t *testing.T) string {
 
 	// Ensure path is escaped correctly when testing across different OS
 	return filepath.ToSlash(remote)
+}
+
+// ShowBranch will retrieve the name of the current branch. Raw output is
+// returned from this command:
+//
+//	git branch --show-current
+func ShowBranch(t *testing.T) string {
+	t.Helper()
+	return MustExec(t, "git branch --show-current")
+}
+
+// Branches returns a list of all local branches associated with the
+// current repository. Raw output is returned from this command:
+//
+//	git branch --list --format='%(refname:short)'
+func Branches(t *testing.T) []string {
+	t.Helper()
+	branches := MustExec(t, "git branch --list --format='%(refname:short)'")
+
+	return strings.Split(branches, "\n")
+}
+
+// RemoteBranches returns a list of all branches that have been pushed to
+// the remote origin of the current repository. Remote branch names are
+// prefixed with the default origin of the remote:
+//
+//	origin/main
+//	origin/branch1
+//
+// Raw output is returned from this command:
+//
+//	git branch --list --remotes --format='%(refname:short)'
+func RemoteBranches(t *testing.T) []string {
+	t.Helper()
+	branches := MustExec(t, "git branch --list --remotes --format='%(refname:short)'")
+
+	return strings.Split(branches, "\n")
 }

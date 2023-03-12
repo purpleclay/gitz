@@ -50,6 +50,14 @@ func statusAdded(file string) string {
 	return fmt.Sprintf("A  %s", file)
 }
 
+// Formats any git reference as a remote reference, by appending the
+// default origin as a prefix
+//
+//	<gittest.DefaultOrigin>/<ref>
+func remote(ref string) string {
+	return fmt.Sprintf("%s/%s", gittest.DefaultOrigin, ref)
+}
+
 func TestInitRepositoryConfigSet(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -297,4 +305,48 @@ func TestRemote(t *testing.T) {
 
 	// Ensure path is sanitized before comparison
 	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("file://%s.git", cwd)), remote)
+}
+
+func TestShowBranch(t *testing.T) {
+	gittest.InitRepository(t)
+
+	branch := gittest.ShowBranch(t)
+	assert.Equal(t, gittest.DefaultBranch, branch)
+}
+
+func TestBranches(t *testing.T) {
+	gittest.InitRepository(t)
+
+	script := `
+for b in branch{1..3}; do
+	git checkout -b $b;
+done;`
+
+	_, err := exec.Command("/bin/sh", "-c", script).CombinedOutput()
+	require.NoError(t, err)
+
+	branches := gittest.Branches(t)
+	assert.ElementsMatch(t, []string{"branch1", "branch2", "branch3", gittest.DefaultBranch}, branches)
+}
+
+func TestRemoteBranches(t *testing.T) {
+	gittest.InitRepository(t)
+
+	script := `
+for b in branch{1..3}; do
+	git checkout -b $b;
+done;
+git push origin --all`
+
+	_, err := exec.Command("/bin/sh", "-c", script).CombinedOutput()
+	require.NoError(t, err)
+
+	branches := gittest.RemoteBranches(t)
+	assert.ElementsMatch(t, []string{
+		remote("branch1"),
+		remote("branch2"),
+		remote("branch3"),
+		gittest.DefaultRemoteBranch,
+		gittest.DefaultRemoteBranchAlias,
+	}, branches)
 }
