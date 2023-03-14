@@ -32,7 +32,7 @@ import (
 )
 
 func TestPull(t *testing.T) {
-	log := "(tag: 0.1.0) feat: a new exciting feature"
+	log := "(tag: 0.1.0, main, origin/main) feat: a new exciting feature"
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 
 	lastCommit := gittest.LastCommit(t)

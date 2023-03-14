@@ -42,9 +42,17 @@ const (
 	// initializing the test repository
 	DefaultBranch = "main"
 
+	// DefaultOrigin contains the name of the default origin that connects
+	// the local repository back to its remote counterpart
+	DefaultOrigin = "origin"
+
 	// DefaultRemoteBranch contains the name of the default branch when
 	// initializing the remote bare repository
 	DefaultRemoteBranch = "origin/main"
+
+	// DefaultRemoteBranchHEAD is a remote tracking branch that points at
+	// the default branch of the repository
+	DefaultRemoteBranchAlias = "origin/HEAD"
 
 	// DefaultAuthorName contains the author name written to local git
 	// config when initializing the test repository
@@ -95,15 +103,35 @@ type file struct {
 	Staged bool
 }
 
-// WithLog ensures the repository will be initialized with a given snapshot
-// of commits and tags. Ideal for initializing a repository with a known
-// state. The provided log is parsed using [ParseLog] and expects the log
-// in the following format:
+// WithLog ensures the repository will be initialized to a known state.
+// The log can be used to create any number of tags and branches (both
+// local and remote) at different commits within the repositories history.
+// The HEAD pointer reference (HEAD -> <branch>) is supported and allows
+// a repository to check out a branch after completing the import.
 //
-//	(tag: 0.1.0) feat: improve existing cli documentation
-//	docs: create initial mkdocs material documentation
+// Given the following log extract:
 //
-// This is the equivalent to the format produced using the git command:
+//	(HEAD -> new-feature, origin/new-feature) pass tests
+//	write tests for new feature
+//	(main, origin/main) ci: add code security github workflow
+//	(code-example-docs) chore: add example code snippets
+//	(tag: 0.1.1, origin/parsing-tests) fix: parsing of multiple tags within log
+//	(tag: 0.1.0) feat: parsing of multiple tags within log
+//	chore: update existing project README
+//
+// The repository would be initialized with the known state:
+//   - Tag '0.1.0' references commit 'feat: parsing of multiple tags within log'
+//   - Tag '0.1.1' references commit 'fix: parsing of multiple tags within log'
+//   - Remote branch 'parsing-tests' was branched from commit 'fix: parsing of
+//     multiple tags within log' and hasn't been checked out locally
+//   - Local branch 'code-example-docs' was branched from commit 'chore: add
+//     example code snippets' but has not been pushed to the remote
+//   - The default branch references commit 'ci: add code security github workflow'
+//   - Local branch 'new-feature' has been checked out will all commits being
+//     pushed back to the remote
+//
+// The provided log is parsed using [ParseLog] and is based on the
+// output of git command:
 //
 //	git log --pretty='format:%d %s'
 func WithLog(log string) RepositoryOption {
@@ -113,16 +141,25 @@ func WithLog(log string) RepositoryOption {
 }
 
 // WithRemoteLog ensures the remote origin of the repository will be
-// initialized with a given snapshot of commits and tags. Ideal for
-// simulating a delta between the current repository (working directory)
-// and the remote. Use with caution, as this can result in conflicts.
-// The provided log is parsed using [ParseLog] and expects the log
-// in the following format:
+// initialized to a known state. Ideal for simulating a delta between
+// the current repository (working directory) and the remote. Use with
+// caution, as this can result in conflicts.
 //
-//	(tag: 0.1.0) feat: improve existing cli documentation
+// Some typical scenarios for this option. Both require a git pull for
+// synchronization.
+//
+// 1. Introducing a delta with the default branch:
+//
+//	(tag: 0.1.0, main, origin/main) feat: improve existing cli documentation
 //	docs: create initial mkdocs material documentation
 //
-// This is the equivalent to the format produced using the git command:
+// 2. Introducing a delta for a new branch:
+//
+//	(HEAD -> new-branch, origin/new-branch) pass tests
+//	write tests for new feature
+//
+// The provided log is parsed using [ParseLog] and is based on the
+// output of git command:
 //
 //	git log --pretty='format:%d %s'
 func WithRemoteLog(log string) RepositoryOption {
@@ -305,25 +342,121 @@ func tempFile(t *testing.T, path, content string) {
 
 func importLog(t *testing.T, log []LogEntry) {
 	// It is important to reverse the list as we want to write the log back
-	// to the repository using oldest to latest
-	for i := len(log) - 1; i >= 0; i-- {
-		commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, log[i].Commit)
-		MustExec(t, commitCmd)
+	// to the repository in reverse chronological order
+	firstEntry := len(log) - 1
+	trunkIndex := 0
 
-		commitPushCmd := fmt.Sprintf(gitPushTemplate, DefaultBranch)
-		MustExec(t, commitPushCmd)
+	// If the latest commit contains both the HEAD pointer and trunk reference,
+	// just import without altering the trunk index. This condition is satisfied
+	// by a log line such as:
+	// (HEAD -> another-branch, main, origin/main) this is a commit
+	if log[0].IsTrunk && log[0].HeadPointerRef != "" {
+		goto process
+	}
 
-		// If there is no tag, continue onto the next log entry
-		if log[i].Tag == "" {
+	// Shift the starting index of the trunk in relation to the head reference
+	for j := trunkIndex + 1; j <= firstEntry; j++ {
+		if log[j].IsTrunk {
+			trunkIndex = j
+			break
+		}
+	}
+
+process:
+	entry := firstEntry
+	for entry >= trunkIndex {
+		importLogEntry(t, log[entry])
+		entry--
+	}
+
+	if log[0].HeadPointerRef != "" {
+		// Since the HEAD pointer reference points at branch other than the default,
+		// checkout out the branch and continue import. The checkout must come before
+		// the import, since we import in reverse chronological order
+		MustExec(t, fmt.Sprintf("git checkout -b %s", log[0].HeadPointerRef))
+		for entry >= 0 {
+			importLogEntry(t, log[entry])
+			entry--
+		}
+	}
+}
+
+func importLogEntry(t *testing.T, entry LogEntry) {
+	commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, entry.Commit)
+	MustExec(t, commitCmd)
+
+	// Grab the commit hash and use it when creating branches and tags
+	hash := MustExec(t, "git rev-parse HEAD")
+
+	importBranchesAtRef(t, entry.Branches, hash)
+	importTagsAtRef(t, entry.Tags, hash)
+}
+
+func importBranchesAtRef(t *testing.T, branches []string, ref string) {
+	if len(branches) == 0 {
+		return
+	}
+
+	// Track local and remote branches separately
+	local := map[string]struct{}{}
+	remote := map[string]struct{}{}
+
+	for _, branch := range branches {
+		// Filter out any branches that already exist, or are automatically updated
+		if branch == DefaultBranch ||
+			branch == DefaultRemoteBranchAlias ||
+			strings.HasPrefix(branch, "HEAD") {
 			continue
 		}
 
-		tagCmd := fmt.Sprintf("git tag %s", log[i].Tag)
-		MustExec(t, tagCmd)
-
-		pushTagCmd := fmt.Sprintf(gitPushTemplate, log[i].Tag)
-		MustExec(t, pushTagCmd)
+		if strings.HasPrefix(branch, DefaultOrigin) {
+			remote[branch] = struct{}{}
+		} else {
+			local[branch] = struct{}{}
+		}
 	}
+
+	// Detect and push to the default remote branch if needed
+	if _, pushDefault := remote[DefaultRemoteBranch]; pushDefault {
+		MustExec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
+		delete(remote, DefaultRemoteBranch)
+	}
+
+	for branch := range remote {
+		cleanedBranch := strings.TrimPrefix(branch, "origin/")
+
+		// Check if the branch already exists, before creating it
+		if out := MustExec(t, fmt.Sprintf("git branch --list %s", cleanedBranch)); out == "" {
+			MustExec(t, fmt.Sprintf("git branch %s %s", cleanedBranch, ref))
+		}
+		MustExec(t, fmt.Sprintf(gitPushTemplate, cleanedBranch))
+
+		if _, exists := local[cleanedBranch]; exists {
+			delete(local, cleanedBranch)
+		} else {
+			// Do not attempt to delete the branch locally if checked out
+			if current := MustExec(t, "git branch --show-current --no-color"); current != cleanedBranch {
+				MustExec(t, fmt.Sprintf("git branch -d %s", cleanedBranch))
+			}
+		}
+	}
+
+	for branch := range local {
+		MustExec(t, fmt.Sprintf("git branch %s %s", branch, ref))
+	}
+}
+
+func importTagsAtRef(t *testing.T, tags []string, ref string) {
+	if len(tags) == 0 {
+		return
+	}
+
+	for _, tag := range tags {
+		tagCmd := fmt.Sprintf("git tag %s %s", tag, ref)
+		MustExec(t, tagCmd)
+	}
+
+	MustExec(t, "git push --tags")
 }
 
 func setConfig(key, value string) error {
@@ -489,4 +622,41 @@ func Remote(t *testing.T) string {
 
 	// Ensure path is escaped correctly when testing across different OS
 	return filepath.ToSlash(remote)
+}
+
+// ShowBranch will retrieve the name of the current branch. Raw output is
+// returned from this command:
+//
+//	git branch --show-current
+func ShowBranch(t *testing.T) string {
+	t.Helper()
+	return MustExec(t, "git branch --show-current")
+}
+
+// Branches returns a list of all local branches associated with the
+// current repository. Raw output is returned from this command:
+//
+//	git branch --list --format='%(refname:short)'
+func Branches(t *testing.T) []string {
+	t.Helper()
+	branches := MustExec(t, "git branch --list --format='%(refname:short)'")
+
+	return strings.Split(branches, "\n")
+}
+
+// RemoteBranches returns a list of all branches that have been pushed to
+// the remote origin of the current repository. Remote branch names are
+// prefixed with the default origin of the remote:
+//
+//	origin/main
+//	origin/branch1
+//
+// Raw output is returned from this command:
+//
+//	git branch --list --remotes --format='%(refname:short)'
+func RemoteBranches(t *testing.T) []string {
+	t.Helper()
+	branches := MustExec(t, "git branch --list --remotes --format='%(refname:short)'")
+
+	return strings.Split(branches, "\n")
 }
