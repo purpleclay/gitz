@@ -103,18 +103,35 @@ type file struct {
 	Staged bool
 }
 
-// TODO: improve the comment based on sample
-// TODO: explain how the log command can be used to create different scenarios
-
-// WithLog ensures the repository will be initialized with a given snapshot
-// of commits and tags. Ideal for initializing a repository with a known
-// state. The provided log is parsed using [ParseLog] and expects the log
-// in the following format:
+// WithLog ensures the repository will be initialized to a known state.
+// The log can be used to create any number of tags and branches (both
+// local and remote) at different commits within the repositories history.
+// The HEAD pointer reference (HEAD -> <branch>) is supported and allows
+// a repository to check out a branch after completing the import.
 //
-//	(tag: 0.1.0) feat: improve existing cli documentation
-//	docs: create initial mkdocs material documentation
+// Given the following log extract:
 //
-// This is the equivalent to the format produced using the git command:
+//	(HEAD -> new-feature, origin/new-feature) pass tests
+//	write tests for new feature
+//	(main, origin/main) ci: add code security github workflow
+//	(code-example-docs) chore: add example code snippets
+//	(tag: 0.1.1, origin/parsing-tests) fix: parsing of multiple tags within log
+//	(tag: 0.1.0) feat: parsing of multiple tags within log
+//	chore: update existing project README
+//
+// The repository would be initialized with the known state:
+//   - Tag '0.1.0' references commit 'feat: parsing of multiple tags within log'
+//   - Tag '0.1.1' references commit 'fix: parsing of multiple tags within log'
+//   - Remote branch 'parsing-tests' was branched from commit 'fix: parsing of
+//     multiple tags within log' and hasn't been checked out locally
+//   - Local branch 'code-example-docs' was branched from commit 'chore: add
+//     example code snippets' but has not been pushed to the remote
+//   - The default branch references commit 'ci: add code security github workflow'
+//   - Local branch 'new-feature' has been checked out will all commits being
+//     pushed back to the remote
+//
+// The provided log is parsed using [ParseLog] and is based on the
+// output of git command:
 //
 //	git log --pretty='format:%d %s'
 func WithLog(log string) RepositoryOption {
@@ -124,16 +141,25 @@ func WithLog(log string) RepositoryOption {
 }
 
 // WithRemoteLog ensures the remote origin of the repository will be
-// initialized with a given snapshot of commits and tags. Ideal for
-// simulating a delta between the current repository (working directory)
-// and the remote. Use with caution, as this can result in conflicts.
-// The provided log is parsed using [ParseLog] and expects the log
-// in the following format:
+// initialized to a known state. Ideal for simulating a delta between
+// the current repository (working directory) and the remote. Use with
+// caution, as this can result in conflicts.
 //
-//	(tag: 0.1.0) feat: improve existing cli documentation
+// Some typical scenarios for this option. Both require a git pull for
+// synchronization.
+//
+// 1. Introducing a delta with the default branch:
+//
+//	(tag: 0.1.0, main, origin/main) feat: improve existing cli documentation
 //	docs: create initial mkdocs material documentation
 //
-// This is the equivalent to the format produced using the git command:
+// 2. Introducing a delta for a new branch:
+//
+//	(HEAD -> new-branch, origin/new-branch) pass tests
+//	write tests for new feature
+//
+// The provided log is parsed using [ParseLog] and is based on the
+// output of git command:
 //
 //	git log --pretty='format:%d %s'
 func WithRemoteLog(log string) RepositoryOption {

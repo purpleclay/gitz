@@ -234,6 +234,21 @@ func TestWithRemoteLog(t *testing.T) {
 	assert.Contains(t, string(localLog), "this is a remote commit")
 }
 
+func TestWithRemoteLogNewBranch(t *testing.T) {
+	log := `(HEAD -> new-branch, origin/new-branch) pass tests
+write tests for new feature`
+	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+
+	branches := remoteBranches(t)
+	assert.NotContains(t, branches, remote("new-branch"))
+
+	_, err := exec.Command("git", "pull").CombinedOutput()
+	require.NoError(t, err)
+
+	branches = remoteBranches(t)
+	assert.Contains(t, branches, remote("new-branch"))
+}
+
 func TestWithCloneDepth(t *testing.T) {
 	log := `(main, origin/main) feat: this is commit number 3
 feat: this is commit number 2
