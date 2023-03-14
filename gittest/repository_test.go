@@ -28,6 +28,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -137,7 +138,12 @@ func shellExecInline(t *testing.T, inline string, args ...string) string {
 	// Combine and squash args into a slice
 	cmdArgs := append([]string{"-c", inline}, args...)
 
-	out, err := exec.Command("/bin/bash", cmdArgs...).CombinedOutput()
+	interp := "/bin/bash"
+	if runtime.GOOS == "windows" {
+		interp = "bash"
+	}
+
+	out, err := exec.Command(interp, cmdArgs...).CombinedOutput()
 	require.NoError(t, err)
 
 	return string(out)
