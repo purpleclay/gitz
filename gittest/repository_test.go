@@ -121,17 +121,26 @@ docs: update existing project README`
 
 	// Checkout and verify that branches are associated with the expected commit
 	script := "git checkout $0 &>/dev/null; git log -n1 --oneline"
-	out, err := exec.Command("/bin/sh", "-c", script, "local-tracked").CombinedOutput()
-	require.NoError(t, err)
-	assert.Contains(t, string(out), "feat: support branch creation within log")
+	out := shellExecInline(t, script, "local-tracked")
+	assert.Contains(t, out, "feat: support branch creation within log")
 
-	out, err = exec.Command("/bin/sh", "-c", script, "tracked").CombinedOutput()
-	require.NoError(t, err)
-	assert.Contains(t, string(out), "docs: document fix")
+	out = shellExecInline(t, script, "tracked")
+	assert.Contains(t, out, "docs: document fix")
 
-	out, err = exec.Command("/bin/sh", "-c", script, "remote-tracked").CombinedOutput()
+	out = shellExecInline(t, script, "remote-tracked")
+	assert.Contains(t, out, "fix: parsing of multiple tags within log")
+}
+
+func shellExecInline(t *testing.T, inline string, args ...string) string {
+	t.Helper()
+
+	// Combine and squash args into a slice
+	cmdArgs := append([]string{"-c", inline}, args...)
+
+	out, err := exec.Command("/bin/bash", cmdArgs...).CombinedOutput()
 	require.NoError(t, err)
-	assert.Contains(t, string(out), "fix: parsing of multiple tags within log")
+
+	return string(out)
 }
 
 func localBranches(t *testing.T) []string {
@@ -426,8 +435,7 @@ for b in branch{1..3}; do
 	git checkout -b $b;
 done;`
 
-	_, err := exec.Command("/bin/sh", "-c", script).CombinedOutput()
-	require.NoError(t, err)
+	shellExecInline(t, script)
 
 	branches := gittest.Branches(t)
 	assert.ElementsMatch(t, []string{"branch1", "branch2", "branch3", gittest.DefaultBranch}, branches)
@@ -442,8 +450,7 @@ for b in branch{1..3}; do
 done;
 git push origin --all`
 
-	_, err := exec.Command("/bin/bash", "-c", script).CombinedOutput()
-	require.NoError(t, err)
+	shellExecInline(t, script)
 
 	branches := gittest.RemoteBranches(t)
 	assert.ElementsMatch(t, []string{
