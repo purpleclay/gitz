@@ -47,6 +47,14 @@ type LogEntry struct {
 	// Branches contains the name of all branches (local and remote)
 	// that are associated with the current commit
 	Branches []string
+
+	// IsTrunk identifies if the current log entry has a reference
+	// to the default branch
+	IsTrunk bool
+
+	// HeadPointerRef contains the name of the branch the HEAD of the
+	// repository points to
+	HeadPointerRef string
 }
 
 // ParseLog will attempt to parse a log extract from a given repository
@@ -67,6 +75,10 @@ type LogEntry struct {
 //
 //	git log --pretty='format:%d %s'
 func ParseLog(log string) []LogEntry {
+	if log == "" {
+		return nil
+	}
+
 	entries := make([]LogEntry, 0)
 
 	scanner := bufio.NewScanner(strings.NewReader(log))
@@ -99,6 +111,11 @@ func ParseLog(log string) []LogEntry {
 					entry.Tags = append(entry.Tags, strings.TrimPrefix(cleanedRef, "tag: "))
 				} else {
 					entry.Branches = append(entry.Branches, cleanedRef)
+
+					// Detect the existence of the default branch
+					if cleanedRef == DefaultBranch {
+						entry.IsTrunk = true
+					}
 				}
 			}
 
@@ -112,5 +129,25 @@ func ParseLog(log string) []LogEntry {
 		entries = append(entries, entry)
 	}
 
+	// Determine if the first log entry contains a HEAD pointer reference
+	for _, branch := range entries[0].Branches {
+		if hasBranchPrefix(branch, "HEAD->", "HEAD ->") {
+			if _, pointer, found := strings.Cut(branch, "->"); found {
+				head := strings.TrimSuffix(pointer, DefaultBranch)
+				entries[0].HeadPointerRef = strings.TrimSpace(head)
+				break
+			}
+		}
+	}
+
 	return entries
+}
+
+func hasBranchPrefix(branch string, prefixes ...string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(branch, prefix) {
+			return true
+		}
+	}
+	return false
 }

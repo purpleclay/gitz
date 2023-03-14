@@ -50,7 +50,8 @@ const (
 	// initializing the remote bare repository
 	DefaultRemoteBranch = "origin/main"
 
-	// DefaultRemoteBranchAlias ...
+	// DefaultRemoteBranchHEAD is a remote tracking branch that points at
+	// the default branch of the repository
 	DefaultRemoteBranchAlias = "origin/HEAD"
 
 	// DefaultAuthorName contains the author name written to local git
@@ -101,6 +102,9 @@ type file struct {
 	Path   string
 	Staged bool
 }
+
+// TODO: improve the comment based on sample
+// TODO: explain how the log command can be used to create different scenarios
 
 // WithLog ensures the repository will be initialized with a given snapshot
 // of commits and tags. Ideal for initializing a repository with a known
@@ -312,25 +316,121 @@ func tempFile(t *testing.T, path, content string) {
 
 func importLog(t *testing.T, log []LogEntry) {
 	// It is important to reverse the list as we want to write the log back
-	// to the repository using oldest to latest
-	for i := len(log) - 1; i >= 0; i-- {
-		commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, log[i].Commit)
-		MustExec(t, commitCmd)
+	// to the repository in reverse chronological order
+	firstEntry := len(log) - 1
+	trunkIndex := 0
 
-		commitPushCmd := fmt.Sprintf(gitPushTemplate, DefaultBranch)
-		MustExec(t, commitPushCmd)
+	// If the latest commit contains both the HEAD pointer and trunk reference,
+	// just import without altering the trunk index. This condition is satisfied
+	// by a log line such as:
+	// (HEAD -> another-branch, main, origin/main) this is a commit
+	if log[0].IsTrunk && log[0].HeadPointerRef != "" {
+		goto process
+	}
 
-		// If there is no tag, continue onto the next log entry
-		if log[i].Tag == "" {
+	// Shift the starting index of the trunk in relation to the head reference
+	for j := trunkIndex + 1; j <= firstEntry; j++ {
+		if log[j].IsTrunk {
+			trunkIndex = j
+			break
+		}
+	}
+
+process:
+	entry := firstEntry
+	for entry >= trunkIndex {
+		importLogEntry(t, log[entry])
+		entry--
+	}
+
+	if log[0].HeadPointerRef != "" {
+		// Since the HEAD pointer reference points at branch other than the default,
+		// checkout out the branch and continue import. The checkout must come before
+		// the import, since we import in reverse chronological order
+		MustExec(t, fmt.Sprintf("git checkout -b %s", log[0].HeadPointerRef))
+		for entry >= 0 {
+			importLogEntry(t, log[entry])
+			entry--
+		}
+	}
+}
+
+func importLogEntry(t *testing.T, entry LogEntry) {
+	commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, entry.Commit)
+	MustExec(t, commitCmd)
+
+	// Grab the commit hash and use it when creating branches and tags
+	hash := MustExec(t, "git rev-parse HEAD")
+
+	importBranchesAtRef(t, entry.Branches, hash)
+	importTagsAtRef(t, entry.Tags, hash)
+}
+
+func importBranchesAtRef(t *testing.T, branches []string, ref string) {
+	if len(branches) == 0 {
+		return
+	}
+
+	// Track local and remote branches separately
+	local := map[string]struct{}{}
+	remote := map[string]struct{}{}
+
+	for _, branch := range branches {
+		// Filter out any branches that already exist, or are automatically updated
+		if branch == DefaultBranch ||
+			branch == DefaultRemoteBranchAlias ||
+			strings.HasPrefix(branch, "HEAD") {
 			continue
 		}
 
-		tagCmd := fmt.Sprintf("git tag %s", log[i].Tag)
-		MustExec(t, tagCmd)
-
-		pushTagCmd := fmt.Sprintf(gitPushTemplate, log[i].Tag)
-		MustExec(t, pushTagCmd)
+		if strings.HasPrefix(branch, DefaultOrigin) {
+			remote[branch] = struct{}{}
+		} else {
+			local[branch] = struct{}{}
+		}
 	}
+
+	// Detect and push to the default remote branch if needed
+	if _, pushDefault := remote[DefaultRemoteBranch]; pushDefault {
+		MustExec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
+		delete(remote, DefaultRemoteBranch)
+	}
+
+	for branch := range remote {
+		cleanedBranch := strings.TrimPrefix(branch, "origin/")
+
+		// Check if the branch already exists, before creating it
+		if out := MustExec(t, fmt.Sprintf("git branch --list %s", cleanedBranch)); out == "" {
+			MustExec(t, fmt.Sprintf("git branch %s %s", cleanedBranch, ref))
+		}
+		MustExec(t, fmt.Sprintf(gitPushTemplate, cleanedBranch))
+
+		if _, exists := local[cleanedBranch]; exists {
+			delete(local, cleanedBranch)
+		} else {
+			// Do not attempt to delete the branch locally if checked out
+			if current := MustExec(t, "git branch --show-current --no-color"); current != cleanedBranch {
+				MustExec(t, fmt.Sprintf("git branch -d %s", cleanedBranch))
+			}
+		}
+	}
+
+	for branch := range local {
+		MustExec(t, fmt.Sprintf("git branch %s %s", branch, ref))
+	}
+}
+
+func importTagsAtRef(t *testing.T, tags []string, ref string) {
+	if len(tags) == 0 {
+		return
+	}
+
+	for _, tag := range tags {
+		tagCmd := fmt.Sprintf("git tag %s %s", tag, ref)
+		MustExec(t, tagCmd)
+	}
+
+	MustExec(t, "git push --tags")
 }
 
 func setConfig(key, value string) error {

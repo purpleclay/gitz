@@ -45,29 +45,46 @@ feat: scaffold initial cli and add first command`
 	assert.Empty(t, entries[0].Tag)
 	assert.Empty(t, entries[0].Tags)
 	assert.ElementsMatch(t, []string{"HEAD -> new-feature", "origin/new-feature"}, entries[0].Branches)
+	assert.False(t, entries[0].IsTrunk)
+	assert.Equal(t, "new-feature", entries[0].HeadPointerRef)
 
 	assert.Equal(t, entries[1].Commit, "write tests for new feature")
-	assert.Empty(t, entries[0].Tag)
-	assert.Empty(t, entries[0].Tags)
+	assert.Empty(t, entries[1].Tag)
+	assert.Empty(t, entries[1].Tags)
 	assert.Empty(t, entries[1].Branches)
+	assert.False(t, entries[1].IsTrunk)
+	assert.Empty(t, entries[1].HeadPointerRef)
 
 	assert.Equal(t, entries[2].Commit, "feat: improve existing cli documentation")
 	assert.Equal(t, "0.2.0", entries[2].Tag)
 	assert.ElementsMatch(t, []string{"0.2.0", "v1"}, entries[2].Tags)
 	assert.ElementsMatch(t, []string{"main", "origin/main"}, entries[2].Branches)
+	assert.True(t, entries[2].IsTrunk)
+	assert.Empty(t, entries[2].HeadPointerRef)
 
 	assert.Equal(t, entries[3].Commit, "docs: create initial mkdocs material documentation")
 	assert.Empty(t, entries[3].Tag)
 	assert.Empty(t, entries[3].Branches)
+	assert.False(t, entries[3].IsTrunk)
+	assert.Empty(t, entries[3].HeadPointerRef)
 
 	assert.Equal(t, entries[4].Commit, "feat: add secondary cli command to support filtering of results")
 	assert.Equal(t, "0.1.0", entries[4].Tag)
 	assert.ElementsMatch(t, []string{"0.1.0"}, entries[4].Tags)
 	assert.Empty(t, entries[4].Branches)
+	assert.False(t, entries[4].IsTrunk)
+	assert.Empty(t, entries[4].HeadPointerRef)
 
 	assert.Equal(t, entries[5].Commit, "feat: scaffold initial cli and add first command")
 	assert.Empty(t, entries[5].Tag)
 	assert.Empty(t, entries[5].Branches)
+	assert.False(t, entries[5].IsTrunk)
+	assert.Empty(t, entries[5].HeadPointerRef)
+}
+
+func TestParseLogEmpty(t *testing.T) {
+	entries := gittest.ParseLog("")
+	assert.Empty(t, entries)
 }
 
 func TestParseLogTrimsSpaces(t *testing.T) {
