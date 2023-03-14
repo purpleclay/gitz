@@ -442,7 +442,7 @@ for b in branch{1..3}; do
 done;
 git push origin --all`
 
-	_, err := exec.Command("/bin/sh", "-c", script).CombinedOutput()
+	_, err := exec.Command("/bin/bash", "-c", script).CombinedOutput()
 	require.NoError(t, err)
 
 	branches := gittest.RemoteBranches(t)
