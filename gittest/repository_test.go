@@ -23,10 +23,13 @@ SOFTWARE.
 package gittest_test
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/purpleclay/gitz/gittest"
@@ -50,6 +53,14 @@ func statusAdded(file string) string {
 	return fmt.Sprintf("A  %s", file)
 }
 
+// Formats any git reference as a remote reference, by appending the
+// default origin as a prefix
+//
+//	<gittest.DefaultOrigin>/<ref>
+func remote(ref string) string {
+	return fmt.Sprintf("%s/%s", gittest.DefaultOrigin, ref)
+}
+
 func TestInitRepositoryConfigSet(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -70,19 +81,120 @@ func TestInitRepositoryDefaultBranchSet(t *testing.T) {
 }
 
 func TestInitRepositoryWithLog(t *testing.T) {
-	log := `(tag: 0.1.0) feat: this is a brand new feature
-ci: include github workflow`
+	log := `chore: resolve broken build badge
+ci: adopt new code security workflow`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
 	out, err := exec.Command("git", "log", "-n2", "--oneline").CombinedOutput()
 	require.NoError(t, err)
 
+	assert.Contains(t, string(out), "chore: resolve broken build badge")
+	assert.Contains(t, string(out), "ci: adopt new code security workflow")
+}
+
+func TestInitRepositoryWithLogCreatesTags(t *testing.T) {
+	log := `(tag: 0.1.0, tag: v1) feat: this is a brand new feature
+ci: include github workflow`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
 	tag, err := exec.Command("git", "tag").CombinedOutput()
 	require.NoError(t, err)
 
-	assert.Contains(t, string(out), "feat: this is a brand new feature")
-	assert.Contains(t, string(out), "ci: include github workflow")
 	assert.Contains(t, string(tag), "0.1.0")
+	assert.Contains(t, string(tag), "v1")
+}
+
+func TestInitRepositoryWithLogCreatesBranches(t *testing.T) {
+	log := `(main) chore: add example code snippets
+(local-tracked) feat: support branch creation within log
+(tracked, origin/tracked) docs: document fix 
+(origin/remote-tracked) fix: parsing of multiple tags within log
+docs: update existing project README`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	assert.ElementsMatch(t, []string{"main", "local-tracked", "tracked"}, localBranches(t))
+	assert.ElementsMatch(t, []string{
+		remote("main"),
+		remote("HEAD"),
+		remote("tracked"),
+		remote("remote-tracked"),
+	}, remoteBranches(t))
+
+	// Checkout and verify that branches are associated with the expected commit
+	script := "git checkout $0 &>/dev/null; git log -n1 --oneline"
+	out := shellExecInline(t, script, "local-tracked")
+	assert.Contains(t, out, "feat: support branch creation within log")
+
+	out = shellExecInline(t, script, "tracked")
+	assert.Contains(t, out, "docs: document fix")
+
+	out = shellExecInline(t, script, "remote-tracked")
+	assert.Contains(t, out, "fix: parsing of multiple tags within log")
+}
+
+func shellExecInline(t *testing.T, inline string, args ...string) string {
+	t.Helper()
+
+	// Combine and squash args into a slice
+	cmdArgs := append([]string{"-c", inline}, args...)
+
+	interp := "/bin/bash"
+	if runtime.GOOS == "windows" {
+		interp = "bash"
+	}
+
+	out, err := exec.Command(interp, cmdArgs...).CombinedOutput()
+	require.NoError(t, err)
+
+	return string(out)
+}
+
+func localBranches(t *testing.T) []string {
+	t.Helper()
+
+	out, err := exec.Command("git", "branch", "--list", "--format=%(refname:short)").CombinedOutput()
+	require.NoError(t, err)
+	out = bytes.TrimSuffix(out, []byte{'\n'})
+
+	return strings.Split(string(out), "\n")
+}
+
+func remoteBranches(t *testing.T) []string {
+	t.Helper()
+
+	out, err := exec.Command("git", "branch", "--list", "--remotes", "--format=%(refname:short)").CombinedOutput()
+	require.NoError(t, err)
+	out = bytes.TrimSuffix(out, []byte{'\n'})
+
+	return strings.Split(string(out), "\n")
+}
+
+func TestInitRepositoryWithLogCheckoutBranch(t *testing.T) {
+	log := `(HEAD -> branch-checkout, origin/branch-checkout) pass tests
+write tests for branch checkout
+(main, origin/main) docs: update existing project README`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	out, err := exec.Command("git", "branch", "--show-current").CombinedOutput()
+	require.NoError(t, err)
+	assert.Contains(t, string(out), "branch-checkout")
+
+	out, err = exec.Command("git", "log", "-n2", "--oneline").CombinedOutput()
+	require.NoError(t, err)
+	assert.Contains(t, string(out), "pass tests")
+	assert.Contains(t, string(out), "write tests for branch checkout")
+}
+
+func TestInitRepositoryWithLogCheckoutBranchNotPushed(t *testing.T) {
+	log := "(HEAD -> local-branch, main, origin/main) feat: latest and greatest feature"
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	out, err := exec.Command("git", "branch", "--show-current").CombinedOutput()
+	require.NoError(t, err)
+	assert.Contains(t, string(out), "local-branch")
+
+	remoteBranches := remoteBranches(t)
+	assert.NotContains(t, remoteBranches, remote("local-branch"))
 }
 
 func TestInitRepositoryWithFiles(t *testing.T) {
@@ -122,23 +234,38 @@ func TestInitRepositoryWithLocalCommits(t *testing.T) {
 }
 
 func TestWithRemoteLog(t *testing.T) {
-	log := "this is a remote commit"
+	log := "(main, origin/main) this is a remote commit"
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 
 	localLog, err := exec.Command("git", "log", "-n1", "--oneline").CombinedOutput()
 	require.NoError(t, err)
-	assert.NotContains(t, string(localLog), log)
+	assert.NotContains(t, string(localLog), "this is a remote commit")
 
 	_, err = exec.Command("git", "pull").CombinedOutput()
 	require.NoError(t, err)
 
 	localLog, err = exec.Command("git", "log", "-n1", "--oneline").CombinedOutput()
 	require.NoError(t, err)
-	assert.Contains(t, string(localLog), log)
+	assert.Contains(t, string(localLog), "this is a remote commit")
+}
+
+func TestWithRemoteLogNewBranch(t *testing.T) {
+	log := `(HEAD -> new-branch, origin/new-branch) pass tests
+write tests for new feature`
+	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+
+	branches := remoteBranches(t)
+	assert.NotContains(t, branches, remote("new-branch"))
+
+	_, err := exec.Command("git", "pull").CombinedOutput()
+	require.NoError(t, err)
+
+	branches = remoteBranches(t)
+	assert.Contains(t, branches, remote("new-branch"))
 }
 
 func TestWithCloneDepth(t *testing.T) {
-	log := `feat: this is commit number 3
+	log := `(main, origin/main) feat: this is commit number 3
 feat: this is commit number 2
 feat: this is commit number 1`
 
@@ -297,4 +424,46 @@ func TestRemote(t *testing.T) {
 
 	// Ensure path is sanitized before comparison
 	assert.Equal(t, filepath.ToSlash(fmt.Sprintf("file://%s.git", cwd)), remote)
+}
+
+func TestShowBranch(t *testing.T) {
+	gittest.InitRepository(t)
+
+	branch := gittest.ShowBranch(t)
+	assert.Equal(t, gittest.DefaultBranch, branch)
+}
+
+func TestBranches(t *testing.T) {
+	gittest.InitRepository(t)
+
+	script := `
+for b in branch{1..3}; do
+	git checkout -b $b;
+done;`
+
+	shellExecInline(t, script)
+
+	branches := gittest.Branches(t)
+	assert.ElementsMatch(t, []string{"branch1", "branch2", "branch3", gittest.DefaultBranch}, branches)
+}
+
+func TestRemoteBranches(t *testing.T) {
+	gittest.InitRepository(t)
+
+	script := `
+for b in branch{1..3}; do
+	git checkout -b $b;
+done;
+git push origin --all`
+
+	shellExecInline(t, script)
+
+	branches := gittest.RemoteBranches(t)
+	assert.ElementsMatch(t, []string{
+		remote("branch1"),
+		remote("branch2"),
+		remote("branch3"),
+		gittest.DefaultRemoteBranch,
+		gittest.DefaultRemoteBranchAlias,
+	}, branches)
 }

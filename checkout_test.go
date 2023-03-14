@@ -23,7 +23,7 @@ SOFTWARE.
 package git_test
 
 import (
-	"os"
+	"fmt"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -32,22 +32,40 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClone(t *testing.T) {
-	log := "(main, origin/main) chore: testing if a git clone works"
+func TestCheckout(t *testing.T) {
+	log := `(HEAD -> branch-checkout, origin/branch-checkout) pass tests
+write tests for branch checkout
+(main, origin/main) docs: update existing project README`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
-	// Grab the remote for cloning later
-	remote := gittest.Remote(t)
-
-	// Clone the existing repository into a new temporary directory
-	dir := t.TempDir()
-	require.NoError(t, os.Chdir(dir))
-
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote)
+	out, err := client.Checkout("main")
 	require.NoError(t, err)
 
-	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
-	lastCommit := gittest.LastCommit(t)
-	assert.Contains(t, lastCommit, "chore: testing if a git clone works")
+	// Inspect the raw git output
+	assert.Contains(t, out, "Switched to branch 'main'")
+	assert.Contains(t, gittest.LastCommit(t), "docs: update existing project README")
+}
+
+func TestCheckoutCreatesBranch(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Checkout("testing")
+	require.NoError(t, err)
+
+	branches := gittest.Branches(t)
+	remoteBranches := gittest.RemoteBranches(t)
+
+	assert.Contains(t, branches, "testing")
+	assert.NotContains(t, remoteBranches, fmt.Sprintf("%s/testing", gittest.DefaultOrigin))
+}
+
+func TestCheckoutQueryingBranchesError(t *testing.T) {
+	nonWorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Checkout("testing")
+
+	require.Error(t, err)
 }

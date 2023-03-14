@@ -20,34 +20,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package git_test
+package git
 
 import (
-	"os"
-	"testing"
-
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"fmt"
+	"strings"
 )
 
-func TestClone(t *testing.T) {
-	log := "(main, origin/main) chore: testing if a git clone works"
-	gittest.InitRepository(t, gittest.WithLog(log))
+// Checkout will attempt to checkout a branch with the given name. If the branch
+// does not exist, it is created at the current working tree reference (or commit),
+// and then switched to. If the branch does exist, then switching to it restores
+// all working tree files
+func (c *Client) Checkout(branch string) (string, error) {
+	// Query the repository for all existing branches, both local and remote.
+	// If a pull hasn't been done, there is a chance that an expected
+	// remote branch will not be tracked
+	out, err := exec("git branch --all --format='%(refname:short)'")
+	if err != nil {
+		return out, err
+	}
 
-	// Grab the remote for cloning later
-	remote := gittest.Remote(t)
+	for _, ref := range strings.Split(out, "\n") {
+		if strings.HasSuffix(ref, branch) {
+			return exec(fmt.Sprintf("git checkout %s", branch))
+		}
+	}
 
-	// Clone the existing repository into a new temporary directory
-	dir := t.TempDir()
-	require.NoError(t, os.Chdir(dir))
-
-	client, _ := git.NewClient()
-	_, err := client.Clone(remote)
-	require.NoError(t, err)
-
-	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
-	lastCommit := gittest.LastCommit(t)
-	assert.Contains(t, lastCommit, "chore: testing if a git clone works")
+	return exec(fmt.Sprintf("git checkout -b %s", branch))
 }
