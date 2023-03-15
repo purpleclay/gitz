@@ -361,28 +361,28 @@ func TestPorcelainStatus(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
 
 	status := gittest.PorcelainStatus(t)
-	assert.Equal(t, "?? file1.txt\n?? file2.txt", status)
-	// TODO: split on newlines (can use ElementsMatch)
+	assert.ElementsMatch(t, []string{"?? file1.txt", "?? file2.txt"}, status)
 }
 
 func TestLogRemote(t *testing.T) {
 	gittest.InitRepository(t)
-
 	gitExec(t, "commit", "--allow-empty", "-m", "this commit is on the remote")
 	gitExec(t, "push", "origin", gittest.DefaultBranch)
 
 	log := gittest.LogRemote(t)
-	require.Contains(t, log, "this commit is on the remote")
-	// TODO: this should return a log entry
+
+	require.Len(t, log, 2)
+	require.Equal(t, "this commit is on the remote", log[0].Commit)
 }
 
 func TestLogRemoteDoesNotContainLocalCommits(t *testing.T) {
 	gittest.InitRepository(t)
-
 	gitExec(t, "commit", "--allow-empty", "-m", "this commit is not on the remote")
 
 	log := gittest.LogRemote(t)
-	require.NotContains(t, log, "this commit is not on the remote")
+
+	require.Len(t, log, 1)
+	assert.NotEqual(t, "this commit is not on the remote", log[0].Commit)
 }
 
 func TestTagLocal(t *testing.T) {

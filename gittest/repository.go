@@ -598,23 +598,30 @@ func LastCommit(t *testing.T) CommitDetails {
 
 // PorcelainStatus returns a snapshot of the current status of a
 // repository (working directory) in an easy to parse format.
-// Raw output is returned from the git command:
+// Raw output is parsed from the git command:
 //
 //	git status --porcelain
-func PorcelainStatus(t *testing.T) string {
+func PorcelainStatus(t *testing.T) []string {
 	t.Helper()
-	return MustExec(t, "git status --porcelain")
+
+	status := MustExec(t, "git status --porcelain")
+	if status == "" {
+		return nil
+	}
+
+	return strings.Split(status, "\n")
 }
 
 // LogRemote returns the log history of a repository (working directory)
-// as it currently exists on the remote. Any local commit that are not
+// as it currently exists on the remote. Any local commits that are not
 // pushed, will not appear within this log history. Raw output is
-// returned from this command:
+// parsed from this command:
 //
-//	git log --oneline origin/main
-func LogRemote(t *testing.T) string {
+//	git log --pretty='format:%d %s' origin/main
+func LogRemote(t *testing.T) []LogEntry {
 	t.Helper()
-	return MustExec(t, fmt.Sprintf("git log --oneline %s", DefaultRemoteBranch))
+	log := MustExec(t, fmt.Sprintf("git log --pretty='format:%%d %%s' %s", DefaultRemoteBranch))
+	return ParseLog(log)
 }
 
 // TagLocal creates a tag that is only tracked locally and will not have
@@ -685,7 +692,7 @@ func ShowBranch(t *testing.T) string {
 }
 
 // Branches returns a list of all local branches associated with the
-// current repository. Raw output is returned from this command:
+// current repository. Raw output is parsed from this command:
 //
 //	git branch --list --format='%(refname:short)'
 func Branches(t *testing.T) []string {
@@ -706,7 +713,7 @@ func Branches(t *testing.T) []string {
 //	origin/main
 //	origin/branch
 //
-// Raw output is returned from this command:
+// Raw output is parsed from this command:
 //
 //	git branch --list --remotes --format='%(refname:short)'
 func RemoteBranches(t *testing.T) []string {

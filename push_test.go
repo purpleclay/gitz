@@ -39,7 +39,7 @@ func TestPushCommit(t *testing.T) {
 
 	require.NoError(t, err)
 	remoteLog := gittest.LogRemote(t)
-	require.Contains(t, remoteLog, "testing git push")
+	require.Equal(t, "testing git push", remoteLog[0].Commit)
 }
 
 func TestPushTag(t *testing.T) {
