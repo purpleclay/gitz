@@ -23,7 +23,6 @@ SOFTWARE.
 package git_test
 
 import (
-	"fmt"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -57,8 +56,8 @@ func TestCheckoutCreatesBranch(t *testing.T) {
 	branches := gittest.Branches(t)
 	remoteBranches := gittest.RemoteBranches(t)
 
-	assert.Contains(t, branches, "testing")
-	assert.NotContains(t, remoteBranches, fmt.Sprintf("%s/testing", gittest.DefaultOrigin))
+	assert.ElementsMatch(t, []string{"testing", gittest.DefaultBranch}, branches)
+	assert.ElementsMatch(t, []string{"main", "HEAD"}, remoteBranches)
 }
 
 func TestCheckoutQueryingBranchesError(t *testing.T) {

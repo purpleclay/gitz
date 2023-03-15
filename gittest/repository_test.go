@@ -36,22 +36,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Creates the expected git status message of an untracked file, as based
-// on the official git documentation: https://git-scm.com/docs/git-status#_short_format
-//
-//	?? file
-func statusUntracked(file string) string {
-	return fmt.Sprintf("?? %s", file)
-}
-
-// Creates the expected git status message of a staged file, as based
-// on the official git documentation: https://git-scm.com/docs/git-status#_short_format
-//
-//	A  file
-func statusAdded(file string) string {
-	return fmt.Sprintf("A  %s", file)
-}
-
 // Utility method for executing git commands and ensuring the trailing slash is trimmed
 func gitExec(t *testing.T, args ...string) string {
 	t.Helper()
@@ -215,19 +199,19 @@ func TestInitRepositoryWithLogCheckoutBranchNotPushed(t *testing.T) {
 func TestInitRepositoryWithFiles(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithFiles("a.txt", "b.txt"))
 
-	status := gitExec(t, "status", "--porcelain")
+	out := gitExec(t, "status", "--porcelain")
+	status := strings.Split(out, "\n")
 
-	assert.Contains(t, status, statusUntracked("a.txt"))
-	assert.Contains(t, status, statusUntracked("b.txt"))
+	assert.ElementsMatch(t, []string{"?? a.txt", "?? b.txt"}, status)
 }
 
 func TestInitRepositoryWithStagedFiles(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithStagedFiles("c.txt", "dir/d.txt"))
 
-	status := gitExec(t, "status", "--porcelain")
+	out := gitExec(t, "status", "--porcelain")
+	status := strings.Split(out, "\n")
 
-	assert.Contains(t, status, statusAdded("c.txt"))
-	assert.Contains(t, status, statusAdded("dir/d.txt"))
+	assert.ElementsMatch(t, []string{"A  c.txt", "A  dir/d.txt"}, status)
 }
 
 func TestInitRepositoryWithLocalCommits(t *testing.T) {

@@ -43,5 +43,5 @@ func TestPull(t *testing.T) {
 
 	assert.Equal(t, gittest.LastCommit(t).Message, "feat: a new exciting feature")
 	tags := gittest.Tags(t)
-	assert.Contains(t, tags, "0.1.0")
+	assert.ElementsMatch(t, []string{"0.1.0"}, tags)
 }
