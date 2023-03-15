@@ -299,6 +299,11 @@ func TestTags(t *testing.T) {
 	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0"}, tags)
 }
 
+func TestTagsIsEmpty(t *testing.T) {
+	gittest.InitRepository(t)
+	assert.Empty(t, gittest.Tags(t))
+}
+
 func TestRemoteTags(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -307,6 +312,11 @@ func TestRemoteTags(t *testing.T) {
 
 	tags := gittest.RemoteTags(t)
 	assert.ElementsMatch(t, []string{"0.2.0"}, tags)
+}
+
+func TestRemoteTagsIsEmpty(t *testing.T) {
+	gittest.InitRepository(t)
+	assert.Empty(t, gittest.RemoteTags(t))
 }
 
 func TestStageFile(t *testing.T) {
@@ -346,6 +356,11 @@ func TestPorcelainStatus(t *testing.T) {
 
 	status := gittest.PorcelainStatus(t)
 	assert.ElementsMatch(t, []string{"?? file1.txt", "?? file2.txt"}, status)
+}
+
+func TestProcelainStatusNoChanges(t *testing.T) {
+	gittest.InitRepository(t)
+	assert.Empty(t, gittest.PorcelainStatus(t))
 }
 
 func TestLogRemote(t *testing.T) {
