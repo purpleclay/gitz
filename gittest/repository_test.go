@@ -53,14 +53,6 @@ func statusAdded(file string) string {
 	return fmt.Sprintf("A  %s", file)
 }
 
-// Formats any git reference as a remote reference, by appending the
-// default origin as a prefix
-//
-//	<gittest.DefaultOrigin>/<ref>
-func remote(ref string) string {
-	return fmt.Sprintf("%s/%s", gittest.DefaultOrigin, ref)
-}
-
 func TestInitRepositoryConfigSet(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -114,10 +106,10 @@ docs: update existing project README`
 
 	assert.ElementsMatch(t, []string{"main", "local-tracked", "tracked"}, localBranches(t))
 	assert.ElementsMatch(t, []string{
-		remote("main"),
-		remote("HEAD"),
-		remote("tracked"),
-		remote("remote-tracked"),
+		"main",
+		"HEAD",
+		"tracked",
+		"remote-tracked",
 	}, remoteBranches(t))
 
 	// Checkout and verify that branches are associated with the expected commit
@@ -194,7 +186,7 @@ func TestInitRepositoryWithLogCheckoutBranchNotPushed(t *testing.T) {
 	assert.Contains(t, string(out), "local-branch")
 
 	remoteBranches := remoteBranches(t)
-	assert.NotContains(t, remoteBranches, remote("local-branch"))
+	assert.NotContains(t, remoteBranches, "local-branch")
 }
 
 func TestInitRepositoryWithFiles(t *testing.T) {
@@ -255,13 +247,13 @@ write tests for new feature`
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 
 	branches := remoteBranches(t)
-	assert.NotContains(t, branches, remote("new-branch"))
+	assert.NotContains(t, branches, "new-branch")
 
 	_, err := exec.Command("git", "pull").CombinedOutput()
 	require.NoError(t, err)
 
 	branches = remoteBranches(t)
-	assert.Contains(t, branches, remote("new-branch"))
+	assert.Contains(t, branches, "new-branch")
 }
 
 func TestWithCloneDepth(t *testing.T) {
@@ -305,8 +297,11 @@ func TestTags(t *testing.T) {
 	_, err := exec.Command("git", "tag", "0.1.0").CombinedOutput()
 	require.NoError(t, err)
 
-	out := gittest.Tags(t)
-	assert.Contains(t, out, "refs/tags/0.1.0")
+	_, err = exec.Command("git", "tag", "0.2.0").CombinedOutput()
+	require.NoError(t, err)
+
+	tags := gittest.Tags(t)
+	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0"}, tags)
 }
 
 func TestRemoteTags(t *testing.T) {
@@ -318,8 +313,8 @@ func TestRemoteTags(t *testing.T) {
 	_, err = exec.Command("git", "push", "origin", "0.2.0").CombinedOutput()
 	require.NoError(t, err)
 
-	out := gittest.RemoteTags(t)
-	assert.Contains(t, out, "refs/tags/0.2.0")
+	tags := gittest.RemoteTags(t)
+	assert.ElementsMatch(t, []string{"0.2.0"}, tags)
 }
 
 func TestStageFile(t *testing.T) {
@@ -349,8 +344,15 @@ func TestLastCommit(t *testing.T) {
 	_, err := exec.Command("git", "commit", "--allow-empty", "-m", "this is a test").CombinedOutput()
 	require.NoError(t, err)
 
-	log := gittest.LastCommit(t)
-	assert.Contains(t, log, "this is a test")
+	out, err := exec.Command("git", "rev-parse", "HEAD").CombinedOutput()
+	require.NoError(t, err)
+
+	commit := gittest.LastCommit(t)
+	assert.Equal(t, string(out), commit.Hash)
+	assert.Equal(t, string(out)[:7], commit.AbbrevHash)
+	assert.Equal(t, gittest.DefaultAuthorName, commit.AuthorName)
+	assert.Equal(t, gittest.DefaultAuthorEmail, commit.AuthorEmail)
+	assert.Equal(t, "this is a test", commit.Message)
 }
 
 func TestPorcelainStatus(t *testing.T) {
@@ -447,6 +449,22 @@ done;`
 	assert.ElementsMatch(t, []string{"branch1", "branch2", "branch3", gittest.DefaultBranch}, branches)
 }
 
+func TestBranchesOnInitializedRepository(t *testing.T) {
+	changeToTmpDir(t)
+
+	_, err := exec.Command("git", "init").CombinedOutput()
+	require.NoError(t, err)
+
+	branches := gittest.Branches(t)
+	assert.Empty(t, branches)
+}
+
+func changeToTmpDir(t *testing.T) {
+	t.Helper()
+	dir := t.TempDir()
+	require.NoError(t, os.Chdir(dir))
+}
+
 func TestRemoteBranches(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -460,10 +478,20 @@ git push origin --all`
 
 	branches := gittest.RemoteBranches(t)
 	assert.ElementsMatch(t, []string{
-		remote("branch1"),
-		remote("branch2"),
-		remote("branch3"),
-		gittest.DefaultRemoteBranch,
-		gittest.DefaultRemoteBranchAlias,
+		"branch1",
+		"branch2",
+		"branch3",
+		gittest.DefaultBranch,
+		"HEAD",
 	}, branches)
+}
+
+func TestRemoteBranchesOnInitializedRepository(t *testing.T) {
+	changeToTmpDir(t)
+
+	_, err := exec.Command("git", "init").CombinedOutput()
+	require.NoError(t, err)
+
+	branches := gittest.RemoteBranches(t)
+	assert.Empty(t, branches)
 }

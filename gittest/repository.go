@@ -103,6 +103,15 @@ type file struct {
 	Staged bool
 }
 
+// CommitDetails contains details about a specific git commit
+type CommitDetails struct {
+	Hash        string
+	AbbrevHash  string
+	AuthorName  string
+	AuthorEmail string
+	Message     string
+}
+
 // WithLog ensures the repository will be initialized to a known state.
 // The log can be used to create any number of tags and branches (both
 // local and remote) at different commits within the repositories history.
@@ -501,10 +510,16 @@ func exec(cmd string) (string, error) {
 // Tags returns a list of all local tags associated with the current
 // repository. Raw output is returned from the git command:
 //
-//	git for-each-ref refs/tags
-func Tags(t *testing.T) string {
+//	git for-each-ref refs/tags --format='%(refname:short)'
+func Tags(t *testing.T) []string {
 	t.Helper()
-	return MustExec(t, "git for-each-ref refs/tags")
+	tags := MustExec(t, "git for-each-ref refs/tags --format='%(refname:short)'")
+
+	if tags == "" {
+		return nil
+	}
+
+	return strings.Split(tags, "\n")
 }
 
 // RemoteTags returns a list of all tags that have been pushed to the
@@ -512,9 +527,18 @@ func Tags(t *testing.T) string {
 // the git command:
 //
 //	git ls-remote --tags
-func RemoteTags(t *testing.T) string {
+func RemoteTags(t *testing.T) []string {
 	t.Helper()
-	return MustExec(t, "git ls-remote --tags")
+	tagRefs := MustExec(t, "git ls-remote --tags")
+
+	tags := make([]string, 0)
+	for _, ref := range strings.Split(tagRefs, "\n") {
+		if _, tag, found := strings.Cut(ref, "refs/tags/"); found {
+			tags = append(tags, tag)
+		}
+	}
+
+	return tags
 }
 
 // StageFile will attempt to use the provided path to stage a file that
@@ -537,12 +561,39 @@ func Commit(t *testing.T, message string) {
 }
 
 // LastCommit returns the last commit from the git log of the current
-// repository. Raw output is returned from the git command:
+// repository. Raw output is parsed from the git command:
 //
 //	git log -n1
-func LastCommit(t *testing.T) string {
+func LastCommit(t *testing.T) CommitDetails {
 	t.Helper()
-	return MustExec(t, "git log -n1")
+
+	log := MustExec(t, "git log -n1")
+	parts := strings.Split(log, "\n")
+
+	// The structure of a git log is incredibly stable, so follows the format:
+	// commit <hash>
+	// Author: <name> <email>
+	// Date: <date>
+	// <blank>
+	// <tab><message>
+
+	hash := parts[0][7:47]
+	author := parts[1][8:]
+	authorName, authorEmail, _ := strings.Cut(author, " <")
+
+	// A commit message can span multiple lines, so hoover everything else up
+	var message strings.Builder
+	for _, line := range parts[4:] {
+		message.WriteString(strings.TrimSpace(line))
+	}
+
+	return CommitDetails{
+		Hash:        hash,
+		AbbrevHash:  hash[:7],
+		AuthorName:  authorName,
+		AuthorEmail: strings.TrimSuffix(authorEmail, ">"),
+		Message:     message.String(),
+	}
 }
 
 // PorcelainStatus returns a snapshot of the current status of a
@@ -641,6 +692,10 @@ func Branches(t *testing.T) []string {
 	t.Helper()
 	branches := MustExec(t, "git branch --list --format='%(refname:short)'")
 
+	if branches == "" {
+		return nil
+	}
+
 	return strings.Split(branches, "\n")
 }
 
@@ -649,7 +704,7 @@ func Branches(t *testing.T) []string {
 // prefixed with the default origin of the remote:
 //
 //	origin/main
-//	origin/branch1
+//	origin/branch
 //
 // Raw output is returned from this command:
 //
@@ -658,5 +713,14 @@ func RemoteBranches(t *testing.T) []string {
 	t.Helper()
 	branches := MustExec(t, "git branch --list --remotes --format='%(refname:short)'")
 
-	return strings.Split(branches, "\n")
+	if branches == "" {
+		return nil
+	}
+
+	cleanedBranches := make([]string, 0)
+	for _, branch := range strings.Split(branches, "\n") {
+		sep := strings.Index(branch, "/")
+		cleanedBranches = append(cleanedBranches, branch[sep+1:])
+	}
+	return cleanedBranches
 }

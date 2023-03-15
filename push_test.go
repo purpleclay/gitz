@@ -50,6 +50,6 @@ func TestPushTag(t *testing.T) {
 	_, err := client.PushTag("0.1.0")
 
 	require.NoError(t, err)
-	out := gittest.RemoteTags(t)
-	assert.Contains(t, out, refs("0.1.0"))
+	remoteTags := gittest.RemoteTags(t)
+	assert.ElementsMatch(t, []string{"0.1.0"}, remoteTags)
 }

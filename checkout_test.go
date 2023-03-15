@@ -44,7 +44,7 @@ write tests for branch checkout
 
 	// Inspect the raw git output
 	assert.Contains(t, out, "Switched to branch 'main'")
-	assert.Contains(t, gittest.LastCommit(t), "docs: update existing project README")
+	assert.Equal(t, gittest.LastCommit(t).Message, "docs: update existing project README")
 }
 
 func TestCheckoutCreatesBranch(t *testing.T) {
