@@ -32,11 +32,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Formats a tag into the expected refs/tags/<tag> format
-func refs(tag string) string {
-	return fmt.Sprintf("refs/tags/%s", tag)
-}
-
 func TestTag(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -45,11 +40,11 @@ func TestTag(t *testing.T) {
 
 	require.NoError(t, err)
 
-	out := gittest.Tags(t)
-	assert.Contains(t, out, refs("0.1.0"))
+	localTags := gittest.Tags(t)
+	assert.ElementsMatch(t, []string{"0.1.0"}, localTags)
 
-	out = gittest.RemoteTags(t)
-	assert.Contains(t, out, refs("0.1.0"))
+	remoteTags := gittest.RemoteTags(t)
+	assert.ElementsMatch(t, []string{"0.1.0"}, remoteTags)
 }
 
 func TestTagWithInvalidName(t *testing.T) {
@@ -115,11 +110,11 @@ func TestDeleteTag(t *testing.T) {
 
 	require.NoError(t, err)
 
-	out := gittest.Tags(t)
-	assert.NotContains(t, out, refs("0.1.0"))
+	localTags := gittest.Tags(t)
+	assert.Empty(t, localTags)
 
-	out = gittest.RemoteTags(t)
-	assert.NotContains(t, out, refs("0.1.0"))
+	remoteTags := gittest.RemoteTags(t)
+	assert.Empty(t, remoteTags)
 }
 
 func TestDeleteMissingLocalTag(t *testing.T) {

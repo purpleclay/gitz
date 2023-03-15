@@ -39,7 +39,7 @@ func TestPushCommit(t *testing.T) {
 
 	require.NoError(t, err)
 	remoteLog := gittest.LogRemote(t)
-	require.Contains(t, remoteLog, "testing git push")
+	require.Equal(t, "testing git push", remoteLog[0].Commit)
 }
 
 func TestPushTag(t *testing.T) {
@@ -50,6 +50,6 @@ func TestPushTag(t *testing.T) {
 	_, err := client.PushTag("0.1.0")
 
 	require.NoError(t, err)
-	out := gittest.RemoteTags(t)
-	assert.Contains(t, out, refs("0.1.0"))
+	remoteTags := gittest.RemoteTags(t)
+	assert.ElementsMatch(t, []string{"0.1.0"}, remoteTags)
 }

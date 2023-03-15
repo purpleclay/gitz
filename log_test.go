@@ -98,9 +98,9 @@ func TestLogValidateParsing(t *testing.T) {
 
 	assert.Equal(t, gittest.InitialCommit, out.Commits[0].Message)
 
-	longHash := latestCommitHash(t)
-	assert.Equal(t, longHash, out.Commits[0].Hash)
-	assert.Equal(t, longHash[:7], out.Commits[0].AbbrevHash)
+	lastCommit := gittest.LastCommit(t)
+	assert.Equal(t, lastCommit.Hash, out.Commits[0].Hash)
+	assert.Equal(t, lastCommit.AbbrevHash, out.Commits[0].AbbrevHash)
 }
 
 func TestLogError(t *testing.T) {
@@ -124,20 +124,6 @@ func nonWorkingDirectory(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
 	})
-}
-
-// A utility function that is a wrapper around [gittest.LastCommit]
-// and parses the hash from the output. This will be a hash in its
-// long format
-func latestCommitHash(t *testing.T) string {
-	t.Helper()
-
-	// e.g. commit e22a94c1cac6c4da71cd766530a0950edfc58e56 (HEAD -> main, origin/main)
-	commit := gittest.LastCommit(t)
-	commit = strings.TrimPrefix(commit, "commit ")
-
-	// A git hash is always 40 characters in length
-	return commit[:40]
 }
 
 func TestLogWithRawOnly(t *testing.T) {

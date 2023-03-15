@@ -39,9 +39,10 @@ func TestCommit(t *testing.T) {
 
 	require.NoError(t, err)
 
-	out := gittest.LastCommit(t)
-	assert.Contains(t, out, gittest.DefaultAuthorLog)
-	assert.Contains(t, out, "this is an example commit message")
+	lastCommit := gittest.LastCommit(t)
+	assert.Equal(t, lastCommit.AuthorName, gittest.DefaultAuthorName)
+	assert.Equal(t, lastCommit.AuthorEmail, gittest.DefaultAuthorEmail)
+	assert.Equal(t, lastCommit.Message, "this is an example commit message")
 }
 
 func TestCommitCleanWorkingTreeError(t *testing.T) {

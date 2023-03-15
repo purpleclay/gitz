@@ -35,15 +35,13 @@ func TestPull(t *testing.T) {
 	log := "(tag: 0.1.0, main, origin/main) feat: a new exciting feature"
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 
-	lastCommit := gittest.LastCommit(t)
-	require.NotContains(t, lastCommit, "feat: a new exciting feature")
+	require.NotEqual(t, gittest.LastCommit(t).Message, "feat: a new exciting feature")
 
 	client, _ := git.NewClient()
 	_, err := client.Pull()
 	require.NoError(t, err)
 
-	lastCommit = gittest.LastCommit(t)
-	assert.Contains(t, lastCommit, "feat: a new exciting feature")
+	assert.Equal(t, gittest.LastCommit(t).Message, "feat: a new exciting feature")
 	tags := gittest.Tags(t)
-	assert.Contains(t, tags, "0.1.0")
+	assert.ElementsMatch(t, []string{"0.1.0"}, tags)
 }

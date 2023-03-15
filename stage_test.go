@@ -23,8 +23,6 @@ SOFTWARE.
 package git_test
 
 import (
-	"bufio"
-	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -41,29 +39,11 @@ func TestStage(t *testing.T) {
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
-
-	statusLines := parsePorcelainStatus(t, status)
-	require.Len(t, statusLines, 3)
-
-	assert.ElementsMatch(t, statusLines, []string{
+	assert.ElementsMatch(t, []string{
 		"A  file.txt",
 		"A  dir1/file.txt",
 		"A  dir2/file.txt",
-	})
-}
-
-func parsePorcelainStatus(t *testing.T, status string) []string {
-	t.Helper()
-
-	scanner := bufio.NewScanner(strings.NewReader(status))
-	scanner.Split(bufio.ScanLines)
-
-	lines := []string{}
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	return lines
+	}, status)
 }
 
 func TestStageWithPathSpecs(t *testing.T) {
@@ -80,16 +60,12 @@ func TestStageWithPathSpecs(t *testing.T) {
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
-
-	statusLines := parsePorcelainStatus(t, status)
-	require.Len(t, statusLines, 4)
-
-	assert.ElementsMatch(t, statusLines, []string{
+	assert.ElementsMatch(t, []string{
 		"A  file.txt",
 		"?? dir1/file.txt",
 		"A  dir1/file.gif",
 		"?? dir2/",
-	})
+	}, status)
 }
 
 func TestStageWithPathSpecsIgnoresEmptyPathSpecs(t *testing.T) {
@@ -100,9 +76,5 @@ func TestStageWithPathSpecsIgnoresEmptyPathSpecs(t *testing.T) {
 
 	require.NoError(t, err)
 	status := gittest.PorcelainStatus(t)
-
-	statusLines := parsePorcelainStatus(t, status)
-	require.Len(t, statusLines, 2)
-
-	assert.ElementsMatch(t, statusLines, []string{"?? file1.txt", "A  file2.txt"})
+	assert.ElementsMatch(t, []string{"?? file1.txt", "A  file2.txt"}, status)
 }

@@ -75,7 +75,7 @@ func TestRepositoryDetectsShallowClone(t *testing.T) {
 func TestRepositoryDetectsDetachedHead(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithLocalCommits("chore: checking this out will force a detached head"))
 
-	hash := latestCommitHash(t)
+	hash := gittest.LastCommit(t).Hash
 	gittest.Checkout(t, hash)
 
 	client, _ := git.NewClient()

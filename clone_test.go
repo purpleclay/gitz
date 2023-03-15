@@ -48,6 +48,5 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
-	lastCommit := gittest.LastCommit(t)
-	assert.Contains(t, lastCommit, "chore: testing if a git clone works")
+	assert.Equal(t, gittest.LastCommit(t).Message, "chore: testing if a git clone works")
 }
