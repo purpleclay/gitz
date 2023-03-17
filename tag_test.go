@@ -164,7 +164,7 @@ func TestTagsWithSortBy(t *testing.T) {
 	log := `(tag: 0.11.0) feat: add support for tag sorting and filtering
 (tag: 0.10.0) feat: add support for inspecting a repository
 (tag: 0.9.1) fix: grep pattern not working as expected
-(tag: 0.9.0) feat: add suport for log filtering`
+(tag: 0.9.0) feat: add support for log filtering`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
 	client, _ := git.NewClient()
