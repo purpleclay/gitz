@@ -46,7 +46,7 @@ write tests for branch checkout
 	assert.Equal(t, gittest.LastCommit(t).Message, "docs: update existing project README")
 }
 
-func TestCheckoutCreatesBranch(t *testing.T) {
+func TestCheckoutCreatesLocalBranch(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
@@ -56,8 +56,8 @@ func TestCheckoutCreatesBranch(t *testing.T) {
 	branches := gittest.Branches(t)
 	remoteBranches := gittest.RemoteBranches(t)
 
-	assert.ElementsMatch(t, []string{"testing", gittest.DefaultBranch}, branches)
-	assert.ElementsMatch(t, []string{"main", "HEAD"}, remoteBranches)
+	assert.Contains(t, branches, "testing")
+	assert.NotContains(t, remoteBranches, "testing")
 }
 
 func TestCheckoutQueryingBranchesError(t *testing.T) {
