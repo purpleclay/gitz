@@ -27,12 +27,54 @@ import (
 	"strings"
 )
 
-// TagOption provides a way for setting specific options during a tag operation.
-// Each supported option can customize the way the tag is applied against
-// the current repository (working directory)
-type TagOption func(*tagOptions)
+// SortKey represents a structured [field name] that can be used as a sort key
+// when analysing referenced objects such as tags
+//
+// [field name]: https://git-scm.com/docs/git-for-each-ref#_field_names
+type SortKey string
 
-type tagOptions struct {
+const (
+	// CreatorDate sorts the reference in ascending order by the creation date
+	// of the underlying commit
+	CreatorDate SortKey = "creatordate"
+
+	// CreatorDateDesc sorts the reference in descending order by the creation date
+	// of the underlying commit
+	CreatorDateDesc SortKey = "-creatordate"
+
+	// RefName sorts the reference by its name in ascending lexicographic order
+	RefName SortKey = "refname"
+
+	// RefNameDesc sorts the reference by its name in descending lexicographic order
+	RefNameDesc SortKey = "-refname"
+
+	// TaggerDate sorts the reference in ascending order by its tag creation date
+	TaggerDate SortKey = "taggerdate"
+
+	// TaggerDateDesc sorts the reference in descending order by its tag
+	// creation date
+	TaggerDateDesc SortKey = "-taggerdate"
+
+	// Version interpolates the references as a version number and sorts in
+	// ascending order
+	Version SortKey = "version:refname"
+
+	// VersionDesc interpolates the references as a version number and sorts in
+	// descending order
+	VersionDesc SortKey = "-version:refname"
+)
+
+// String converts the sort key from an enum into its string counterpart
+func (k SortKey) String() string {
+	return string(k)
+}
+
+// CreateTagOption provides a way for setting specific options during a tag
+// creation operation. Each supported option can customize the way the tag is
+// created against the current repository (working directory)
+type CreateTagOption func(*createTagOptions)
+
+type createTagOptions struct {
 	Annotation string
 }
 
@@ -41,8 +83,8 @@ type tagOptions struct {
 // an annotated tag which is stored as a full object within the git
 // database. Any leading and trailing whitespace will automatically be
 // trimmed from the message. This allows empty messages to be ignored
-func WithAnnotation(message string) TagOption {
-	return func(opts *tagOptions) {
+func WithAnnotation(message string) CreateTagOption {
+	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
 	}
 }
@@ -56,8 +98,8 @@ func WithAnnotation(message string) TagOption {
 //
 // By default, a lightweight tag will be created, unless specific tag
 // options are provided
-func (c *Client) Tag(tag string, opts ...TagOption) (string, error) {
-	options := &tagOptions{}
+func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
+	options := &createTagOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -85,4 +127,74 @@ func (c *Client) DeleteTag(tag string) (string, error) {
 	}
 
 	return exec(fmt.Sprintf("git push --delete origin '%s'", tag))
+}
+
+// ListTagsOption provides a way for setting specific options during a list
+// tags operation. Each supported option can customize the way in which the
+// tags are queried and returned from the current repository (workng directory)
+type ListTagsOption func(*listTagsOptions)
+
+type listTagsOptions struct {
+	ShellGlobs []string
+	SortBy     []string
+}
+
+// WithShellGlob limits the number of tags that will be retrieved, by only
+// returning tags that match a given [Shell Glob] pattern. If multiple
+// patterns are provided, tags will be retrieved if they match against
+// a single pattern. All leading and trailing whitespace will be trimmed,
+// allowing empty patterns to be ignored
+//
+// [Shell Glob]: https://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm
+func WithShellGlob(patterns ...string) ListTagsOption {
+	return func(opts *listTagsOptions) {
+		opts.ShellGlobs = TrimAndPrefix("refs/tags/", patterns...)
+	}
+}
+
+// WithSortBy allows the retrieved order of tags to be changed by sorting
+// against a reserved [field name]. By default, sorting will always be in
+// ascending order. To change this behaviour, prefix a field name with a
+// hyphen (-<fieldname>). You can sort tags against multiple fields, but
+// this does change the expected behavior. The last field name is treated
+// as the primary key for the entire sort. All leading and trailing whitespace
+// will be trimmed, allowing empty field names to be ignored
+//
+// [field name]: https://git-scm.com/docs/git-for-each-ref#_field_names
+func WithSortBy(keys ...SortKey) ListTagsOption {
+	return func(opts *listTagsOptions) {
+		converted := make([]string, len(keys))
+		for _, key := range keys {
+			converted = append(converted, key.String())
+		}
+
+		opts.SortBy = TrimAndPrefix("--sort=", converted...)
+	}
+}
+
+// Tags retrieves all local tags from the current repository (working directory).
+// By default all tags are retrieved in ascending lexicographic order as implied
+// through the [RefName] sort key. Options can be provided to customize retrieval
+func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
+	options := &listTagsOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	if len(options.ShellGlobs) == 0 {
+		options.ShellGlobs = append(options.ShellGlobs, "refs/tags/*")
+	}
+
+	tags, err := exec(fmt.Sprintf("git for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
+		strings.Join(options.SortBy, " "),
+		strings.Join(options.ShellGlobs, " ")))
+	if err != nil {
+		return nil, err
+	}
+
+	if tags == "" {
+		return nil, nil
+	}
+
+	return strings.Split(tags, "\n"), nil
 }

@@ -92,14 +92,7 @@ func WithRefRange(fromRef string, toRef string) LogOption {
 // trimmed from the file paths, allowing empty paths to be ignored
 func WithPaths(paths ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.LogPaths = make([]string, 0)
-
-		for _, path := range paths {
-			cleaned := strings.TrimSpace(path)
-			if cleaned != "" {
-				opts.LogPaths = append(opts.LogPaths, cleaned)
-			}
-		}
+		opts.LogPaths = Trim(paths...)
 	}
 }
 
@@ -140,14 +133,7 @@ func WithTake(n int) LogOption {
 // will be trimmed, allowing empty matches to be ignored
 func WithGrep(matches ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.Matches = make([]string, 0)
-
-		for _, match := range matches {
-			cleaned := strings.TrimSpace(match)
-			if cleaned != "" {
-				opts.Matches = append(opts.Matches, cleaned)
-			}
-		}
+		opts.Matches = Trim(matches...)
 	}
 }
 

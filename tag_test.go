@@ -125,3 +125,64 @@ func TestDeleteMissingLocalTag(t *testing.T) {
 
 	assert.ErrorContains(t, err, "tag '0.1.0' not found")
 }
+
+func TestTags(t *testing.T) {
+	log := `(tag: 0.2.0, tag: v1) feat: add support for tag sorting and filtering
+(tag: 0.1.0) feat: add support for basic cloning`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags()
+
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0", "v1"}, tags)
+}
+
+func TestTagsEmpty(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags()
+
+	require.NoError(t, err)
+	assert.Empty(t, tags)
+}
+
+func TestTagsWithShellGlob(t *testing.T) {
+	log := `(tag: 0.2.0, tag: v1) feat: add support for tag sorting and filtering
+(tag: 0.1.0) feat: add support for basic cloning`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags(git.WithShellGlob("*.*.*"))
+
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0"}, tags)
+}
+
+func TestTagsWithSortBy(t *testing.T) {
+	log := `(tag: 0.11.0) feat: add support for tag sorting and filtering
+(tag: 0.10.0) feat: add support for inspecting a repository
+(tag: 0.9.1) fix: grep pattern not working as expected
+(tag: 0.9.0) feat: add suport for log filtering`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags(git.WithSortBy(git.CreatorDateDesc, git.VersionDesc))
+
+	require.NoError(t, err)
+	require.Len(t, tags, 4)
+	assert.Equal(t, "0.11.0", tags[0])
+	assert.Equal(t, "0.10.0", tags[1])
+	assert.Equal(t, "0.9.1", tags[2])
+	assert.Equal(t, "0.9.0", tags[3])
+}
+
+func TestTagsQueryingTagsError(t *testing.T) {
+	nonWorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Tags()
+
+	require.Error(t, err)
+}
