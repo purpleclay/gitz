@@ -470,6 +470,16 @@ func changeToTmpDir(t *testing.T) {
 func TestRemoteBranches(t *testing.T) {
 	gittest.InitRepository(t)
 
+	/*
+			origin/HEAD -> origin/main
+			origin/main
+			origin/HEAD -> origin/main
+		origin/branch1
+		 origin/branch2
+			  origin/branch3
+			  origin/main
+	*/
+
 	fmt.Println(gittest.MustExec(t, "git branch --list --remotes"))
 
 	script := `
