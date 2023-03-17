@@ -31,11 +31,11 @@ on:
       - "go.mod"
       - "go.sum"
   pull_request:
-    # paths:
-    #   - "**/*.go"
-    #   - "*.go"
-    #   - "go.mod"
-    #   - "go.sum"
+    paths:
+      - "**/*.go"
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
 
 permissions:
   contents: read
@@ -66,11 +66,11 @@ jobs:
   lint:
     uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
     with:
-      version: v1.51.2
+      version: ${{ vars.GOLANGCI_LINT_VERSION }}
       go-version: ${{ vars.GO_VERSION }}
 
   static-analysis:
-    uses: purpleclay/github/.github/workflows/sonarcloud.yml@improve-sonarcloud-workflow
+    uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
