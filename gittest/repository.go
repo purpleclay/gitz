@@ -724,8 +724,6 @@ func RemoteBranches(t *testing.T) []string {
 		return nil
 	}
 
-	fmt.Println(branches)
-
 	cleanedBranches := make([]string, 0)
 	for _, branch := range strings.Split(branches, "\n") {
 		sep := strings.Index(branch, "/")

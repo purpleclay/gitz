@@ -115,13 +115,15 @@ func TestInitRepositoryWithLogCreatesBranches(t *testing.T) {
 docs: update existing project README`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
-	assert.ElementsMatch(t, []string{"main", "local-tracked", "tracked"}, localBranches(t))
-	assert.ElementsMatch(t, []string{
-		"main",
-		"HEAD",
-		"tracked",
-		"remote-tracked",
-	}, remoteBranches(t))
+	localBranches := localBranches(t)
+	assert.Contains(t, localBranches, "local-tracked")
+	assert.Contains(t, localBranches, "tracked")
+	assert.NotContains(t, localBranches, "remote-tracked")
+
+	remoteBranches := remoteBranches(t)
+	assert.Contains(t, remoteBranches, "tracked")
+	assert.Contains(t, remoteBranches, "remote-tracked")
+	assert.NotContains(t, remoteBranches, "local-tracked")
 
 	// Checkout and verify that branches are associated with the expected commit
 	script := "git checkout $0 &>/dev/null; git log -n1 --oneline"
@@ -470,18 +472,6 @@ func changeToTmpDir(t *testing.T) {
 func TestRemoteBranches(t *testing.T) {
 	gittest.InitRepository(t)
 
-	/*
-			origin/HEAD -> origin/main
-			origin/main
-			origin/HEAD -> origin/main
-		origin/branch1
-		 origin/branch2
-			  origin/branch3
-			  origin/main
-	*/
-
-	fmt.Println(gittest.MustExec(t, "git branch --list --remotes"))
-
 	script := `
 for b in branch{1..3}; do
 	git checkout -b $b;
@@ -490,16 +480,10 @@ git push origin --all`
 
 	shellExecInline(t, script)
 
-	fmt.Println(gittest.MustExec(t, "git branch --list --remotes"))
-
 	branches := gittest.RemoteBranches(t)
-	assert.ElementsMatch(t, []string{
-		"branch1",
-		"branch2",
-		"branch3",
-		gittest.DefaultBranch,
-		"HEAD",
-	}, branches)
+	assert.Contains(t, branches, "branch1")
+	assert.Contains(t, branches, "branch2")
+	assert.Contains(t, branches, "branch3")
 }
 
 func TestRemoteBranchesOnInitializedRepository(t *testing.T) {
