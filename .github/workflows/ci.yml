@@ -21,6 +21,8 @@
 name: ci
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
       - main
     paths:
@@ -50,6 +52,7 @@ jobs:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
   test-by-os:
+    if: "!startsWith(github.ref, 'refs/tags/')"
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -63,7 +66,7 @@ jobs:
   lint:
     uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
     with:
-      version: v1.51.2
+      version: ${{ vars.GOLANGCI_LINT_VERSION }}
       go-version: ${{ vars.GO_VERSION }}
 
   static-analysis:
