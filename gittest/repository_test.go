@@ -110,7 +110,7 @@ func remoteTags(t *testing.T) []string {
 func TestInitRepositoryWithLogCreatesBranches(t *testing.T) {
 	log := `(main) chore: add example code snippets
 (local-tracked) feat: support branch creation within log
-(tracked, origin/tracked) docs: document fix 
+(tracked, origin/tracked) docs: document fix
 (origin/remote-tracked) fix: parsing of multiple tags within log
 docs: update existing project README`
 	gittest.InitRepository(t, gittest.WithLog(log))
@@ -470,6 +470,8 @@ func changeToTmpDir(t *testing.T) {
 func TestRemoteBranches(t *testing.T) {
 	gittest.InitRepository(t)
 
+	fmt.Println(gittest.MustExec(t, "git branch --list --remotes"))
+
 	script := `
 for b in branch{1..3}; do
 	git checkout -b $b;
@@ -477,6 +479,8 @@ done;
 git push origin --all`
 
 	shellExecInline(t, script)
+
+	fmt.Println(gittest.MustExec(t, "git branch --list --remotes"))
 
 	branches := gittest.RemoteBranches(t)
 	assert.ElementsMatch(t, []string{
