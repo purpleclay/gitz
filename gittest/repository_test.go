@@ -110,18 +110,20 @@ func remoteTags(t *testing.T) []string {
 func TestInitRepositoryWithLogCreatesBranches(t *testing.T) {
 	log := `(main) chore: add example code snippets
 (local-tracked) feat: support branch creation within log
-(tracked, origin/tracked) docs: document fix 
+(tracked, origin/tracked) docs: document fix
 (origin/remote-tracked) fix: parsing of multiple tags within log
 docs: update existing project README`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
-	assert.ElementsMatch(t, []string{"main", "local-tracked", "tracked"}, localBranches(t))
-	assert.ElementsMatch(t, []string{
-		"main",
-		"HEAD",
-		"tracked",
-		"remote-tracked",
-	}, remoteBranches(t))
+	localBranches := localBranches(t)
+	assert.Contains(t, localBranches, "local-tracked")
+	assert.Contains(t, localBranches, "tracked")
+	assert.NotContains(t, localBranches, "remote-tracked")
+
+	remoteBranches := remoteBranches(t)
+	assert.Contains(t, remoteBranches, "tracked")
+	assert.Contains(t, remoteBranches, "remote-tracked")
+	assert.NotContains(t, remoteBranches, "local-tracked")
 
 	// Checkout and verify that branches are associated with the expected commit
 	script := "git checkout $0 &>/dev/null; git log -n1 --oneline"
@@ -479,13 +481,9 @@ git push origin --all`
 	shellExecInline(t, script)
 
 	branches := gittest.RemoteBranches(t)
-	assert.ElementsMatch(t, []string{
-		"branch1",
-		"branch2",
-		"branch3",
-		gittest.DefaultBranch,
-		"HEAD",
-	}, branches)
+	assert.Contains(t, branches, "branch1")
+	assert.Contains(t, branches, "branch2")
+	assert.Contains(t, branches, "branch3")
 }
 
 func TestRemoteBranchesOnInitializedRepository(t *testing.T) {

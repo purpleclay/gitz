@@ -42,14 +42,7 @@ type stageOptions struct {
 // [PathSpecs]: https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
 func WithPathSpecs(specs ...string) StageOption {
 	return func(opts *stageOptions) {
-		opts.PathSpecs = make([]string, 0)
-
-		for _, spec := range specs {
-			cleaned := strings.TrimSpace(spec)
-			if cleaned != "" {
-				opts.PathSpecs = append(opts.PathSpecs, cleaned)
-			}
-		}
+		opts.PathSpecs = Trim(specs...)
 	}
 }
 
