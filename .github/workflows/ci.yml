@@ -21,6 +21,8 @@
 name: ci
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
       - main
     paths:
@@ -29,11 +31,11 @@ on:
       - "go.mod"
       - "go.sum"
   pull_request:
-    paths:
-      - "**/*.go"
-      - "*.go"
-      - "go.mod"
-      - "go.sum"
+    # paths:
+    #   - "**/*.go"
+    #   - "*.go"
+    #   - "go.mod"
+    #   - "go.sum"
 
 permissions:
   contents: read
@@ -49,7 +51,9 @@ jobs:
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  # TODO: test-by-os should be skipped if this is a tag build
   test-by-os:
+    if: "!startsWith(github.ref, 'refs/tags/')"
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -67,7 +71,7 @@ jobs:
       go-version: ${{ vars.GO_VERSION }}
 
   static-analysis:
-    uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
+    uses: purpleclay/github/.github/workflows/sonarcloud.yml@improve-sonarcloud-workflow
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
