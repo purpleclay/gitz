@@ -22,11 +22,68 @@ SOFTWARE.
 
 package git
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+// PushOption ...
+type PushOption func(*pushOptions)
+
+type pushOptions struct {
+	All      bool
+	Tags     bool
+	RefSpecs []string
+}
+
+// WithAllBranches ...
+func WithAllBranches() PushOption {
+	return func(opts *pushOptions) {
+		opts.All = true
+	}
+}
+
+// WithAllTags ...
+func WithAllTags() PushOption {
+	return func(opts *pushOptions) {
+		opts.Tags = true
+	}
+}
+
+// WithRefSpecs ...
+func WithRefSpecs(refs ...string) PushOption {
+	return func(opts *pushOptions) {
+		opts.RefSpecs = Trim(refs...)
+	}
+}
 
 // Push (or upload) all local changes to the remote repository
-func (c *Client) Push() (string, error) {
-	return exec("git push origin main")
+func (c *Client) Push(opts ...PushOption) (string, error) {
+	options := &pushOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	var buffer strings.Builder
+	buffer.WriteString("git push")
+
+	if options.All {
+		buffer.WriteString(" --all")
+	} else if options.Tags {
+		buffer.WriteString(" --tags")
+	} else if len(options.RefSpecs) > 0 {
+		buffer.WriteString(" origin ")
+		buffer.WriteString(strings.Join(options.RefSpecs, " "))
+	} else {
+		out, err := exec("git branch --show-current")
+		if err != nil {
+			return out, err
+		}
+
+		buffer.WriteString(fmt.Sprintf(" origin '%s'", out))
+	}
+
+	return exec(buffer.String())
 }
 
 // PushTag will push an individual tag reference to the remote repository
