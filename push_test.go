@@ -32,6 +32,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// type Cmd func() string -> this is the git command that will be executed
+// everything is streamed to the same buffer
+//
+
+type Cmd = func(string) (string, error)
+
+func e(string) (string, error) {
+	return "", nil
+}
+
+func a(cmds ...Cmd) (string, error) {
+	return "", nil
+}
+
 func TestPush(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithLocalCommits("testing git push"))
 
