@@ -94,15 +94,13 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 			return out, err
 		}
 
-		buffer.WriteString(fmt.Sprintf(" origin '%s'", out))
+		buffer.WriteString(fmt.Sprintf(" origin %s", out))
 	}
 
 	return exec(buffer.String())
 }
 
-// TODO: PushRef refs ...string strings.Join and push
-
-// PushTag will push an individual tag reference to the remote repository
-func (c *Client) PushTag(tag string) (string, error) {
-	return exec(fmt.Sprintf("git push origin '%s'", tag))
+// PushRef will push an individual reference to the remote repository
+func (c *Client) PushRef(ref string) (string, error) {
+	return exec(fmt.Sprintf("git push origin %s", ref))
 }

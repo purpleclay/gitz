@@ -115,22 +115,6 @@ func (c *Client) Repository() (Repository, error) {
 	}, nil
 }
 
-// type Cmd func() Msg
-// type Msg interface{}
-// type BatchMsg []Cmd
-// func Batch(cmds ...Cmd) Cmd {}
-
-// type Cmd func(string) (string, error)
-// git.Cmd
-
-// Exec()
-// ExecBatch()
-
-// type Cmd func() (string, error)
-// func Batch(cmds ...Cmd) Cmd {} // write to the same buffer
-
-// exec(cmd Cmd) (string, error)
-
 func exec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 

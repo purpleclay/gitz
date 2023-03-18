@@ -32,20 +32,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// type Cmd func() string -> this is the git command that will be executed
-// everything is streamed to the same buffer
-//
-
-type Cmd = func(string) (string, error)
-
-func e(string) (string, error) {
-	return "", nil
-}
-
-func a(cmds ...Cmd) (string, error) {
-	return "", nil
-}
-
 func TestPush(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithLocalCommits("testing git push"))
 
@@ -118,12 +104,12 @@ func TestPushWithRefSpecs(t *testing.T) {
 	assert.NotContains(t, out, fmt.Sprintf("%[1]s -> %[1]s", "local-branch-4"))
 }
 
-func TestPushTag(t *testing.T) {
+func TestPushRef(t *testing.T) {
 	gittest.InitRepository(t)
 	gittest.TagLocal(t, "0.1.0")
 
 	client, _ := git.NewClient()
-	_, err := client.PushTag("0.1.0")
+	_, err := client.PushRef("0.1.0")
 
 	require.NoError(t, err)
 	remoteTags := gittest.RemoteTags(t)
