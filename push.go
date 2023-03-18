@@ -22,14 +22,85 @@ SOFTWARE.
 
 package git
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// Push (or upload) all local changes to the remote repository
-func (c *Client) Push() (string, error) {
-	return exec("git push origin main")
+// PushOption provides a way of setting specific options during a git
+// push operation. Each supported option can customize the way in which
+// references are pushed back to the remote
+type PushOption func(*pushOptions)
+
+type pushOptions struct {
+	All      bool
+	Tags     bool
+	RefSpecs []string
 }
 
-// PushTag will push an individual tag reference to the remote repository
-func (c *Client) PushTag(tag string) (string, error) {
-	return exec(fmt.Sprintf("git push origin '%s'", tag))
+// WithAllBranches will push all localled created branche references
+// back to the remote
+func WithAllBranches() PushOption {
+	return func(opts *pushOptions) {
+		opts.All = true
+	}
+}
+
+// WithAllTags will push all locally created tag references back
+// to the remote
+func WithAllTags() PushOption {
+	return func(opts *pushOptions) {
+		opts.Tags = true
+	}
+}
+
+// WithRefSpecs allows locally created references to be cherry-picked
+// and pushed back to the remote. A reference (or refspec) can be as
+// simple as a name, where git will automatically resolve any
+// ambiguity, or as explicit as providing a source and destination
+// for each local reference within the remote. Check out the official
+// git documentation on how to write a more complex refspec
+//
+// [refspec]: https://git-scm.com/docs/git-push#Documentation/git-push.txt-ltrefspecgt82308203
+func WithRefSpecs(refs ...string) PushOption {
+	return func(opts *pushOptions) {
+		opts.RefSpecs = Trim(refs...)
+	}
+}
+
+// Push (or upload) all local changes to the remote repository.
+// By default, changes associated with the current branch will
+// be pushed back to the remote. Options can be provided to
+// configure branch and tag push semantics
+func (c *Client) Push(opts ...PushOption) (string, error) {
+	options := &pushOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	var buffer strings.Builder
+	buffer.WriteString("git push")
+
+	if options.All {
+		buffer.WriteString(" --all")
+	} else if options.Tags {
+		buffer.WriteString(" --tags")
+	} else if len(options.RefSpecs) > 0 {
+		buffer.WriteString(" origin ")
+		buffer.WriteString(strings.Join(options.RefSpecs, " "))
+	} else {
+		out, err := exec("git branch --show-current")
+		if err != nil {
+			return out, err
+		}
+
+		buffer.WriteString(fmt.Sprintf(" origin %s", out))
+	}
+
+	return exec(buffer.String())
+}
+
+// PushRef will push an individual reference to the remote repository
+func (c *Client) PushRef(ref string) (string, error) {
+	return exec(fmt.Sprintf("git push origin %s", ref))
 }

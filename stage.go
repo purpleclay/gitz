@@ -47,7 +47,9 @@ func WithPathSpecs(specs ...string) StageOption {
 }
 
 // Stage changes to any file or folder within the current repository
-// (working directory) ready for inclusion in the next commit
+// (working directory) ready for inclusion in the next commit. Options
+// can be provided to further configure stage semantics. By default,
+// all changes will be staged ready for the next commit.
 func (c *Client) Stage(opts ...StageOption) (string, error) {
 	options := &stageOptions{}
 	for _, opt := range opts {
