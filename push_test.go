@@ -45,6 +45,15 @@ func TestPush(t *testing.T) {
 	require.Equal(t, "testing git push", remoteLog[0].Commit)
 }
 
+func TestPushResolveBranchError(t *testing.T) {
+	nonWorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Push()
+
+	assert.Error(t, err)
+}
+
 func TestPushAwareOfCurrentBranch(t *testing.T) {
 	log := "(HEAD -> branch-aware, main, origin/main) chore: finished scaffolding project"
 	gittest.InitRepository(t,
