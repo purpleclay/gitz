@@ -22,11 +22,81 @@ SOFTWARE.
 
 package git
 
-import "fmt"
+import (
+	"strconv"
+	"strings"
+)
+
+// CloneOption ...
+type CloneOption func(*cloneOptions)
+
+type cloneOptions struct {
+	Branch string
+	Depth  int
+	Dir    string
+	NoTags bool
+}
+
+// WithBranch ...
+func WithBranch(branch string) CloneOption {
+	return func(opts *cloneOptions) {
+		opts.Branch = strings.TrimSpace(branch)
+	}
+}
+
+// WithDepth ...
+func WithDepth(depth int) CloneOption {
+	return func(opts *cloneOptions) {
+		opts.Depth = depth
+	}
+}
+
+// WithDirectory ...
+func WithDirectory(dir string) CloneOption {
+	return func(opts *cloneOptions) {
+		opts.Dir = strings.TrimSpace(dir)
+	}
+}
+
+// WithNoTags ...
+func WithNoTags() CloneOption {
+	return func(opts *cloneOptions) {
+		opts.NoTags = true
+	}
+}
 
 // Clone a repository by its provided URL into a newly created directory.
 // Remote tracking branches are created for each branch within the repository
 // with only the default branch being checked out fully
-func (c *Client) Clone(url string) (string, error) {
-	return exec(fmt.Sprintf("git clone %s", url))
+func (c *Client) Clone(url string, opts ...CloneOption) (string, error) {
+	options := &cloneOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	var buffer strings.Builder
+	buffer.WriteString("git clone")
+	if options.NoTags {
+		buffer.WriteString(" --no-tags")
+	}
+
+	if options.Branch != "" {
+		buffer.WriteString(" --branch ")
+		buffer.WriteString(options.Branch)
+	}
+
+	if options.Depth > 0 {
+		buffer.WriteString(" --depth ")
+		buffer.WriteString(strconv.Itoa(options.Depth))
+	}
+
+	buffer.WriteString(" -- ")
+	buffer.WriteString(url)
+
+	if options.Dir != "" {
+		buffer.WriteRune(' ')
+		buffer.WriteString(options.Dir)
+	}
+
+	return exec(buffer.String())
 }
