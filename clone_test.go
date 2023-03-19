@@ -92,9 +92,29 @@ chore: testing clone depth line 1`
 	assert.Equal(t, "chore: testing clone depth line 2", localLog[0].Message)
 }
 
-// TODO: clone depth less than 1 is ignored to prevent error
+func TestCloneWithDepthLessThanOne(t *testing.T) {
+	log := `(main, origin/main) chore: testing clone depth line 2
+chore: testing clone depth line 1`
+	gittest.InitRepository(t, gittest.WithLog(log))
 
-func TestCloneWithBranch(t *testing.T) {
+	// Grab the remote for cloning later
+	remote := gittest.Remote(t)
+
+	// Clone the existing repository into a new temporary directory
+	dir := t.TempDir()
+	require.NoError(t, os.Chdir(dir))
+
+	client, _ := git.NewClient()
+	_, err := client.Clone(remote, git.WithDepth(0))
+
+	require.NoError(t, err)
+	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
+
+	localLog := gittest.Log(t)
+	assert.Len(t, localLog, 3)
+}
+
+func TestCloneWithBranchRef(t *testing.T) {
 	log := "(main, origin/main, origin/branch-cloning) chore: test branch is cloned"
 	gittest.InitRepository(t, gittest.WithLog(log))
 
@@ -106,14 +126,52 @@ func TestCloneWithBranch(t *testing.T) {
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote, git.WithBranch("branch-cloning"))
+	_, err := client.Clone(remote, git.WithBranchRef("branch-cloning"))
 
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
 	assert.Equal(t, "branch-cloning", gittest.ShowBranch(t))
 }
 
-// TODO: empty branch is ignored
+func TestCloneWithBranchRefUsingTag(t *testing.T) {
+	log := `(main, origin/main) chore: shouldn't see this commit
+(tag: clone-tag) chore: test this tag is cloned`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	// Grab the remote for cloning later
+	remote := gittest.Remote(t)
+
+	// Clone the existing repository into a new temporary directory
+	dir := t.TempDir()
+	require.NoError(t, os.Chdir(dir))
+
+	client, _ := git.NewClient()
+	_, err := client.Clone(remote, git.WithBranchRef("clone-tag"))
+
+	require.NoError(t, err)
+	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
+	assert.Equal(t, "chore: test this tag is cloned", gittest.LastCommit(t).Message)
+}
+
+func TestCloneWithBranchRefEmptyString(t *testing.T) {
+	log := `(main, origin/main) chore: shouldn't see this commit
+(tag: clone-tag) chore: test this tag is cloned`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	// Grab the remote for cloning later
+	remote := gittest.Remote(t)
+
+	// Clone the existing repository into a new temporary directory
+	dir := t.TempDir()
+	require.NoError(t, os.Chdir(dir))
+
+	client, _ := git.NewClient()
+	_, err := client.Clone(remote, git.WithBranchRef("   "))
+
+	require.NoError(t, err)
+	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
+	assert.Equal(t, "chore: shouldn't see this commit", gittest.LastCommit(t).Message)
+}
 
 func TestCloneWithNoTags(t *testing.T) {
 	log := "(main, origin/main) chore: test no tags are cloned"
