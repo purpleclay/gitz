@@ -113,14 +113,16 @@ func TestParseLogMalformedLine(t *testing.T) {
 			name: "NoClosingParentheses",
 			log:  "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
 			expected: gittest.LogEntry{
-				Commit: "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
+				Commit:  "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
+				Message: "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
 			},
 		},
 		{
 			name: "NoOpeningParentheses",
 			log:  "HEAD -> main, main) ci: updated existing github workflow",
 			expected: gittest.LogEntry{
-				Commit: "HEAD -> main, main) ci: updated existing github workflow",
+				Commit:  "HEAD -> main, main) ci: updated existing github workflow",
+				Message: "HEAD -> main, main) ci: updated existing github workflow",
 			},
 		},
 		{
@@ -128,6 +130,7 @@ func TestParseLogMalformedLine(t *testing.T) {
 			log:  "(tag: 0.2.0, HEAD -> main, main, new-feature)docs: include tests (and regressions) in guide",
 			expected: gittest.LogEntry{
 				Commit:   "in guide",
+				Message:  "in guide",
 				Tag:      "0.2.0",
 				Tags:     []string{"0.2.0"},
 				Branches: []string{"HEAD -> main", "main", "new-feature)docs: include tests (and regressions"},
@@ -137,7 +140,8 @@ func TestParseLogMalformedLine(t *testing.T) {
 			name: "EmptyRefNames",
 			log:  "() chore: add new issue template",
 			expected: gittest.LogEntry{
-				Commit: "chore: add new issue template",
+				Commit:  "chore: add new issue template",
+				Message: "chore: add new issue template",
 			},
 		},
 	}
