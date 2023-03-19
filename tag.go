@@ -173,7 +173,7 @@ func WithSortBy(keys ...SortKey) ListTagsOption {
 }
 
 // Tags retrieves all local tags from the current repository (working directory).
-// By default all tags are retrieved in ascending lexicographic order as implied
+// By default, all tags are retrieved in ascending lexicographic order as implied
 // through the [RefName] sort key. Options can be provided to customize retrieval
 func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 	options := &listTagsOptions{}

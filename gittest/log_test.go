@@ -42,6 +42,7 @@ feat: scaffold initial cli and add first command`
 
 	require.Len(t, entries, 6)
 	assert.Equal(t, entries[0].Commit, "pass tests")
+	assert.Equal(t, entries[0].Message, "pass tests")
 	assert.Empty(t, entries[0].Tag)
 	assert.Empty(t, entries[0].Tags)
 	assert.ElementsMatch(t, []string{"HEAD -> new-feature", "origin/new-feature"}, entries[0].Branches)
@@ -49,6 +50,7 @@ feat: scaffold initial cli and add first command`
 	assert.Equal(t, "new-feature", entries[0].HeadPointerRef)
 
 	assert.Equal(t, entries[1].Commit, "write tests for new feature")
+	assert.Equal(t, entries[1].Message, "write tests for new feature")
 	assert.Empty(t, entries[1].Tag)
 	assert.Empty(t, entries[1].Tags)
 	assert.Empty(t, entries[1].Branches)
@@ -56,6 +58,7 @@ feat: scaffold initial cli and add first command`
 	assert.Empty(t, entries[1].HeadPointerRef)
 
 	assert.Equal(t, entries[2].Commit, "feat: improve existing cli documentation")
+	assert.Equal(t, entries[2].Message, "feat: improve existing cli documentation")
 	assert.Equal(t, "0.2.0", entries[2].Tag)
 	assert.ElementsMatch(t, []string{"0.2.0", "v1"}, entries[2].Tags)
 	assert.ElementsMatch(t, []string{"main", "origin/main"}, entries[2].Branches)
@@ -63,12 +66,14 @@ feat: scaffold initial cli and add first command`
 	assert.Empty(t, entries[2].HeadPointerRef)
 
 	assert.Equal(t, entries[3].Commit, "docs: create initial mkdocs material documentation")
+	assert.Equal(t, entries[3].Message, "docs: create initial mkdocs material documentation")
 	assert.Empty(t, entries[3].Tag)
 	assert.Empty(t, entries[3].Branches)
 	assert.False(t, entries[3].IsTrunk)
 	assert.Empty(t, entries[3].HeadPointerRef)
 
 	assert.Equal(t, entries[4].Commit, "feat: add secondary cli command to support filtering of results")
+	assert.Equal(t, entries[4].Message, "feat: add secondary cli command to support filtering of results")
 	assert.Equal(t, "0.1.0", entries[4].Tag)
 	assert.ElementsMatch(t, []string{"0.1.0"}, entries[4].Tags)
 	assert.Empty(t, entries[4].Branches)
@@ -76,6 +81,7 @@ feat: scaffold initial cli and add first command`
 	assert.Empty(t, entries[4].HeadPointerRef)
 
 	assert.Equal(t, entries[5].Commit, "feat: scaffold initial cli and add first command")
+	assert.Equal(t, entries[5].Message, "feat: scaffold initial cli and add first command")
 	assert.Empty(t, entries[5].Tag)
 	assert.Empty(t, entries[5].Branches)
 	assert.False(t, entries[5].IsTrunk)
@@ -94,6 +100,7 @@ func TestParseLogTrimsSpaces(t *testing.T) {
 
 	require.Len(t, entries, 1)
 	assert.Equal(t, entries[0].Commit, "feat: testing if leading and trailing spaces are removed")
+	assert.Equal(t, entries[0].Message, "feat: testing if leading and trailing spaces are removed")
 }
 
 func TestParseLogMalformedLine(t *testing.T) {
@@ -106,14 +113,16 @@ func TestParseLogMalformedLine(t *testing.T) {
 			name: "NoClosingParentheses",
 			log:  "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
 			expected: gittest.LogEntry{
-				Commit: "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
+				Commit:  "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
+				Message: "(tag: 0.1.0, HEAD -> main, main feat: this is a brand new feature",
 			},
 		},
 		{
 			name: "NoOpeningParentheses",
 			log:  "HEAD -> main, main) ci: updated existing github workflow",
 			expected: gittest.LogEntry{
-				Commit: "HEAD -> main, main) ci: updated existing github workflow",
+				Commit:  "HEAD -> main, main) ci: updated existing github workflow",
+				Message: "HEAD -> main, main) ci: updated existing github workflow",
 			},
 		},
 		{
@@ -121,6 +130,7 @@ func TestParseLogMalformedLine(t *testing.T) {
 			log:  "(tag: 0.2.0, HEAD -> main, main, new-feature)docs: include tests (and regressions) in guide",
 			expected: gittest.LogEntry{
 				Commit:   "in guide",
+				Message:  "in guide",
 				Tag:      "0.2.0",
 				Tags:     []string{"0.2.0"},
 				Branches: []string{"HEAD -> main", "main", "new-feature)docs: include tests (and regressions"},
@@ -130,7 +140,8 @@ func TestParseLogMalformedLine(t *testing.T) {
 			name: "EmptyRefNames",
 			log:  "() chore: add new issue template",
 			expected: gittest.LogEntry{
-				Commit: "chore: add new issue template",
+				Commit:  "chore: add new issue template",
+				Message: "chore: add new issue template",
 			},
 		},
 	}
@@ -140,6 +151,7 @@ func TestParseLogMalformedLine(t *testing.T) {
 
 			require.Len(t, entries, 1)
 			require.Equal(t, tt.expected.Commit, entries[0].Commit, "commit does not match")
+			require.Equal(t, tt.expected.Message, entries[0].Message, "commit does not match")
 			require.Equal(t, tt.expected.Tag, entries[0].Tag, "tag does not match")
 			require.ElementsMatch(t, tt.expected.Tags, entries[0].Tags, "tags slice mismatch")
 			require.ElementsMatch(t, tt.expected.Branches, entries[0].Branches, "branches slice mismatch")

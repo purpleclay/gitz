@@ -612,13 +612,38 @@ func PorcelainStatus(t *testing.T) []string {
 	return strings.Split(status, "\n")
 }
 
+// Log returns the log history of a repository (working directory) as
+// it currently exists on the default branch. Raw output is parsed from
+// this command:
+//
+//	git log --pretty='format:%d %s' main
+func Log(t *testing.T) []LogEntry {
+	t.Helper()
+	log := MustExec(t, fmt.Sprintf("git log --pretty='format:%%d %%s' %s", DefaultBranch))
+	return ParseLog(log)
+}
+
 // LogRemote returns the log history of a repository (working directory)
 // as it currently exists on the remote. Any local commits that are not
 // pushed, will not appear within this log history. Raw output is
 // parsed from this command:
 //
 //	git log --pretty='format:%d %s' origin/main
+//
+// Deprecated: use [RemoteLog] instead
 func LogRemote(t *testing.T) []LogEntry {
+	t.Helper()
+	log := MustExec(t, fmt.Sprintf("git log --pretty='format:%%d %%s' %s", DefaultRemoteBranch))
+	return ParseLog(log)
+}
+
+// RemoteLog returns the log history of a repository (working directory)
+// as it currently exists on the remote. Any local commits that are not
+// pushed, will not appear within this log history. Raw output is
+// parsed from this command:
+//
+//	git log --pretty='format:%d %s' origin/main
+func RemoteLog(t *testing.T) []LogEntry {
 	t.Helper()
 	log := MustExec(t, fmt.Sprintf("git log --pretty='format:%%d %%s' %s", DefaultRemoteBranch))
 	return ParseLog(log)

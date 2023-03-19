@@ -31,13 +31,18 @@ import (
 // of a git repository
 type LogEntry struct {
 	// Commit contains the commit message
+	//
+	// Deprecated: use [LogEntry.Message] instead
 	Commit string
+
+	// Message contains the log message associated with the commit
+	Message string
 
 	// Tag contains a valid tag reference to an associated
 	// commit within a log entry. If using multiple tags,
 	// only the first will be referenced
 	//
-	// Deprecated: Use [gittest.LogEntry.Tags] instead.
+	// Deprecated: Use [LogEntry.Tags] instead.
 	Tag string
 
 	// Tags contains all tag references that are associated
@@ -88,7 +93,7 @@ func ParseLog(log string) []LogEntry {
 		line := scanner.Text()
 		line = strings.TrimSpace(line)
 
-		entry := LogEntry{Commit: line}
+		entry := LogEntry{Commit: line, Message: line}
 		if strings.HasPrefix(line, "(") {
 			// Cut based on the first occurrence of a closing parentheses, if one doesn't
 			// exist, then append the line as a raw log entry
@@ -98,6 +103,7 @@ func ParseLog(log string) []LogEntry {
 			}
 
 			entry.Commit = msg
+			entry.Message = msg
 
 			// Process the comma separated list of ref names, preceding the commit message
 			for _, ref := range strings.Split(refNames[1:], ",") {
