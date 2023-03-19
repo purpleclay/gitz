@@ -376,11 +376,22 @@ func TestLogRemote(t *testing.T) {
 	require.Equal(t, "this commit is on the remote", log[0].Commit)
 }
 
-func TestLogRemoteDoesNotContainLocalCommits(t *testing.T) {
+func TestRemoteLog(t *testing.T) {
+	gittest.InitRepository(t)
+	gitExec(t, "commit", "--allow-empty", "-m", "this commit is on the remote")
+	gitExec(t, "push", "origin", gittest.DefaultBranch)
+
+	log := gittest.RemoteLog(t)
+
+	require.Len(t, log, 2)
+	require.Equal(t, "this commit is on the remote", log[0].Commit)
+}
+
+func TestRemoteLogDoesNotContainLocalCommits(t *testing.T) {
 	gittest.InitRepository(t)
 	gitExec(t, "commit", "--allow-empty", "-m", "this commit is not on the remote")
 
-	log := gittest.LogRemote(t)
+	log := gittest.RemoteLog(t)
 
 	require.Len(t, log, 1)
 	assert.NotEqual(t, "this commit is not on the remote", log[0].Commit)

@@ -41,8 +41,8 @@ func TestPush(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, out, fmt.Sprintf("%[1]s -> %[1]s", gittest.DefaultBranch))
 
-	remoteLog := gittest.LogRemote(t)
-	require.Equal(t, "testing git push", remoteLog[0].Commit)
+	remoteLog := gittest.RemoteLog(t)
+	require.Equal(t, "testing git push", remoteLog[0].Message)
 }
 
 func TestPushResolveBranchError(t *testing.T) {
