@@ -14,6 +14,13 @@ When creating a new client, `gitz` will check for the existence of git using the
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, err := git.NewClient()
     if err != nil {
@@ -31,6 +38,13 @@ Check the integrity of a repository by running a series of tests and capturing t
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -47,7 +61,7 @@ func main() {
 
 Example output when checking the integrity of a repository cloned within a CI system:
 
-```{ .text .no-select }
+```{ .text .no-select .no-copy }
 Default Branch: main
 Shallow Clone:  false
 Detached Head:  true

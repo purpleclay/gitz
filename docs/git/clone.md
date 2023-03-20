@@ -16,6 +16,12 @@ Calling `Clone` will result in a repository containing all remote-tracking branc
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 

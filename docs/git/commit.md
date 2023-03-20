@@ -15,6 +15,12 @@ Calling `Commit` with a message will create a new commit within the repository:
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -29,7 +35,7 @@ func main() {
 
 And to verify its creation:
 
-```sh
+```{ .text .no-select .no-copy }
 $ git log -n1
 
 commit 703a6c9bc9ee91d0c226b169b131670fb92d9a0a (HEAD -> main)

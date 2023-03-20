@@ -44,6 +44,7 @@ permissions:
 
 jobs:
   security-checks:
+    if: ${{ github.actor != 'dependabot[bot]' }}
     uses: purpleclay/github/.github/workflows/code-security.yml@main
     with:
       go-version: ${{ vars.GO_VERSION }}

@@ -16,6 +16,13 @@ Calling `Log` without any options will retrieve the entire repository log from t
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -30,10 +37,10 @@ func main() {
 
 Printing the `Raw` output from this command:
 
-```{ .text .no-select }
-99cb396148cff7db435cebb9a8ea95a11b5658e1 fix: parsing error when input string is too long
-e8b67f90c613340fd61392fda03181d86a7febbe ci: extend the existing build workflow to include integration tests
-c90e819baa6ddc212811924c51256e65f53d4c32 docs: create initial mkdocs material documentation
+```{ .text .no-select .no-copy }
+99cb396148cff7db435cebb9a8ea95a11b5658e1 fix: input string parsing error
+e8b67f90c613340fd61392fda03181d86a7febbe ci: extend existing build workflow
+c90e819baa6ddc212811924c51256e65f53d4c32 docs: create mkdocs documentation
 1635f10b81a810833b163793e6ef902d52a89789 feat: add first feature to library
 a09348464773e99dbc94a5494b5b83b253c18019 initialized repository
 ```
@@ -46,6 +53,13 @@ Use the `WithRawOnly` option to skip parsing of the log into the structured `Com
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
@@ -61,7 +75,7 @@ func main() {
 
 Printing the `Commits` property should now be an empty slice:
 
-```text
+```{ .text .no-select .no-copy }
 []
 ```
 
@@ -71,6 +85,13 @@ When retrieving the log history, the `WithRef` option provides a starting point 
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
@@ -91,6 +112,13 @@ The `WithRefRange` option provides a start and end point for retrieving a snapsh
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -109,6 +137,13 @@ Fine-tune the log history further with the `WithPaths` option. Providing a set o
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
@@ -133,7 +168,7 @@ func main() {
 
 Printing the `Raw` output from this command:
 
-```text
+```{ .text .no-select .no-copy }
 d611a22c1a009bd74bc2c691b331b9df38828dae fix: typos in file content
 9b342465255d1a8ec4f5517eef6049e5bcc8fb45 feat: a brand new feature
 ```
@@ -144,6 +179,13 @@ Cherry-pick a section of the log by skipping and taking a set number of entries 
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
@@ -166,7 +208,7 @@ func main() {
 
 Printing the `Raw` output from this command:
 
-```text
+```{ .text .no-select .no-copy }
 9967e3c6196422a6a97afa4b6fca9f609bb5490b fix: filtering on unsupported prefixes
 1b1f4a725cfe44d5c9bd992be59f1130ed9d9911 docs: create docs using material mkdocs
 ```
@@ -177,6 +219,13 @@ Filter the commit log to only contain entries that match any set of patterns (_r
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
@@ -198,7 +247,7 @@ func main() {
 
 Printing the `Raw` output from this command, with matches highlighted for reference only:
 
-```text
+```{ .text .no-select .no-copy }
 2d68a506fe7d5148db0a10ea143752991a65c26d {==docs==}: document pattern matching option
 5bfd532328ed2e9ea6d3062eb3a331f42468a7e3 feat: filter log with pattern {==matching==}
 ```

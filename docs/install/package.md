@@ -6,13 +6,13 @@ icon: material/package-variant-closed
 
 Use `go get` to pull the `gitz` package as a dependency within your `go.mod` file:
 
-```sh
+```{ .text .no-select }
 go get github.com/purpleclay/gitz
 ```
 
 Then to get started, import the package into your project:
 
-```go
+```{ .go .no-select }
 import git "github.com/purpleclay/gitz"
 ```
 

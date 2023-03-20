@@ -16,6 +16,12 @@ By default, all files (`tracked` and `untracked`) within the current repository 
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -32,7 +38,7 @@ func main() {
 
 And to verify the staged changes:
 
-```sh
+```{ .text .no-select .no-copy }
 $ git status --porcelain
 
 A  a.txt
@@ -45,6 +51,12 @@ Cherry-picking the staging of files and folders is accomplished using the `WithP
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
@@ -64,7 +76,7 @@ func main() {
 
 And to verify the staged changes:
 
-```sh
+```{ .text .no-select .no-copy }
 $ git status --porcelain
 
 A  folder/a.txt
