@@ -17,19 +17,24 @@ import "github.com/purpleclay/gitz/gittest"
 
 Only a single line of code is needed to initialize a test repository. And don't worry; it gets deleted after test execution.
 
-```{ .go .select linenums="1" hl_lines="10" }
-package main_test
+```{ .go .select linenums="1" }
+package git_test
 
 import (
-    "testing"
+	"testing"
 
-    "github.com/purpleclay/gitz/gittest"
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGreatFeature(t *testing.T) {
-    gittest.InitRepository(t)
+func TestInitRepository(t *testing.T) {
+	gittest.InitRepository(t)
 
-    // test logic and assertions to follow ...
+	client, _ := git.NewClient()
+	repo, _ := client.Repository()
+
+	assert.Equal(t, "main", repo.DefaultBranch)
 }
 ```
 
@@ -37,16 +42,36 @@ Where `gittest` shines is in its ability to customize a repository during initia
 
 ### With a commit log
 
-Initialize a repository with a predefined log by using the `WithLog` option. It can contain both commit messages and lightweight tags and is written to the repository in reverse chronological order. The expected format is equivalent to the output from the git command: `git log --pretty='format:%d %s'`.
+Initialize a repository with a predefined log by using the `WithLog` option. It can contain both commit messages and lightweight tags and is written to the repository in reverse chronological order. The expected format is equivalent to the output from the git command:
+
+`git log --pretty='format:%d %s'`.
 
 ```{ .go .select linenums="1" }
-func TestGreatFeature(t *testing.T) {
-    log := `(tag: 0.1.0) feat: this is a brand new feature
+package git_test
+
+import (
+	"testing"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryWithLog(t *testing.T) {
+	log := `(tag: 0.1.0) feat: this is a brand new feature
 docs: write amazing material mkdocs documentation
 ci: include github release workflow`
-    gittest.InitRepository(t, gittest.WithLog(log))
+	gittest.InitRepository(t, gittest.WithLog(log))
 
-    // test logic and assertions to follow ...
+	client, _ := git.NewClient()
+	repoLog, _ := client.Log()
+
+	assert.Equal(t, "feat: this is a brand new feature",
+	   repoLog.Commits[0].Message)
+	assert.Equal(t, "docs: write amazing material mkdocs documentation",
+	   repoLog.Commits[1].Message)
+	assert.Equal(t, "ci: include github release workflow",
+	   repoLog.Commits[2].Message)
 }
 ```
 
@@ -55,13 +80,27 @@ ci: include github release workflow`
 Initialize the remote origin of a repository with a predefined log using the `WithRemoteLog` option. Ideal for simulating a delta between the current log and its remote counterpart.
 
 ```{ .go .select linenums="1" }
-func TestGreatFeature(t *testing.T) {
-    log := `(tag: 0.1.0) feat: this is a brand new feature
-docs: write amazing material mkdocs documentation
-ci: include github release workflow`
-    gittest.InitRepository(t, gittest.WithRemoteLog(log))
+package git_test
 
-    // test logic and assertions to follow ...
+import (
+	"testing"
+
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryRemoteLog(t *testing.T) {
+	log := "(main, origin/main) chore: testing remote log"
+	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+	require.NotEqual(t, gittest.LastCommit(t).Message,
+	   "chore: testing remote log")
+
+	client, _ := git.NewClient()
+	_, err := client.Pull()
+
+	require.NoError(t, err)
+	assert.Equal(t, gittest.LastCommit(t).Message,
+	   "chore: testing remote log")
 }
 ```
 
@@ -70,19 +109,22 @@ ci: include github release workflow`
 Create a set of untracked files within a repository using the `WithFiles` option. File paths can be fully qualified or relative to the repository root. Each created file will contain a sample of `lorem ipsum` text.
 
 ```{ .go .select linenums="1" }
-func TestGreatFeature(t *testing.T) {
-    gittest.InitRepository(t, gittest.WithFiles("a.txt", "dir/b.txt"))
+package git_test
 
-    // test logic and assertions to follow ...
+import (
+	"testing"
+
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryWithFiles(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("a.txt", "dir/b.txt"))
+
+	status := gittest.PorcelainStatus(t)
+	assert.Equal(t, "?? a.txt", status[0])
+	assert.Equal(t, "?? dir/", status[1])
 }
-```
-
-Querying the repository status:
-
-```text
-$ git status --porcelain
-?? a.txt
-?? dir/b.txt
 ```
 
 ### With staged files
@@ -90,19 +132,23 @@ $ git status --porcelain
 Create a set of staged (or tracked) files within a repository using the `WithStagedFiles` option.
 
 ```{ .go .select linenums="1" }
-func TestGreatFeature(t *testing.T) {
-    gittest.InitRepository(t, gittest.WithStagedFiles("a.txt", "dir/b.txt"))
+package git_test
 
-    // test logic and assertions to follow ...
+import (
+	"testing"
+
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryWithStagedFiles(t *testing.T) {
+	gittest.InitRepository(t,
+	   gittest.WithStagedFiles("a.txt", "dir/b.txt"))
+
+	status := gittest.PorcelainStatus(t)
+	assert.Equal(t, "A  a.txt", status[0])
+	assert.Equal(t, "A  dir/b.txt", status[1])
 }
-```
-
-Querying the repository status:
-
-```text
-$ git status --porcelain
-A  a.txt
-A  dir/b.txt
 ```
 
 ### With local commits
@@ -110,15 +156,30 @@ A  dir/b.txt
 Generate a set of local empty commits, ready to be pushed back to the remote, with the `WithLocalCommits` option. Generated Commits will be in chronological order.
 
 ```{ .go .select linenums="1" }
-func TestGreatFeature(t *testing.T) {
-    commits := []string{
-        "docs: my first local commit",
-        "fix: my second local commit",
-        "feat: my third local commit",
-    }
-    gittest.InitRepository(t, gittest.WithLocalCommits(commits...))
+package git_test
 
-    // test logic and assertions to follow ...
+import (
+	"testing"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryWithLocalCommits(t *testing.T) {
+	commits := []string{
+		"docs: my first local commit",
+		"fix: my second local commit",
+		"feat: my third local commit",
+	}
+	gittest.InitRepository(t, gittest.WithLocalCommits(commits...))
+
+	client, _ := git.NewClient()
+	log, _ := client.Log()
+
+	assert.Equal(t, "feat: my third local commit", log.Commits[0].Message)
+	assert.Equal(t, "fix: my second local commit", log.Commits[1].Message)
+	assert.Equal(t, "docs: my first local commit", log.Commits[2].Message)
 }
 ```
 
@@ -127,23 +188,30 @@ func TestGreatFeature(t *testing.T) {
 Shallow clone a repository by truncating its history to a set depth.
 
 ```{ .go .select linenums="1" }
-func TestGreatFeature(t *testing.T) {
-    log := `(tag: 0.1.0) feat: this is a brand new feature
+package git_test
+
+import (
+	"testing"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoruWithCloneDepth(t *testing.T) {
+	log := `(tag: 0.1.0) feat: this is a brand new feature
 docs: write amazing material mkdocs documentation
 ci: include github release workflow`
-    gittest.InitRepository(t,
-        gittest.WithLog(log), gittest.WithCloneDepth(1))
+	gittest.InitRepository(t,
+		gittest.WithLog(log), gittest.WithCloneDepth(1))
 
-    // test logic and assertions to follow ...
+	client, _ := git.NewClient()
+	repoLog, _ := client.Log()
+
+	require.Len(t, repoLog, 1)
+	assert.Equal(t, "feat: this is a brand new feature",
+	   repoLog.Commits[0].Message)
 }
-```
-
-Querying the repository log:
-
-```text
-$ git log --pretty=oneline --no-decorate --no-color
-
-e03726d3c24bbbab106bd1ac6231c030e1296eb9 feat: this is a brand new feature
 ```
 
 ### Option initialization order

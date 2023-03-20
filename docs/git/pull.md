@@ -15,6 +15,13 @@ Calling `Pull` will attempt to sync the current branch with its counterpart from
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"fmt"
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -33,7 +40,7 @@ func main() {
 
 Printing the output from this command:
 
-```text
+```{ .text .no-select .no-copy }
 remote: Enumerating objects: 5, done.
 remote: Counting objects: 100% (5/5), done.
 remote: Compressing objects: 100% (3/3), done.

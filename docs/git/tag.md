@@ -17,6 +17,12 @@ Calling `Tag` with a valid name[^1] will tag the repository with a lightweight t
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -41,6 +47,12 @@ Use the `WithAnnotation` option to switch to annotated tag creation mode:
 ```{ .go .select linenums="1" hl_lines="6" }
 package main
 
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -53,7 +65,7 @@ func main() {
 
 If you were to inspect the annotated tag, details about the author are now included:
 
-```sh
+```{ .text .no-select .no-copy }
 $ git show 0.1.0
 
 tag 0.1.0

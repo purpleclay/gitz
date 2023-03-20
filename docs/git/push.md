@@ -15,6 +15,12 @@ Calling `Push` will attempt to push all locally committed changes back to the re
 ```{ .go .select linenums="1" }
 package main
 
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
+
 func main() {
     client, _ := git.NewClient()
 
@@ -33,6 +39,12 @@ Calling `PushTag` will attempt to push the newly created tag back to the remote:
 
 ```{ .go .select linenums="1" }
 package main
+
+import (
+	"log"
+
+	git "github.com/purpleclay/gitz"
+)
 
 func main() {
     client, _ := git.NewClient()
