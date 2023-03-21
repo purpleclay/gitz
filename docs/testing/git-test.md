@@ -1,8 +1,7 @@
 ---
 icon: material/test-tube
-status: new
 title: Testing your interactions with git
-description: A dedicated gittest package for testing your interactions with git
+description: A dedicated package for testing your interactions with git
 ---
 
 # Testing your interactions with git
@@ -14,8 +13,6 @@ import "github.com/purpleclay/gitz/gittest"
 ```
 
 ## Building a test repository
-
-:octicons-beaker-24: Experimental
 
 Only a single line of code is needed to initialize a test repository. And don't worry; it gets deleted after test execution.
 
@@ -185,7 +182,7 @@ func TestInitRepositoryWithLocalCommits(t *testing.T) {
 }
 ```
 
-### With clone depth :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+### With clone depth
 
 Shallow clone a repository by truncating its history to a set depth.
 

@@ -1,5 +1,6 @@
 ---
 icon: material/tag-outline
+status: new
 title: Tagging a repositories history
 description: Tag a specific time point within a repository's history with a lightweight or annotated tag
 ---
