@@ -1,12 +1,14 @@
 ---
 icon: material/tag-outline
+title: Tagging a repositories history
+description: Tag a specific time point within a repository's history with a lightweight or annotated tag
 ---
 
-# Tagging a Repositories History
+# Tagging a repositories history
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-tag)
 
-Tag a specific time point within a repository's history and push it to the configured remote. Tagging comes in two flavors, a `lightweight` and `annotated` tag. The main difference being an annotated tag is treated as a complete object within git and must include a message (_or annotation_). When querying the git history, an annotated tag will contain details such as the author and its GPG signature, if signed.
+Tag a specific time point within a repository's history ready for pushing back to the configured remote. Tagging comes in two flavors, a `lightweight` and `annotated` tag. The main difference being an annotated tag is treated as a complete object within git and must include a message (_or annotation_). When querying the git history, an annotated tag will contain details such as the author and its GPG signature, if signed.
 
 Gitz supports both tags but defaults to creating the lightweight variant unless instructed.
 

@@ -1,9 +1,11 @@
 ---
 icon: material/archive-lock-open-outline
 status: new
+title: Staging changes within a repository
+description: Stage changes to a particular file or folder within the current repository for inclusion within the next commit
 ---
 
-# Staging changes within a Repository
+# Staging changes within a repository
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-stage)
 

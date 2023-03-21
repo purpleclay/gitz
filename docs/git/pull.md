@@ -1,12 +1,14 @@
 ---
 icon: material/arrow-left-bold-box-outline
+title: Pulling the latest changes from a remote
+description: Pull all changes from a remote into the current working directory
 ---
 
-# Pulling the latest changes from a Remote
+# Pulling the latest changes from a remote
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-pull)
 
-Pull all changes from a remote repository into the current branch. Ensures the existing repository keeps track of remote changes and stays in sync.
+Pull all changes from a remote into the current working directory. Ensures the existing repository keeps track of changes and stays in sync.
 
 ## Pull the latest changes from the current Branch
 

@@ -1,12 +1,14 @@
 ---
 icon: material/arrow-right-bold-box-outline
+title: Pushing the latest changes back to a remote
+description: Push all local repository changes back to the remote
 ---
 
-# Pushing the latest changes to a Remote
+# Pushing the latest changes back to a remote
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-push)
 
-Push all local repository changes back to the remote, ensuring all references are tracked and both instances are in sync.
+Push all local repository changes back to the remote, ensuring the remote now tracks all references.
 
 ## Push committed changes back to the Remote
 

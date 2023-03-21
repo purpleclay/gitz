@@ -1,8 +1,10 @@
 ---
 icon: material/package-variant-closed
+title: How to install gitz
+description: Get up and running with gitz as quickly as possible
 ---
 
-# Installing the Package
+# How to install gitz
 
 Use `go get` to pull the `gitz` package as a dependency within your `go.mod` file:
 
