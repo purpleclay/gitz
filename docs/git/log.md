@@ -1,9 +1,11 @@
 ---
 icon: material/list-box-outline
 status: new
+title: Inspecting the commit log of a repository
+description: Retrieve the commit log of a repository in an easy-to-parse format
 ---
 
-# Inspecting the Commit Log of a Repository
+# Inspecting the commit log of a repository
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-log)
 

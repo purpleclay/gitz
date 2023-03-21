@@ -1,8 +1,10 @@
 ---
 icon: material/archive-lock-outline
+title: Committing changes to a repository
+description: Create a commit within the current repository and describe those changes with a given log message
 ---
 
-# Committing changes to a Repository
+# Committing changes to a repository
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-commit)
 

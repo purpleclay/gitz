@@ -1,9 +1,11 @@
 ---
 icon: material/sheep
 status: new
+title: Cloning a repository
+description: Clone a repository by its provided URL into a newly created directory
 ---
 
-# Cloning a Repository
+# Cloning a repository
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-clone)
 

@@ -1,9 +1,11 @@
 ---
 icon: material/test-tube
 status: new
+title: Testing your interactions with git
+description: A dedicated gittest package for testing your interactions with git
 ---
 
-# Testing your Interactions with Git
+# Testing your interactions with git
 
 `gitz` includes a `gittest` package that enables interactions with Git to be unit tested within your projects. Add the following import to any of your test files to get started:
 
