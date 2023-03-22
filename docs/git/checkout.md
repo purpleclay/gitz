@@ -39,6 +39,13 @@ func main() {
 
 If you were to print the output from the command, you would see a branch creation:
 
-```text
+```{ .text .no-select .no-copy }
 Switched to a new branch 'a-new-branch'
+```
+
+If you check out a branch that already exists, you will see a different output:
+
+```{ .text .no-select .no-copy }
+Switched to branch 'existing-branch'
+Your branch is up to date with 'origin/existing-branch'.
 ```

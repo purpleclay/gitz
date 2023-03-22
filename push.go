@@ -38,7 +38,7 @@ type pushOptions struct {
 	RefSpecs []string
 }
 
-// WithAllBranches will push all localled created branche references
+// WithAllBranches will push all locally created branch references
 // back to the remote
 func WithAllBranches() PushOption {
 	return func(opts *pushOptions) {
@@ -59,7 +59,7 @@ func WithAllTags() PushOption {
 // simple as a name, where git will automatically resolve any
 // ambiguity, or as explicit as providing a source and destination
 // for each local reference within the remote. Check out the official
-// git documentation on how to write a more complex refspec
+// git documentation on how to write a more complex [refspec]
 //
 // [refspec]: https://git-scm.com/docs/git-push#Documentation/git-push.txt-ltrefspecgt82308203
 func WithRefSpecs(refs ...string) PushOption {
