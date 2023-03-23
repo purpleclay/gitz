@@ -114,7 +114,7 @@ chore: testing clone depth line 1`
 	assert.Len(t, localLog, 3)
 }
 
-func TestCloneWithBranchRef(t *testing.T) {
+func TestCloneWithCheckoutRefForBranch(t *testing.T) {
 	log := "(main, origin/main, origin/branch-cloning) chore: test branch is cloned"
 	gittest.InitRepository(t, gittest.WithLog(log))
 
@@ -126,14 +126,14 @@ func TestCloneWithBranchRef(t *testing.T) {
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote, git.WithBranchRef("branch-cloning"))
+	_, err := client.Clone(remote, git.WithCheckoutRef("branch-cloning"))
 
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
 	assert.Equal(t, "branch-cloning", gittest.ShowBranch(t))
 }
 
-func TestCloneWithBranchRefUsingTag(t *testing.T) {
+func TestCloneWithCheckoutRefForTag(t *testing.T) {
 	log := `(main, origin/main) chore: shouldn't see this commit
 (tag: clone-tag) chore: test this tag is cloned`
 	gittest.InitRepository(t, gittest.WithLog(log))
@@ -146,14 +146,14 @@ func TestCloneWithBranchRefUsingTag(t *testing.T) {
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote, git.WithBranchRef("clone-tag"))
+	_, err := client.Clone(remote, git.WithCheckoutRef("clone-tag"))
 
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
 	assert.Equal(t, "chore: test this tag is cloned", gittest.LastCommit(t).Message)
 }
 
-func TestCloneWithBranchRefEmptyString(t *testing.T) {
+func TestCloneWithCheckoutRefEmptyString(t *testing.T) {
 	log := `(main, origin/main) chore: shouldn't see this commit
 (tag: clone-tag) chore: test this tag is cloned`
 	gittest.InitRepository(t, gittest.WithLog(log))
@@ -166,7 +166,7 @@ func TestCloneWithBranchRefEmptyString(t *testing.T) {
 	require.NoError(t, os.Chdir(dir))
 
 	client, _ := git.NewClient()
-	_, err := client.Clone(remote, git.WithBranchRef("   "))
+	_, err := client.Clone(remote, git.WithCheckoutRef("   "))
 
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))

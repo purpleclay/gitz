@@ -1,6 +1,5 @@
 ---
 icon: material/archive-lock-open-outline
-status: new
 title: Staging changes within a repository
 description: Stage changes to a particular file or folder within the current repository for inclusion within the next commit
 ---
@@ -11,7 +10,7 @@ description: Stage changes to a particular file or folder within the current rep
 
 Stage changes to a particular file or folder within the current repository for inclusion within the next commit. Staging is a prerequisite to committing and pushing changes back to the repository remote.
 
-## Staging all changes :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+## Staging all changes
 
 By default, all files (`tracked` and `untracked`) within the current repository are staged automatically unless explicitly ignored through a `.gitignore` file:
 
@@ -55,9 +54,9 @@ Cherry-picking the staging of files and folders is accomplished using the `WithP
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

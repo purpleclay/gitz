@@ -33,19 +33,18 @@ import (
 type CloneOption func(*cloneOptions)
 
 type cloneOptions struct {
-	BranchRef string
-	Depth     int
-	Dir       string
-	NoTags    bool
+	CheckoutRef string
+	Depth       int
+	Dir         string
+	NoTags      bool
 }
 
-// WithBranchRef changes the default checkout behavior after a clone succeeds.
-// An attempt is made to checkout the reference, resulting in a detached
-// HEAD. A branch or tag reference is supported. An empty string will
-// be ignored
-func WithBranchRef(ref string) CloneOption {
+// WithCheckoutRef changes the default checkout behavior after a clone succeeds.
+// A branch or tag reference is supported. Checking out a tag will result in
+// a detached HEAD. An empty string will be ignored
+func WithCheckoutRef(ref string) CloneOption {
 	return func(opts *cloneOptions) {
-		opts.BranchRef = strings.TrimSpace(ref)
+		opts.CheckoutRef = strings.TrimSpace(ref)
 	}
 }
 
@@ -93,9 +92,9 @@ func (c *Client) Clone(url string, opts ...CloneOption) (string, error) {
 		buffer.WriteString(" --no-tags")
 	}
 
-	if options.BranchRef != "" {
+	if options.CheckoutRef != "" {
 		buffer.WriteString(" --branch ")
-		buffer.WriteString(options.BranchRef)
+		buffer.WriteString(options.CheckoutRef)
 	}
 
 	if options.Depth > 0 {

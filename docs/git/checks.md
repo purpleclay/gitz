@@ -1,6 +1,5 @@
 ---
 icon: material/clipboard-check-outline
-status: new
 title: Git checks and how to use them
 description: A series of inbuilt check for inspecting the environment and current repository
 ---
@@ -17,10 +16,10 @@ When creating a new client, `gitz` will check for the existence of git using the
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -33,7 +32,7 @@ func main() {
 }
 ```
 
-## Checking the integrity of a Repository :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+## Checking the integrity of a Repository
 
 Check the integrity of a repository by running a series of tests and capturing the results for inspection.
 
@@ -41,10 +40,10 @@ Check the integrity of a repository by running a series of tests and capturing t
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

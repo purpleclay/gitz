@@ -1,6 +1,5 @@
 ---
 icon: material/list-box-outline
-status: new
 title: Inspecting the commit log of a repository
 description: Retrieve the commit log of a repository in an easy-to-parse format
 ---
@@ -19,10 +18,10 @@ Calling `Log` without any options will retrieve the entire repository log from t
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -57,10 +56,10 @@ Use the `WithRawOnly` option to skip parsing of the log into the structured `Com
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -89,10 +88,10 @@ When retrieving the log history, the `WithRef` option provides a starting point 
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -115,10 +114,10 @@ The `WithRefRange` option provides a start and end point for retrieving a snapsh
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -141,10 +140,10 @@ Fine-tune the log history further with the `WithPaths` option. Providing a set o
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -175,7 +174,7 @@ d611a22c1a009bd74bc2c691b331b9df38828dae fix: typos in file content
 9b342465255d1a8ec4f5517eef6049e5bcc8fb45 feat: a brand new feature
 ```
 
-## Cherry-picking a section of the log :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+## Cherry-picking a section of the log
 
 Cherry-pick a section of the log by skipping and taking a set number of entries using the respective `WithSkip` and `WithTake` options. If combined, skipping has a higher order of precedence:
 
@@ -183,10 +182,10 @@ Cherry-pick a section of the log by skipping and taking a set number of entries 
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -215,7 +214,7 @@ Printing the `Raw` output from this command:
 1b1f4a725cfe44d5c9bd992be59f1130ed9d9911 docs: create docs using material mkdocs
 ```
 
-## Filtering the log with pattern matching :material-new-box:{.new-feature title="Feature added on the 10th March 2023"}
+## Filtering the log with pattern matching
 
 Filter the commit log to only contain entries that match any set of patterns (_regular expressions_) using the `WithGrep` option:
 
@@ -223,10 +222,10 @@ Filter the commit log to only contain entries that match any set of patterns (_r
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
