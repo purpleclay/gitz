@@ -18,10 +18,10 @@ Calling `Pull` will attempt to sync the current branch with its counterpart from
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

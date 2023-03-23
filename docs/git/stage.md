@@ -54,9 +54,9 @@ Cherry-picking the staging of files and folders is accomplished using the `WithP
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

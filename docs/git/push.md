@@ -19,9 +19,9 @@ Calling `Push` without any options will attempt to push all locally committed ch
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-## Pushing all local branches :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+## Pushing all local branches :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 To push changes spread across multiple branches back to the remote in a single atomic operation, use the `WillAllBranches` option:
 
@@ -44,9 +44,9 @@ To push changes spread across multiple branches back to the remote in a single a
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -67,7 +67,7 @@ func main() {
 }
 ```
 
-## Pushing all local tags :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+## Pushing all local tags :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 All locally created tags can also be pushed back to the remote in a single atomic operation using the `WithAllTags` option:
 
@@ -75,9 +75,9 @@ All locally created tags can also be pushed back to the remote in a single atomi
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -92,7 +92,7 @@ func main() {
 }
 ```
 
-## Cherry-pick what is pushed to the remote :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+## Cherry-pick what is pushed to the remote :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 The `WithRefSpecs` option provides greater freedom to cherry-pick locally created references (_branches and tags_) and push them back to the remote. A reference can be as simple as a name or as explicit as providing a source (_local_) to destination (_remote_) mapping. Please read the official git specification on how to construct [refspecs](https://git-scm.com/docs/git-push#Documentation/git-push.txt-ltrefspecgt82308203).
 
@@ -100,9 +100,9 @@ The `WithRefSpecs` option provides greater freedom to cherry-pick locally create
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -117,7 +117,7 @@ func main() {
 }
 ```
 
-## Push a single branch or tag :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+## Push a single branch or tag :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 `PushRef` can be called to cherry-pick and push a single reference (_branch or tag_) back to the remote:
 
@@ -125,9 +125,9 @@ func main() {
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

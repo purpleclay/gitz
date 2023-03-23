@@ -18,9 +18,9 @@ Calling `Commit` with a message will create a new commit within the repository:
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

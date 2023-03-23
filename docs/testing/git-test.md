@@ -20,20 +20,20 @@ Only a single line of code is needed to initialize a test repository. And don't 
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    git "github.com/purpleclay/gitz"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepository(t *testing.T) {
-	gittest.InitRepository(t)
+    gittest.InitRepository(t)
 
-	client, _ := git.NewClient()
-	repo, _ := client.Repository()
+    client, _ := git.NewClient()
+    repo, _ := client.Repository()
 
-	assert.Equal(t, "main", repo.DefaultBranch)
+    assert.Equal(t, "main", repo.DefaultBranch)
 }
 ```
 
@@ -49,28 +49,28 @@ Initialize a repository with a predefined log by using the `WithLog` option. It 
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    git "github.com/purpleclay/gitz"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepositoryWithLog(t *testing.T) {
-	log := `(tag: 0.1.0) feat: this is a brand new feature
+    log := `(tag: 0.1.0) feat: this is a brand new feature
 docs: write amazing material mkdocs documentation
 ci: include github release workflow`
-	gittest.InitRepository(t, gittest.WithLog(log))
+    gittest.InitRepository(t, gittest.WithLog(log))
 
-	client, _ := git.NewClient()
-	repoLog, _ := client.Log()
+    client, _ := git.NewClient()
+    repoLog, _ := client.Log()
 
-	assert.Equal(t, "feat: this is a brand new feature",
-	   repoLog.Commits[0].Message)
-	assert.Equal(t, "docs: write amazing material mkdocs documentation",
-	   repoLog.Commits[1].Message)
-	assert.Equal(t, "ci: include github release workflow",
-	   repoLog.Commits[2].Message)
+    assert.Equal(t, "feat: this is a brand new feature",
+       repoLog.Commits[0].Message)
+    assert.Equal(t, "docs: write amazing material mkdocs documentation",
+       repoLog.Commits[1].Message)
+    assert.Equal(t, "ci: include github release workflow",
+       repoLog.Commits[2].Message)
 }
 ```
 
@@ -82,24 +82,24 @@ Initialize the remote origin of a repository with a predefined log using the `Wi
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepositoryRemoteLog(t *testing.T) {
-	log := "(main, origin/main) chore: testing remote log"
-	gittest.InitRepository(t, gittest.WithRemoteLog(log))
-	require.NotEqual(t, gittest.LastCommit(t).Message,
-	   "chore: testing remote log")
+    log := "(main, origin/main) chore: testing remote log"
+    gittest.InitRepository(t, gittest.WithRemoteLog(log))
+    require.NotEqual(t, gittest.LastCommit(t).Message,
+       "chore: testing remote log")
 
-	client, _ := git.NewClient()
-	_, err := client.Pull()
+    client, _ := git.NewClient()
+    _, err := client.Pull()
 
-	require.NoError(t, err)
-	assert.Equal(t, gittest.LastCommit(t).Message,
-	   "chore: testing remote log")
+    require.NoError(t, err)
+    assert.Equal(t, gittest.LastCommit(t).Message,
+       "chore: testing remote log")
 }
 ```
 
@@ -111,18 +111,18 @@ Create a set of untracked files within a repository using the `WithFiles` option
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepositoryWithFiles(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("a.txt", "dir/b.txt"))
+    gittest.InitRepository(t, gittest.WithFiles("a.txt", "dir/b.txt"))
 
-	status := gittest.PorcelainStatus(t)
-	assert.Equal(t, "?? a.txt", status[0])
-	assert.Equal(t, "?? dir/", status[1])
+    status := gittest.PorcelainStatus(t)
+    assert.Equal(t, "?? a.txt", status[0])
+    assert.Equal(t, "?? dir/", status[1])
 }
 ```
 
@@ -134,19 +134,19 @@ Create a set of staged (or tracked) files within a repository using the `WithSta
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepositoryWithStagedFiles(t *testing.T) {
-	gittest.InitRepository(t,
-	   gittest.WithStagedFiles("a.txt", "dir/b.txt"))
+    gittest.InitRepository(t,
+       gittest.WithStagedFiles("a.txt", "dir/b.txt"))
 
-	status := gittest.PorcelainStatus(t)
-	assert.Equal(t, "A  a.txt", status[0])
-	assert.Equal(t, "A  dir/b.txt", status[1])
+    status := gittest.PorcelainStatus(t)
+    assert.Equal(t, "A  a.txt", status[0])
+    assert.Equal(t, "A  dir/b.txt", status[1])
 }
 ```
 
@@ -158,27 +158,27 @@ Generate a set of local empty commits, ready to be pushed back to the remote, wi
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    git "github.com/purpleclay/gitz"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepositoryWithLocalCommits(t *testing.T) {
-	commits := []string{
-		"docs: my first local commit",
-		"fix: my second local commit",
-		"feat: my third local commit",
-	}
-	gittest.InitRepository(t, gittest.WithLocalCommits(commits...))
+    commits := []string{
+        "docs: my first local commit",
+        "fix: my second local commit",
+        "feat: my third local commit",
+    }
+    gittest.InitRepository(t, gittest.WithLocalCommits(commits...))
 
-	client, _ := git.NewClient()
-	log, _ := client.Log()
+    client, _ := git.NewClient()
+    log, _ := client.Log()
 
-	assert.Equal(t, "feat: my third local commit", log.Commits[0].Message)
-	assert.Equal(t, "fix: my second local commit", log.Commits[1].Message)
-	assert.Equal(t, "docs: my first local commit", log.Commits[2].Message)
+    assert.Equal(t, "feat: my third local commit", log.Commits[0].Message)
+    assert.Equal(t, "fix: my second local commit", log.Commits[1].Message)
+    assert.Equal(t, "docs: my first local commit", log.Commits[2].Message)
 }
 ```
 
@@ -190,26 +190,26 @@ Shallow clone a repository by truncating its history to a set depth.
 package git_test
 
 import (
-	"testing"
+    "testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
+    git "github.com/purpleclay/gitz"
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestInitRepositoruWithCloneDepth(t *testing.T) {
-	log := `(tag: 0.1.0) feat: this is a brand new feature
+    log := `(tag: 0.1.0) feat: this is a brand new feature
 docs: write amazing material mkdocs documentation
 ci: include github release workflow`
-	gittest.InitRepository(t,
-		gittest.WithLog(log), gittest.WithCloneDepth(1))
+    gittest.InitRepository(t,
+        gittest.WithLog(log), gittest.WithCloneDepth(1))
 
-	client, _ := git.NewClient()
-	repoLog, _ := client.Log()
+    client, _ := git.NewClient()
+    repoLog, _ := client.Log()
 
-	require.Len(t, repoLog, 1)
-	assert.Equal(t, "feat: this is a brand new feature",
-	   repoLog.Commits[0].Message)
+    require.Len(t, repoLog, 1)
+    assert.Equal(t, "feat: this is a brand new feature",
+       repoLog.Commits[0].Message)
 }
 ```
 

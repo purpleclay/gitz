@@ -18,10 +18,10 @@ Calling `Log` without any options will retrieve the entire repository log from t
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -56,10 +56,10 @@ Use the `WithRawOnly` option to skip parsing of the log into the structured `Com
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -88,10 +88,10 @@ When retrieving the log history, the `WithRef` option provides a starting point 
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -114,10 +114,10 @@ The `WithRefRange` option provides a start and end point for retrieving a snapsh
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -140,10 +140,10 @@ Fine-tune the log history further with the `WithPaths` option. Providing a set o
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -182,10 +182,10 @@ Cherry-pick a section of the log by skipping and taking a set number of entries 
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -222,10 +222,10 @@ Filter the commit log to only contain entries that match any set of patterns (_r
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

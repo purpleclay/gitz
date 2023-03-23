@@ -25,9 +25,9 @@ Calling `Tag` with a valid name[^1] will tag the repository with a lightweight t
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -55,9 +55,9 @@ Use the `WithAnnotation` option to switch to annotated tag creation mode:
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -84,7 +84,7 @@ created tag 0.1.0
 associated commit message
 ```
 
-## Retrieving all tags :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+## Retrieving all tags :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 Calling `Tags` will retrieve all tags from the current repository in ascending lexicographic order:
 
@@ -92,9 +92,9 @@ Calling `Tags` will retrieve all tags from the current repository in ascending l
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -122,7 +122,7 @@ The resulting output would be:
 0.9.1
 ```
 
-### Changing the sort order :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+### Changing the sort order :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 You can change the default sort order when retrieving tags by using the `WithSortBy` option. Various [sort keys](https://git-scm.com/docs/git-for-each-ref#_field_names) exist, each affecting the overall sort differently. If using multiple sort keys, the last one becomes the primary key. Prefix any key with a `-` for a descending sort. For convenience `gitz` provides constants for the most common sort keys:
 
@@ -136,9 +136,9 @@ package main
 
 import (
     "fmt"
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -166,7 +166,7 @@ The resulting output would now be:
 0.9.0
 ```
 
-### Filtering by pattern :material-new-box:{.new-feature title="Feature added on the 21st March 2023"}
+### Filtering by pattern :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
 
 Filter local tags using pattern-based git [shell globs](https://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm) with the `WithShellGlob` option. If using multiple patterns, a tag only needs to match one.
 
@@ -175,9 +175,9 @@ package main
 
 import (
     "fmt"
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -212,9 +212,9 @@ Call `DeleteTag` to delete a local tag and sync it with the remote:
 package main
 
 import (
-	"log"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {

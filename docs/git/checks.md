@@ -16,10 +16,10 @@ When creating a new client, `gitz` will check for the existence of git using the
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
@@ -40,10 +40,10 @@ Check the integrity of a repository by running a series of tests and capturing t
 package main
 
 import (
-	"fmt"
-	"log"
+    "fmt"
+    "log"
 
-	git "github.com/purpleclay/gitz"
+    git "github.com/purpleclay/gitz"
 )
 
 func main() {
