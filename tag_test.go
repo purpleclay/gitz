@@ -178,6 +178,21 @@ func TestTagsWithSortBy(t *testing.T) {
 	assert.Equal(t, "0.9.0", tags[3])
 }
 
+func TestTagsWithSortBySemanticVersions(t *testing.T) {
+	log := "(tag: 0.1.0, tag: 0.2.0-beta.1, tag: 0.2.0-beta.2, tag: 0.2.0) fix: support semantic version sorting"
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags(git.WithSortBy(git.VersionDesc))
+
+	require.NoError(t, err)
+	require.Len(t, tags, 4)
+	assert.Equal(t, "0.2.0", tags[0])
+	assert.Equal(t, "0.2.0-beta.2", tags[1])
+	assert.Equal(t, "0.2.0-beta.1", tags[2])
+	assert.Equal(t, "0.1.0", tags[3])
+}
+
 func TestTagsQueryingTagsError(t *testing.T) {
 	nonWorkingDirectory(t)
 

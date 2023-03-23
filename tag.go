@@ -135,8 +135,9 @@ func (c *Client) DeleteTag(tag string) (string, error) {
 type ListTagsOption func(*listTagsOptions)
 
 type listTagsOptions struct {
-	ShellGlobs []string
-	SortBy     []string
+	ShellGlobs   []string
+	SemanticSort bool
+	SortBy       []string
 }
 
 // WithShellGlob limits the number of tags that will be retrieved, by only
@@ -165,6 +166,11 @@ func WithSortBy(keys ...SortKey) ListTagsOption {
 	return func(opts *listTagsOptions) {
 		converted := make([]string, len(keys))
 		for _, key := range keys {
+			if key == Version || key == VersionDesc {
+				// Ensure semantic versioning tags are going to be sorted correctly
+				opts.SemanticSort = true
+			}
+
 			converted = append(converted, key.String())
 		}
 
@@ -185,7 +191,13 @@ func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 		options.ShellGlobs = append(options.ShellGlobs, "refs/tags/*")
 	}
 
-	tags, err := exec(fmt.Sprintf("git for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
+	var config string
+	if options.SemanticSort {
+		config = "-c versionsort.suffix=-"
+	}
+
+	tags, err := exec(fmt.Sprintf("git %s for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
+		config,
 		strings.Join(options.SortBy, " "),
 		strings.Join(options.ShellGlobs, " ")))
 	if err != nil {
