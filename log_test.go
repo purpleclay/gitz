@@ -70,6 +70,23 @@ feat: add first operation to library`
 	assert.Equal(t, gittest.InitialCommit, out.Commits[5].Message)
 }
 
+func TestLogMultiLineCommit(t *testing.T) {
+	log := `> feat: this is a commit that will
+be spread
+across multiple lines`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	out, err := client.Log()
+
+	require.NoError(t, err)
+	require.Len(t, out.Commits, 2)
+	assert.Equal(t, `feat: this is a commit that will
+be spread
+across multiple lines`, out.Commits[0].Message)
+	assert.Equal(t, gittest.InitialCommit, out.Commits[1].Message)
+}
+
 // A utility function that will scan the raw output from a git log and
 // count all of the returned log lines. It is important to note, that
 // in some scenarios the log will contain the [gittest.InitialCommit]

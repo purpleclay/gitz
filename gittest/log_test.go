@@ -88,6 +88,23 @@ feat: scaffold initial cli and add first command`
 	assert.Empty(t, entries[5].HeadPointerRef)
 }
 
+func TestParseLogMultiLineMode(t *testing.T) {
+	log := `> fix: ensure parsing of multi-line commits is supported
+> feat(deps): bump github.com/stretchr/testify from 1.8.1 to 1.8.2
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>`
+
+	entries := gittest.ParseLog(log)
+
+	require.Len(t, entries, 2)
+	assert.Equal(t, "fix: ensure parsing of multi-line commits is supported", entries[0].Message)
+	assert.Equal(t, `feat(deps): bump github.com/stretchr/testify from 1.8.1 to 1.8.2
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>`, entries[1].Message)
+}
+
 func TestParseLogEmpty(t *testing.T) {
 	entries := gittest.ParseLog("")
 	assert.Empty(t, entries)

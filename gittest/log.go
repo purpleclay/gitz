@@ -25,6 +25,8 @@ package gittest
 import (
 	"bufio"
 	"strings"
+
+	"github.com/purpleclay/gitz/scan"
 )
 
 // LogEntry represents a single log entry from the history
@@ -62,6 +64,8 @@ type LogEntry struct {
 	HeadPointerRef string
 }
 
+// TODO: update comment to explain support for multi-line commits
+
 // ParseLog will attempt to parse a log extract from a given repository
 // into a series of commits, branches and tags. The log will be returned
 // in the chronological order provided. The parser is designed to not
@@ -79,6 +83,7 @@ type LogEntry struct {
 // This is the equivalent to the format produced using the git command:
 //
 //	git log --pretty='format:%d %s'
+//	git log --pretty='format:%m%d %s%+b%-N'
 func ParseLog(log string) []LogEntry {
 	if log == "" {
 		return nil
@@ -87,7 +92,13 @@ func ParseLog(log string) []LogEntry {
 	entries := make([]LogEntry, 0)
 
 	scanner := bufio.NewScanner(strings.NewReader(log))
-	scanner.Split(bufio.ScanLines)
+
+	// Detect if the log requires multi-line parsing by checking for the git marker > (%m)
+	if log[0] == '>' {
+		scanner.Split(scan.PrefixedLines('>'))
+	} else {
+		scanner.Split(bufio.ScanLines)
+	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
