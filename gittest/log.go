@@ -64,8 +64,6 @@ type LogEntry struct {
 	HeadPointerRef string
 }
 
-// TODO: update comment to explain support for multi-line commits
-
 // ParseLog will attempt to parse a log extract from a given repository
 // into a series of commits, branches and tags. The log will be returned
 // in the chronological order provided. The parser is designed to not
@@ -83,7 +81,24 @@ type LogEntry struct {
 // This is the equivalent to the format produced using the git command:
 //
 //	git log --pretty='format:%d %s'
+//
+// The parser is also designed to support multi-line commits, which is
+// denotoed with the presence of the git marker > expressed as [%m] in
+// formatting notation. The parser will switch between parsing modes
+// if it detects the existence of this marker on the first character
+// of the provided log extract.
+//
+// The log is expected to be in the following format for multi-mode:
+//
+//	> (HEAD -> new-feature, origin/new-feature) pass tests
+//	> write tests for new feature
+//	> (tag: 0.2.0, tag: v1, main, origin/main) feat: improve existing cli documentation
+//
+// This is the equivalent to the format produced using the git command:
+//
 //	git log --pretty='format:%m%d %s%+b%-N'
+//
+// [%m]: https://git-scm.com/docs/git-log#Documentation/git-log.txt-emmem
 func ParseLog(log string) []LogEntry {
 	if log == "" {
 		return nil

@@ -48,12 +48,8 @@ func PrefixedLines(prefix byte) func(data []byte, atEOF bool) (advance int, toke
 }
 
 func eat(prefix byte, data []byte) []byte {
-	if len(data) == 0 {
-		return data
-	}
-
 	i := 0
-	if data[i] == prefix {
+	if i < len(data) && data[i] == prefix {
 		i++
 	}
 
