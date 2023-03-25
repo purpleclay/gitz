@@ -25,6 +25,8 @@ package gittest
 import (
 	"bufio"
 	"strings"
+
+	"github.com/purpleclay/gitz/scan"
 )
 
 // LogEntry represents a single log entry from the history
@@ -79,6 +81,24 @@ type LogEntry struct {
 // This is the equivalent to the format produced using the git command:
 //
 //	git log --pretty='format:%d %s'
+//
+// The parser is also designed to support multi-line commits, which is
+// denotoed with the presence of the git marker > expressed as [%m] in
+// formatting notation. The parser will switch between parsing modes
+// if it detects the existence of this marker on the first character
+// of the provided log extract.
+//
+// The log is expected to be in the following format for multi-mode:
+//
+//	> (HEAD -> new-feature, origin/new-feature) pass tests
+//	> write tests for new feature
+//	> (tag: 0.2.0, tag: v1, main, origin/main) feat: improve existing cli documentation
+//
+// This is the equivalent to the format produced using the git command:
+//
+//	git log --pretty='format:%m%d %s%+b%-N'
+//
+// [%m]: https://git-scm.com/docs/git-log#Documentation/git-log.txt-emmem
 func ParseLog(log string) []LogEntry {
 	if log == "" {
 		return nil
@@ -87,7 +107,13 @@ func ParseLog(log string) []LogEntry {
 	entries := make([]LogEntry, 0)
 
 	scanner := bufio.NewScanner(strings.NewReader(log))
-	scanner.Split(bufio.ScanLines)
+
+	// Detect if the log requires multi-line parsing by checking for the git marker > (%m)
+	if log[0] == '>' {
+		scanner.Split(scan.PrefixedLines('>'))
+	} else {
+		scanner.Split(bufio.ScanLines)
+	}
 
 	for scanner.Scan() {
 		line := scanner.Text()

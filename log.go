@@ -26,6 +26,8 @@ import (
 	"bufio"
 	"fmt"
 	"strings"
+
+	"github.com/purpleclay/gitz/scan"
 )
 
 // constant magic number that disables Skip and Take (-1)
@@ -187,7 +189,7 @@ type LogEntry struct {
 // from the repository HEAD (most recent commit) will be retrieved. The logs
 // are generated using the default git options:
 //
-//	git log --pretty=oneline --no-decorate --no-color
+//	git log --pretty='format:%H %B%-N' --no-color
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{
 		// Disable both counts by default
@@ -232,7 +234,7 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		logCmd.WriteString(options.RefRange)
 	}
 
-	logCmd.WriteString(" --pretty=oneline --no-decorate --no-color")
+	logCmd.WriteString(" --pretty='format:%m%H %B%-N' --no-color")
 
 	if len(options.LogPaths) > 0 {
 		logCmd.WriteString(" --")
@@ -259,7 +261,7 @@ func parseLog(log string) []LogEntry {
 	var entries []LogEntry
 
 	scanner := bufio.NewScanner(strings.NewReader(log))
-	scanner.Split(bufio.ScanLines)
+	scanner.Split(scan.PrefixedLines('>'))
 
 	for scanner.Scan() {
 		// Expected format of log from using the --online format is: <hash><space><message>
