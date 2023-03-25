@@ -24,46 +24,38 @@ package scan
 
 import "bytes"
 
-// PrefixedLines ...
+// PrefixedLines is a split function for a [bufio.Scanner] that returns
+// each block of text, stripped of both the prefix marker and any leading
+// and trailing whitespace. If no prefix is detected, the original text
+// will be treated as a single block of text, with any leading and trailing
+// whitespace stripped
 func PrefixedLines(prefix byte) func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
 		}
 
-		// Check for the existence of the expected marker
-		if i := bytes.IndexByte(data, prefix); i != 0 {
-			return 0, nil, nil
-		}
-
 		if i := bytes.Index(data, []byte{'\n', prefix}); i >= 0 {
-			return i + 1, dropCR(eatWS(data[1:i])), nil
+			return i + 1, eat(prefix, data[:i]), nil
 		}
 
 		if atEOF {
-			return len(data), dropCR(eatWS(data[1:])), nil
+			return len(data), eat(prefix, data), nil
 		}
 
 		return 0, nil, nil
 	}
 }
 
-func eatWS(data []byte) []byte {
+func eat(prefix byte, data []byte) []byte {
+	if len(data) == 0 {
+		return data
+	}
+
 	i := 0
-	for ; i < len(data); i++ {
-		if data[i] != ' ' {
-			break
-		}
+	if data[i] == prefix {
+		i++
 	}
 
-	return data[i:]
-}
-
-// shamelessly copied from the bufio package
-func dropCR(data []byte) []byte {
-	if len(data) > 0 && data[len(data)-1] == '\r' {
-		return data[0 : len(data)-1]
-	}
-
-	return data
+	return bytes.TrimSpace(data[i:])
 }
