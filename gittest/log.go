@@ -83,10 +83,9 @@ type LogEntry struct {
 //	git log --pretty='format:%d %s'
 //
 // The parser is also designed to support multi-line commits, which is
-// denotoed with the presence of the git marker > expressed as [%m] in
-// formatting notation. The parser will switch between parsing modes
-// if it detects the existence of this marker on the first character
-// of the provided log extract.
+// denotoed with the presence of the prefix marker >. The parser will
+// switch between parsing modes if it detects the existence of this marker
+// on the first character of the provided log extract.
 //
 // The log is expected to be in the following format for multi-mode:
 //
@@ -96,7 +95,7 @@ type LogEntry struct {
 //
 // This is the equivalent to the format produced using the git command:
 //
-//	git log --pretty='format:%m%d %s%+b%-N'
+//	git log --pretty='format:> %d %s%+b%-N'
 //
 // [%m]: https://git-scm.com/docs/git-log#Documentation/git-log.txt-emmem
 func ParseLog(log string) []LogEntry {

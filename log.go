@@ -189,7 +189,7 @@ type LogEntry struct {
 // from the repository HEAD (most recent commit) will be retrieved. The logs
 // are generated using the default git options:
 //
-//	git log --pretty='format:%H %B%-N' --no-color
+//	git log --pretty='format:> %H %B%-N' --no-color
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{
 		// Disable both counts by default
@@ -234,7 +234,7 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		logCmd.WriteString(options.RefRange)
 	}
 
-	logCmd.WriteString(" --pretty='format:%m%H %B%-N' --no-color")
+	logCmd.WriteString(" --pretty='format:> %H %B%-N' --no-color")
 
 	if len(options.LogPaths) > 0 {
 		logCmd.WriteString(" --")
