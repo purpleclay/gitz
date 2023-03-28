@@ -189,8 +189,11 @@ func (c *Client) ToRelativePath(path string) (string, error) {
 		return "", err
 	}
 
+	// Ensure slashes are OS agnostic
+	rel = filepath.ToSlash(rel)
+
 	// Reject any paths that are not located within the root repository directory
-	if strings.HasPrefix(filepath.ToSlash(rel), "../") {
+	if strings.HasPrefix(rel, "../") {
 		return "", ErrGitNonRelativePath{
 			RootDir:      root,
 			TargetPath:   path,
