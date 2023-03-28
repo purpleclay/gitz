@@ -24,6 +24,7 @@ package git_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -227,4 +228,28 @@ func TestTagsWithCountEqualToMax(t *testing.T) {
 	require.Len(t, tags, 2)
 	assert.Equal(t, "0.1.0", tags[0])
 	assert.Equal(t, "0.2.0", tags[1])
+}
+
+func TestTagsWithFilters(t *testing.T) {
+	log := `(tag: ui/0.2.0, tag: ui/v1) feat: replace text within table with pills
+(tag: backend/0.2.0, tag: backend/v1) feat: support sorting of items through api
+(tag: ui/0.1.0) feat: add paging support on results table
+(tag: backend/0.1.0) feat: extend api to return item states`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	uiFilter := func(tag string) bool {
+		return strings.HasPrefix(tag, "ui/")
+	}
+
+	noVTagsFilter := func(tag string) bool {
+		return !strings.HasSuffix(tag, "v1")
+	}
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags(git.WithFilters(uiFilter, noVTagsFilter, nil))
+
+	require.NoError(t, err)
+	require.Len(t, tags, 2)
+	assert.Equal(t, "ui/0.1.0", tags[0])
+	assert.Equal(t, "ui/0.2.0", tags[1])
 }

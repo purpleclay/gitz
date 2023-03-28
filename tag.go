@@ -136,16 +136,42 @@ type ListTagsOption func(*listTagsOptions)
 
 type listTagsOptions struct {
 	Count        int
+	Filters      []TagFilter
 	ShellGlobs   []string
 	SemanticSort bool
 	SortBy       []string
 }
+
+// TagFilter allows a tag to be filtered based on any user-defined
+// criteria. If the filter returns true, the tag will be included
+// within the filtered results:
+//
+//	componentFilter := func(tag string) bool {
+//		return strings.HasPrefix(tag, "component/")
+//	}
+type TagFilter func(tag string) bool
 
 // WithCount limits the number of tags that are returned after all
 // processing and filtering has been applied the retrieved list
 func WithCount(n int) ListTagsOption {
 	return func(opts *listTagsOptions) {
 		opts.Count = n
+	}
+}
+
+// WithFilters allows the retrieved list of tags to be processed
+// with a set of user-defined filters. Each filter is applied in
+// turn to the working set. Nil filters are ignored
+func WithFilters(filters ...TagFilter) ListTagsOption {
+	return func(opts *listTagsOptions) {
+		opts.Filters = make([]TagFilter, 0, len(filters))
+		for _, filter := range filters {
+			if filter == nil {
+				continue
+			}
+
+			opts.Filters = append(opts.Filters, filter)
+		}
 	}
 }
 
@@ -199,7 +225,7 @@ func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 	}
 
 	if len(options.ShellGlobs) == 0 {
-		options.ShellGlobs = append(options.ShellGlobs, "refs/tags/*")
+		options.ShellGlobs = append(options.ShellGlobs, "refs/tags/**")
 	}
 
 	var config string
@@ -220,9 +246,27 @@ func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 	}
 
 	splitTags := strings.Split(tags, "\n")
+	splitTags = filterTags(splitTags, options.Filters)
+
 	if options.Count > disabledNumericOption && options.Count <= len(splitTags) {
 		return splitTags[:options.Count], nil
 	}
 
 	return splitTags, nil
+}
+
+func filterTags(tags []string, filters []TagFilter) []string {
+	filtered := tags
+	for _, filter := range filters {
+		keep := make([]string, 0, len(filtered))
+		for _, tag := range filtered {
+			if filter(tag) {
+				keep = append(keep, tag)
+			}
+		}
+
+		filtered = keep
+	}
+
+	return filtered
 }
