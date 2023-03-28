@@ -64,3 +64,20 @@ func TrimAndPrefix(prefix string, strs ...string) []string {
 
 	return out
 }
+
+// TrimAndRemove iterates through a slice, trimming leading and
+// trailing whitespace from each string. Strings that are empty
+// or match the removal string, are removed from the slice
+func TrimAndRemove(rem string, strs ...string) []string {
+	out := make([]string, 0, len(strs))
+	for _, s := range strs {
+		trimmed := strings.TrimSpace(s)
+		if trimmed == "" || trimmed == rem {
+			continue
+		}
+
+		out = append(out, trimmed)
+	}
+
+	return out
+}

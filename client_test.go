@@ -23,6 +23,9 @@ SOFTWARE.
 package git_test
 
 import (
+	"fmt"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -60,6 +63,7 @@ func TestRepository(t *testing.T) {
 	assert.False(t, repo.DetachedHead)
 	assert.False(t, repo.ShallowClone)
 	assert.Equal(t, gittest.DefaultBranch, repo.DefaultBranch)
+	assert.Equal(t, gittest.WorkingDirectory(t), repo.RootDir)
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
@@ -92,4 +96,45 @@ func TestRepositoryNotWorkingDirectory(t *testing.T) {
 	_, err := client.Repository()
 
 	require.EqualError(t, err, "current working directory is not a git repository")
+}
+
+func TestToRelativePath(t *testing.T) {
+	gittest.InitRepository(t)
+	root := gittest.WorkingDirectory(t)
+
+	client, _ := git.NewClient()
+	rel, err := client.ToRelativePath(filepath.Join(root, "a/nested/directory"))
+
+	require.NoError(t, err)
+	assert.Equal(t, "a/nested/directory", rel)
+}
+
+func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
+	gittest.InitRepository(t)
+	root := gittest.WorkingDirectory(t)
+	// ensure it is agnostic to the OS
+	rel := osDriveLetter(t, root) + "/a/non/related/path"
+
+	client, _ := git.NewClient()
+	_, err := client.ToRelativePath(rel)
+
+	// Cope with unwiedly paths due to temporary test directories
+	assert.EqualError(t, err,
+		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
+			rel, root, makeRelativeTo(t, rel, root)))
+}
+
+func osDriveLetter(t *testing.T, path string) string {
+	t.Helper()
+	return path[0:strings.Index(path, "/")]
+}
+
+func makeRelativeTo(t *testing.T, path, target string) string {
+	t.Helper()
+	n := strings.Count(target, "/")
+
+	// Remove any drive letter
+	relPath := strings.TrimPrefix(path, osDriveLetter(t, path))
+	relPath = strings.TrimPrefix(relPath, "/")
+	return strings.Repeat("../", n) + relPath
 }
