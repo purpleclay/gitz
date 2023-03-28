@@ -758,6 +758,8 @@ func RemoteBranches(t *testing.T) []string {
 }
 
 // WorkingDirectory ...
+//
+//	git rev-parse --show-toplevel
 func WorkingDirectory(t *testing.T) string {
 	t.Helper()
 	return filepath.ToSlash(MustExec(t, "git rev-parse --show-toplevel"))

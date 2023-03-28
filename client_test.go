@@ -24,7 +24,6 @@ package git_test
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -64,8 +63,7 @@ func TestRepository(t *testing.T) {
 	assert.False(t, repo.DetachedHead)
 	assert.False(t, repo.ShallowClone)
 	assert.Equal(t, gittest.DefaultBranch, repo.DefaultBranch)
-	cwd, _ := os.Getwd()
-	assert.Equal(t, cwd, repo.RootDir)
+	assert.Equal(t, gittest.WorkingDirectory(t), repo.RootDir)
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
