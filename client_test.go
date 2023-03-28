@@ -135,5 +135,5 @@ func makeRelativeTo(t *testing.T, path, target string) string {
 
 	// Remove any drive letter
 	relPath := strings.TrimPrefix(path, osDriveLetter(t, path))
-	return filepath.Join(strings.Repeat("../", n), relPath)
+	return filepath.ToSlash(filepath.Join(strings.Repeat("../", n), relPath))
 }
