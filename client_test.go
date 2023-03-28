@@ -102,10 +102,10 @@ func TestRepositoryNotWorkingDirectory(t *testing.T) {
 
 func TestToRelativePath(t *testing.T) {
 	gittest.InitRepository(t)
+	root := gittest.WorkingDirectory(t)
 
 	client, _ := git.NewClient()
-	cwd, _ := os.Getwd()
-	rel, err := client.ToRelativePath(filepath.Join(cwd, "a/nested/directory"))
+	rel, err := client.ToRelativePath(filepath.Join(root, "a/nested/directory"))
 
 	require.NoError(t, err)
 	assert.Equal(t, "a/nested/directory", rel)
@@ -113,19 +113,19 @@ func TestToRelativePath(t *testing.T) {
 
 func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
 	gittest.InitRepository(t)
+	root := gittest.WorkingDirectory(t)
 
 	client, _ := git.NewClient()
-	cwd, _ := os.Getwd()
 	_, err := client.ToRelativePath("/a/non/related/path")
 
 	// Cope with unwiedly paths due to temporary test directories
 	assert.EqualError(t, err,
 		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
-			"/a/non/related/path", cwd, makeRelativeTo(t, "/a/non/related/path", cwd)))
+			"/a/non/related/path", root, makeRelativeTo(t, "/a/non/related/path", root)))
 }
 
 func makeRelativeTo(t *testing.T, path, target string) string {
 	t.Helper()
-	n := strings.Count(filepath.ToSlash(target), "/")
+	n := strings.Count(target, "/")
 	return filepath.Join(strings.Repeat("../", n), path)
 }
