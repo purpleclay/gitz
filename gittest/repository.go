@@ -757,7 +757,10 @@ func RemoteBranches(t *testing.T) []string {
 	return cleanedBranches
 }
 
-// WorkingDirectory ...
+// WorkingDirectory returns the working directory (root) of the current
+// repository
+//
+// Raw output is parsed from this command:
 //
 //	git rev-parse --show-toplevel
 func WorkingDirectory(t *testing.T) string {

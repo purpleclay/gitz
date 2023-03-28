@@ -114,12 +114,17 @@ func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
 	root := gittest.WorkingDirectory(t)
 
 	client, _ := git.NewClient()
-	_, err := client.ToRelativePath("/a/non/related/path")
+	_, err := client.ToRelativePath(osDriveLetter(t, root) + "/a/non/related/path")
 
 	// Cope with unwiedly paths due to temporary test directories
 	assert.EqualError(t, err,
 		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
 			"/a/non/related/path", root, makeRelativeTo(t, "/a/non/related/path", root)))
+}
+
+func osDriveLetter(t *testing.T, path string) string {
+	t.Helper()
+	return path[0:strings.Index(path, "/")]
 }
 
 func makeRelativeTo(t *testing.T, path, target string) string {
