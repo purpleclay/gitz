@@ -126,6 +126,6 @@ func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
 
 func makeRelativeTo(t *testing.T, path, target string) string {
 	t.Helper()
-	n := strings.Count(target, "/")
+	n := strings.Count(filepath.ToSlash(target), "/")
 	return filepath.Join(strings.Repeat("../", n), path)
 }
