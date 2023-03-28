@@ -201,3 +201,30 @@ func TestTagsQueryingTagsError(t *testing.T) {
 
 	require.Error(t, err)
 }
+
+func TestTagsWithCount(t *testing.T) {
+	log := "(tag: 0.1.0, tag: 0.2.0, tag: 0.3.0, tag: 0.4.0) feat: limit tag retrieval"
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags(git.WithCount(3))
+
+	require.NoError(t, err)
+	require.Len(t, tags, 3)
+	assert.Equal(t, "0.1.0", tags[0])
+	assert.Equal(t, "0.2.0", tags[1])
+	assert.Equal(t, "0.3.0", tags[2])
+}
+
+func TestTagsWithCountEqualToMax(t *testing.T) {
+	log := "(tag: 0.1.0, tag: 0.2.0) feat: limit tag retrieval"
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	tags, err := client.Tags(git.WithCount(2))
+
+	require.NoError(t, err)
+	require.Len(t, tags, 2)
+	assert.Equal(t, "0.1.0", tags[0])
+	assert.Equal(t, "0.2.0", tags[1])
+}

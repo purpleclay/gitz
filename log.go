@@ -30,7 +30,7 @@ import (
 	"github.com/purpleclay/gitz/scan"
 )
 
-// constant magic number that disables Skip and Take (-1)
+// constant magic number that disables numeric options (-1)
 const disabledNumericOption = -1
 
 // LogOption provides a way for setting specific options during a log operation.
