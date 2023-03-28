@@ -23,6 +23,10 @@ SOFTWARE.
 package git_test
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -60,6 +64,8 @@ func TestRepository(t *testing.T) {
 	assert.False(t, repo.DetachedHead)
 	assert.False(t, repo.ShallowClone)
 	assert.Equal(t, gittest.DefaultBranch, repo.DefaultBranch)
+	cwd, _ := os.Getwd()
+	assert.Equal(t, cwd, repo.RootDir)
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
@@ -92,4 +98,34 @@ func TestRepositoryNotWorkingDirectory(t *testing.T) {
 	_, err := client.Repository()
 
 	require.EqualError(t, err, "current working directory is not a git repository")
+}
+
+func TestToRelativePath(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	cwd, _ := os.Getwd()
+	rel, err := client.ToRelativePath(filepath.Join(cwd, "a/nested/directory"))
+
+	require.NoError(t, err)
+	assert.Equal(t, "a/nested/directory", rel)
+}
+
+func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	cwd, _ := os.Getwd()
+	_, err := client.ToRelativePath("/a/non/related/path")
+
+	// Cope with unwiedly paths due to temporary test directories
+	assert.EqualError(t, err,
+		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
+			"/a/non/related/path", cwd, makeRelativeTo(t, "/a/non/related/path", cwd)))
+}
+
+func makeRelativeTo(t *testing.T, path, target string) string {
+	t.Helper()
+	n := strings.Count(target, "/")
+	return filepath.Join(strings.Repeat("../", n), path)
 }

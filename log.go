@@ -30,9 +30,6 @@ import (
 	"github.com/purpleclay/gitz/scan"
 )
 
-// constant magic number that disables numeric options (-1)
-const disabledNumericOption = -1
-
 // LogOption provides a way for setting specific options during a log operation.
 // Each supported option can customize the way the log history of the current
 // repository (working directory) is processed before retrieval
@@ -91,10 +88,13 @@ func WithRefRange(fromRef string, toRef string) LogOption {
 // Only commits that have had a direct impact on those files and folders
 // will be retrieved. Paths to files and folders are relative to the
 // root of the repository. All leading and trailing whitespace will be
-// trimmed from the file paths, allowing empty paths to be ignored
+// trimmed from the file paths, allowing empty paths to be ignored.
+//
+// A relative path can be resolved using [ToRelativePath] and will
+// automatically be ignored if it matches the [RelativeAtRoot] constant
 func WithPaths(paths ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.LogPaths = Trim(paths...)
+		opts.LogPaths = TrimAndRemove(RelativeAtRoot, paths...)
 	}
 }
 

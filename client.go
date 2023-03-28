@@ -28,10 +28,22 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"mvdan.cc/sh/v3/interp"
 	"mvdan.cc/sh/v3/syntax"
+)
+
+const (
+	disabledNumericOption = -1
+
+	// RelativeAtRoot can be used to compare if a path is equivalent to the
+	// root of a current git repository working directory
+	RelativeAtRoot = "."
+
+	// HeadRef is a pointer to the latest commit within a git repository
+	HeadRef = "HEAD"
 )
 
 // ErrGitMissing is raised when no git client was identified
@@ -63,12 +75,35 @@ func (e ErrGitExecCommand) Error() string {
 %s`, e.Cmd, e.Out)
 }
 
+// ErrGitNonRelativePath is raised when attempting to resolve a path
+// within a git repository that isn't relative to the root of the
+// working directory
+type ErrGitNonRelativePath struct {
+	// RootDir contains the root working directory of the repository
+	RootDir string
+
+	// TargetPath contains the path that was resolved against the
+	// root working directory of the repository
+	TargetPath string
+
+	// RelativePath contains the resolved relative path which raised
+	// the error
+	RelativePath string
+}
+
+// Error returns a friendly formatted message of the current error
+func (e ErrGitNonRelativePath) Error() string {
+	return fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
+		e.TargetPath, e.RootDir, e.RelativePath)
+}
+
 // Repository provides a snapshot of the current state of a repository
 // (working directory)
 type Repository struct {
 	ShallowClone  bool
 	DetachedHead  bool
 	DefaultBranch string
+	RootDir       string
 }
 
 // Client provides a way of performing fluent operations against git.
@@ -107,11 +142,13 @@ func (c *Client) Repository() (Repository, error) {
 	isShallow, _ := exec("git rev-parse --is-shallow-repository")
 	isDetached, _ := exec("git branch --show-current")
 	defaultBranch, _ := exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
+	rootDir, _ := c.rootDir()
 
 	return Repository{
 		ShallowClone:  strings.TrimSpace(isShallow) == "true",
 		DetachedHead:  strings.TrimSpace(isDetached) == "",
 		DefaultBranch: strings.TrimPrefix(defaultBranch, "origin/"),
+		RootDir:       rootDir,
 	}, nil
 }
 
@@ -131,4 +168,35 @@ func exec(cmd string) (string, error) {
 	}
 
 	return strings.TrimSuffix(buf.String(), "\n"), nil
+}
+
+func (c *Client) rootDir() (string, error) {
+	return exec("git rev-parse --show-toplevel")
+}
+
+// ToRelativePath determines if a path is relative to the
+// working directory of the repository and returns the resolved
+// relative path. A [ErrGitNonRelativePath] error will be returned
+// if the path exists outside of the working directory
+func (c *Client) ToRelativePath(path string) (string, error) {
+	root, err := c.rootDir()
+	if err != nil {
+		return "", err
+	}
+
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return "", err
+	}
+
+	// Reject any paths that are not located within the root repository directory
+	if strings.HasPrefix(rel, "../") {
+		return "", ErrGitNonRelativePath{
+			RootDir:      root,
+			TargetPath:   path,
+			RelativePath: rel,
+		}
+	}
+
+	return rel, nil
 }
