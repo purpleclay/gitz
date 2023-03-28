@@ -135,9 +135,18 @@ func (c *Client) DeleteTag(tag string) (string, error) {
 type ListTagsOption func(*listTagsOptions)
 
 type listTagsOptions struct {
+	Count        int
 	ShellGlobs   []string
 	SemanticSort bool
 	SortBy       []string
+}
+
+// WithCount limits the number of tags that are returned after all
+// processing and filtering has been applied the retrieved list
+func WithCount(n int) ListTagsOption {
+	return func(opts *listTagsOptions) {
+		opts.Count = n
+	}
 }
 
 // WithShellGlob limits the number of tags that will be retrieved, by only
@@ -182,7 +191,9 @@ func WithSortBy(keys ...SortKey) ListTagsOption {
 // By default, all tags are retrieved in ascending lexicographic order as implied
 // through the [RefName] sort key. Options can be provided to customize retrieval
 func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
-	options := &listTagsOptions{}
+	options := &listTagsOptions{
+		Count: disabledNumericOption,
+	}
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -208,5 +219,10 @@ func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 		return nil, nil
 	}
 
-	return strings.Split(tags, "\n"), nil
+	splitTags := strings.Split(tags, "\n")
+	if options.Count > disabledNumericOption && options.Count <= len(splitTags) {
+		return splitTags[:options.Count], nil
+	}
+
+	return splitTags, nil
 }
