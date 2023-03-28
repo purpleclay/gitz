@@ -112,14 +112,22 @@ func TestToRelativePath(t *testing.T) {
 func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
 	gittest.InitRepository(t)
 	root := gittest.WorkingDirectory(t)
+	// ensure it is agnostic to the OS
+	rel := osDriveLetter(t, root) + "/a/non/related/path"
 
 	client, _ := git.NewClient()
-	_, err := client.ToRelativePath(osDriveLetter(t, root) + "/a/non/related/path")
+	_, err := client.ToRelativePath(rel)
+
+	/*
+		/a/non/related/path is not relative to the git repository working directory
+		C:/Users/runneradmin/AppData/Local/Temp/TestToRelativePathNotInWorkingDirectoryError3953419149/001/test as it produces path
+		..\\..\\..\\..\\..\\..\\..\\..\\a\\non\\related\\path
+	*/
 
 	// Cope with unwiedly paths due to temporary test directories
 	assert.EqualError(t, err,
 		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
-			"/a/non/related/path", root, makeRelativeTo(t, "/a/non/related/path", root)))
+			rel, root, makeRelativeTo(t, rel, root)))
 }
 
 func osDriveLetter(t *testing.T, path string) string {
@@ -130,5 +138,8 @@ func osDriveLetter(t *testing.T, path string) string {
 func makeRelativeTo(t *testing.T, path, target string) string {
 	t.Helper()
 	n := strings.Count(target, "/")
-	return filepath.Join(strings.Repeat("../", n), path)
+
+	// Remove any drive letter
+	relPath := strings.TrimPrefix(path, osDriveLetter(t, path))
+	return filepath.Join(strings.Repeat("../", n), relPath)
 }
