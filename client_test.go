@@ -118,12 +118,6 @@ func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
 	client, _ := git.NewClient()
 	_, err := client.ToRelativePath(rel)
 
-	/*
-		/a/non/related/path is not relative to the git repository working directory
-		C:/Users/runneradmin/AppData/Local/Temp/TestToRelativePathNotInWorkingDirectoryError3953419149/001/test as it produces path
-		..\\..\\..\\..\\..\\..\\..\\..\\a\\non\\related\\path
-	*/
-
 	// Cope with unwiedly paths due to temporary test directories
 	assert.EqualError(t, err,
 		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
