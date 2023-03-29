@@ -22,7 +22,12 @@ SOFTWARE.
 
 package git
 
-import "strings"
+import (
+	"errors"
+	"fmt"
+	"strings"
+	"unicode"
+)
 
 // Config ...
 func (c *Client) Config(path string) (string, error) {
@@ -50,4 +55,62 @@ func (c *Client) ConfigL(paths ...string) (map[string]string, error) {
 	}
 
 	return cfg, nil
+}
+
+// ConfigSet ...
+func (c *Client) ConfigSet(path, value string) error {
+	var cmd strings.Builder
+	cmd.WriteString("git config --add ")
+	cmd.WriteString(fmt.Sprintf("%s '%s'", path, value))
+
+	_, err := exec(cmd.String())
+	return err
+}
+
+// ConfigSetL ...
+func (c *Client) ConfigSetL(pairs ...string) error {
+	if len(pairs) == 0 {
+		return nil
+	}
+
+	if len(pairs)%2 != 0 {
+		return errors.New("uneven pairs provided, not enough values to paths") // print out the offending path
+	}
+
+	for i := 0; i < len(pairs); i += 2 {
+		fmt.Println(pairs[i])
+		if !ValidConfigPath(pairs[i]) {
+			return errors.New("path is not valid") // must be made up of ...
+		}
+	}
+
+	for i := 0; i < len(pairs); i += 2 {
+		if err := c.ConfigSet(pairs[i], pairs[i+1]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ValidConfigPath ...
+func ValidConfigPath(path string) bool {
+	lastDot := strings.LastIndex(path, ".")
+	if lastDot == -1 || lastDot == len(path)-1 {
+		return false
+	}
+
+	for i, c := range path {
+		if i == lastDot+1 && !unicode.IsLetter(c) {
+			return false
+		}
+
+		if unicode.IsDigit(c) || unicode.IsLetter(c) || c == '.' {
+			continue
+		}
+
+		return false
+	}
+
+	return true
 }
