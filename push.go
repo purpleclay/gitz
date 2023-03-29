@@ -64,7 +64,7 @@ func WithAllTags() PushOption {
 // [refspec]: https://git-scm.com/docs/git-push#Documentation/git-push.txt-ltrefspecgt82308203
 func WithRefSpecs(refs ...string) PushOption {
 	return func(opts *pushOptions) {
-		opts.RefSpecs = Trim(refs...)
+		opts.RefSpecs = trim(refs...)
 	}
 }
 

@@ -184,7 +184,7 @@ func WithFilters(filters ...TagFilter) ListTagsOption {
 // [Shell Glob]: https://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm
 func WithShellGlob(patterns ...string) ListTagsOption {
 	return func(opts *listTagsOptions) {
-		opts.ShellGlobs = TrimAndPrefix("refs/tags/", patterns...)
+		opts.ShellGlobs = trimAndPrefix("refs/tags/", patterns...)
 	}
 }
 
@@ -209,7 +209,7 @@ func WithSortBy(keys ...SortKey) ListTagsOption {
 			converted = append(converted, key.String())
 		}
 
-		opts.SortBy = TrimAndPrefix("--sort=", converted...)
+		opts.SortBy = trimAndPrefix("--sort=", converted...)
 	}
 }
 
