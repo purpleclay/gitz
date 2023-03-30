@@ -110,5 +110,5 @@ func (c *Client) Clone(url string, opts ...CloneOption) (string, error) {
 		buffer.WriteString(options.Dir)
 	}
 
-	return exec(buffer.String())
+	return c.exec(buffer.String())
 }

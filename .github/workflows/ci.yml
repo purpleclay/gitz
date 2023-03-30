@@ -21,6 +21,8 @@
 name: ci
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
       - main
     paths:
@@ -66,3 +68,10 @@ jobs:
     with:
       version: ${{ vars.GOLANGCI_LINT_VERSION }}
       go-version: ${{ vars.GO_VERSION }}
+
+  static-analysis:
+    uses: purpleclay/github/.github/workflows/sonarcloud.yml@main
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
+    needs: [test, lint]

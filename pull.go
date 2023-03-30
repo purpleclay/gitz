@@ -26,5 +26,5 @@ package git
 // repository (current working) directory with those changes. This ensures
 // that your current repository keeps track of remote changes and stays in sync
 func (c *Client) Pull() (string, error) {
-	return exec("git pull")
+	return c.exec("git pull")
 }

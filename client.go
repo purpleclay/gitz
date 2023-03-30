@@ -116,12 +116,13 @@ type Client struct {
 
 // NewClient returns a new instance of the git client
 func NewClient() (*Client, error) {
-	if _, err := exec("type git"); err != nil {
+	c := &Client{}
+
+	if _, err := c.exec("type git"); err != nil {
 		return nil, ErrGitMissing{PathEnv: os.Getenv("PATH")}
 	}
 
-	c := &Client{}
-	c.gitVersion, _ = exec("git --version")
+	c.gitVersion, _ = c.exec("git --version")
 	return c, nil
 }
 
@@ -134,14 +135,14 @@ func (c *Client) Version() string {
 // by carrying out a series of checks. Answers to which are returned as a
 // snapshot for querying
 func (c *Client) Repository() (Repository, error) {
-	isRepo, _ := exec("git rev-parse --is-inside-work-tree")
+	isRepo, _ := c.exec("git rev-parse --is-inside-work-tree")
 	if strings.TrimSpace(isRepo) != "true" {
 		return Repository{}, errors.New("current working directory is not a git repository")
 	}
 
-	isShallow, _ := exec("git rev-parse --is-shallow-repository")
-	isDetached, _ := exec("git branch --show-current")
-	defaultBranch, _ := exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
+	isShallow, _ := c.exec("git rev-parse --is-shallow-repository")
+	isDetached, _ := c.exec("git branch --show-current")
+	defaultBranch, _ := c.exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
 	rootDir, _ := c.rootDir()
 
 	return Repository{
@@ -152,7 +153,7 @@ func (c *Client) Repository() (Repository, error) {
 	}, nil
 }
 
-func exec(cmd string) (string, error) {
+func (c *Client) exec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
 	var buf bytes.Buffer
@@ -171,7 +172,7 @@ func exec(cmd string) (string, error) {
 }
 
 func (c *Client) rootDir() (string, error) {
-	return exec("git rev-parse --show-toplevel")
+	return c.exec("git rev-parse --show-toplevel")
 }
 
 // ToRelativePath determines if a path is relative to the

@@ -113,20 +113,20 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 	}
 	tagCmd.WriteString(fmt.Sprintf("'%s'", tag))
 
-	if out, err := exec(tagCmd.String()); err != nil {
+	if out, err := c.exec(tagCmd.String()); err != nil {
 		return out, err
 	}
 
-	return exec(fmt.Sprintf("git push origin '%s'", tag))
+	return c.exec(fmt.Sprintf("git push origin '%s'", tag))
 }
 
 // DeleteTag a tag both locally and from the remote origin
 func (c *Client) DeleteTag(tag string) (string, error) {
-	if out, err := exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
+	if out, err := c.exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
 		return out, err
 	}
 
-	return exec(fmt.Sprintf("git push --delete origin '%s'", tag))
+	return c.exec(fmt.Sprintf("git push --delete origin '%s'", tag))
 }
 
 // ListTagsOption provides a way for setting specific options during a list
@@ -233,7 +233,7 @@ func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 		config = "-c versionsort.suffix=-"
 	}
 
-	tags, err := exec(fmt.Sprintf("git %s for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
+	tags, err := c.exec(fmt.Sprintf("git %s for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
 		config,
 		strings.Join(options.SortBy, " "),
 		strings.Join(options.ShellGlobs, " ")))

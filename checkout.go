@@ -35,16 +35,16 @@ func (c *Client) Checkout(branch string) (string, error) {
 	// Query the repository for all existing branches, both local and remote.
 	// If a pull hasn't been done, there is a chance that an expected
 	// remote branch will not be tracked
-	out, err := exec("git branch --all --format='%(refname:short)'")
+	out, err := c.exec("git branch --all --format='%(refname:short)'")
 	if err != nil {
 		return out, err
 	}
 
 	for _, ref := range strings.Split(out, "\n") {
 		if strings.HasSuffix(ref, branch) {
-			return exec(fmt.Sprintf("git checkout %s", branch))
+			return c.exec(fmt.Sprintf("git checkout %s", branch))
 		}
 	}
 
-	return exec(fmt.Sprintf("git checkout -b %s", branch))
+	return c.exec(fmt.Sprintf("git checkout -b %s", branch))
 }
