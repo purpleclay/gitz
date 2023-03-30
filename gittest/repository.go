@@ -332,8 +332,8 @@ func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
 	require.NoError(t, os.Chdir(cloneName))
 
 	// Ensure author details are set
-	require.NoError(t, setConfig("user.name", DefaultAuthorName))
-	require.NoError(t, setConfig("user.email", DefaultAuthorEmail))
+	setConfig(t, "user.name", DefaultAuthorName)
+	setConfig(t, "user.email", DefaultAuthorEmail)
 
 	// Check if there any any commits, if not, initialize and push back first commit
 	if out := MustExec(t, "git rev-list -n1 --all"); out == "" {
@@ -468,31 +468,16 @@ func importTagsAtRef(t *testing.T, tags []string, ref string) {
 	MustExec(t, "git push --tags")
 }
 
-func setConfig(key, value string) error {
+func setConfig(t *testing.T, key, value string) {
 	configCmd := fmt.Sprintf(`git config %s "%s"`, key, value)
-	_, err := exec(configCmd)
-	return err
+	_, err := Exec(t, configCmd)
+	require.NoError(t, err)
 }
 
 // Exec will execute any given git command and return the raw output and
 // error from the underlying git client
 func Exec(t *testing.T, cmd string) (string, error) {
 	t.Helper()
-	return exec(cmd)
-}
-
-// MustExec will execute any given git command, requiring no failure. Any
-// raw output will be returned from the underlying git client
-func MustExec(t *testing.T, cmd string) string {
-	t.Helper()
-
-	out, err := exec(cmd)
-	require.NoError(t, err)
-
-	return out
-}
-
-func exec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
 	var buf bytes.Buffer
@@ -505,6 +490,17 @@ func exec(cmd string) (string, error) {
 	}
 
 	return strings.TrimSuffix(buf.String(), "\n"), nil
+}
+
+// MustExec will execute any given git command, requiring no failure. Any
+// raw output will be returned from the underlying git client
+func MustExec(t *testing.T, cmd string) string {
+	t.Helper()
+
+	out, err := Exec(t, cmd)
+	require.NoError(t, err)
+
+	return out
 }
 
 // Tags returns a list of all local tags associated with the current
