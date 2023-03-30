@@ -62,12 +62,15 @@ func (e ErrInvalidConfigPath) Error() string {
 // most recent value first
 func (c *Client) Config(path string) ([]string, error) {
 	var cmd strings.Builder
-	cmd.WriteString("git config --get-all ")
+	cmd.WriteString("git config --local --get-all ")
 	cmd.WriteString(path)
 
-	// TODO: switch to parsing the result into separate values and reversing the slice
+	cfg, err := exec(cmd.String())
+	if err != nil {
+		return nil, nil
+	}
 
-	return exec(cmd.String())
+	return reverse(strings.Split(cfg, "\n")...), nil
 }
 
 // ConfigL attempts to query a batch of local git config settings for
@@ -79,7 +82,7 @@ func (c *Client) ConfigL(paths ...string) (map[string][]string, error) {
 		return nil, nil
 	}
 
-	cfg := map[string]string{}
+	cfg := map[string][]string{}
 	for _, path := range paths {
 		v, err := c.Config(path)
 		if err != nil {

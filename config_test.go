@@ -23,6 +23,7 @@ SOFTWARE.
 package git_test
 
 import (
+	"fmt"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -31,30 +32,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: change this to return a []string
-
 func TestConfig(t *testing.T) {
 	gittest.InitRepository(t)
+	setConfig(t, "user.name", "joker")
 
 	client, _ := git.NewClient()
 	cfg, err := client.Config("user.name")
 
 	require.NoError(t, err)
-	assert.Equal(t, gittest.DefaultAuthorName, cfg)
+	require.Len(t, cfg, 2)
+	assert.Equal(t, "joker", cfg[0])
+	assert.Equal(t, gittest.DefaultAuthorName, cfg[1])
 }
 
-// TODO: change this to return a map[string][]string
+func setConfig(t *testing.T, path, value string) {
+	t.Helper()
+	_, err := gittest.Exec(t, fmt.Sprintf("git config --add %s '%s'", path, value))
+	require.NoError(t, err)
+}
 
 func TestConfigL(t *testing.T) {
 	gittest.InitRepository(t)
+	setConfig(t, "user.name", "alfred")
 
 	client, _ := git.NewClient()
 	cfg, err := client.ConfigL("user.name", "user.email")
 
 	require.NoError(t, err)
-	require.Len(t, cfg, 2)
-	assert.Equal(t, gittest.DefaultAuthorName, cfg["user.name"])
-	assert.Equal(t, gittest.DefaultAuthorEmail, cfg["user.email"])
+	require.Len(t, cfg["user.name"], 2)
+	assert.Equal(t, "alfred", cfg["user.name"][0])
+	assert.Equal(t, gittest.DefaultAuthorName, cfg["user.name"][1])
+
+	require.Len(t, cfg["user.email"], 1)
+	assert.Equal(t, gittest.DefaultAuthorEmail, cfg["user.email"][0])
 }
 
 func TestConfigSet(t *testing.T) {
