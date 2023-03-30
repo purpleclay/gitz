@@ -31,6 +31,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: change this to return a []string
+
 func TestConfig(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -40,6 +42,8 @@ func TestConfig(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, gittest.DefaultAuthorName, cfg)
 }
+
+// TODO: change this to return a map[string][]string
 
 func TestConfigL(t *testing.T) {
 	gittest.InitRepository(t)
@@ -57,77 +61,89 @@ func TestConfigSet(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	err := client.ConfigSet("user.name", "")
+	err := client.ConfigSet("user.age", "unknown")
 
 	require.NoError(t, err)
+	configEquals(t, "user.age", "unknown")
+}
+
+func configEquals(t *testing.T, path, expected string) {
+	t.Helper()
+	cfg, err := gittest.Exec(t, "git config --get "+path)
+
+	require.NoError(t, err)
+	assert.Equal(t, expected, cfg)
 }
 
 func TestConfigSetL(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	err := client.ConfigSetL("user.name", "user.email", "user.email", "")
+	err := client.ConfigSetL("user.phobia", "bats", "user.birth.place", "gotham")
 
 	require.NoError(t, err)
-	// verify that it has been set
+	configEquals(t, "user.phobia", "bats")
+	configEquals(t, "user.birth.place", "gotham")
 }
 
 func TestConfigSetLMismatchedPairsError(t *testing.T) {
-	client, _ := git.NewClient()
+	gittest.InitRepository(t)
 
-	err := client.ConfigSetL("user.name")
-	require.Error(t, err)
-	// TODO: verify error message
+	client, _ := git.NewClient()
+	err := client.ConfigSetL("user.hobbies")
+
+	assert.EqualError(t, err, "config paths mismatch. path: user.hobbies is missing a corresponding value")
 }
 
-func TestConfigSetLInvalidPathError(t *testing.T) {
-	client, _ := git.NewClient()
+func TestConfigSetLNothingSetIfError(t *testing.T) {
+	gittest.InitRepository(t)
 
-	err := client.ConfigSetL("user.email", "jdoe@gmail.com", "user.1ame", "jdoe")
+	client, _ := git.NewClient()
+	err := client.ConfigSetL("user.hobbies", "fighting crime", "user.arch.3nemy", "joker")
+
 	require.Error(t, err)
-	// TODO: verify error message
+	configMissing(t, "user.hobbies")
+	configMissing(t, "user.4rch.enemy")
 }
 
-func TestValidConfigPath(t *testing.T) {
+func configMissing(t *testing.T, path string) {
+	t.Helper()
+	cfg, err := gittest.Exec(t, "git config --get "+path)
+
+	require.Error(t, err)
+	require.Empty(t, cfg)
+}
+
+func TestCheckConfigPathError(t *testing.T) {
 	tests := []struct {
-		name    string
-		path    string
-		isValid bool
+		name   string
+		path   string
+		errMsg string
 	}{
 		{
-			name:    "ValidSingleDotPath",
-			path:    "gr8.path",
-			isValid: true,
+			name:   "InvalidMissingDot",
+			path:   "nodot",
+			errMsg: "path: nodot invalid as dot separator is missing or is the last character",
 		},
 		{
-			name:    "ValidMultiDotPath",
-			path:    "a.gr8.path",
-			isValid: true,
+			name:   "InvalidJustSection",
+			path:   "section.only.",
+			errMsg: "path: section.only|.| invalid as dot separator is missing or is the last character",
 		},
 		{
-			name:    "InvalidMissingDot",
-			path:    "nodot",
-			isValid: false,
+			name:   "InvalidDigitAfterLastDot",
+			path:   "a.bad.4pple",
+			errMsg: "path: a.bad.|4|pple invalid as first character after final dot must be a letter [a-zA-Z]",
 		},
 		{
-			name:    "InvalidJustSection",
-			path:    "section.only.",
-			isValid: false,
-		},
-		{
-			name:    "InvalidDigitAfterLastDot",
-			path:    "a.bad.4pple",
-			isValid: false,
-		},
-		{
-			name:    "InvalidContainsNonAlphanumeric",
-			path:    "no.$symbol.allowed",
-			isValid: false,
+			name:   "InvalidContainsNonAlphanumeric",
+			path:   "no.$symbol.allowed",
+			errMsg: "path: no.|$|symbol.allowed invalid as non alphanumeric character detected [a-zA-Z0-9]",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.isValid, git.ValidConfigPath(tt.path))
+			require.EqualError(t, git.CheckConfigPath(tt.path), tt.errMsg)
 		})
 	}
 }

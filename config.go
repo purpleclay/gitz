@@ -23,11 +23,38 @@ SOFTWARE.
 package git
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 )
+
+// ErrInvalidConfigPath is raised ...
+type ErrInvalidConfigPath struct {
+	// Path ...
+	Path string
+
+	// Pos ...
+	Pos int
+
+	// Reason ...
+	Reason string
+}
+
+// Error returns a friendly formatted message of the current error
+func (e ErrInvalidConfigPath) Error() string {
+	var buf strings.Builder
+	if e.Pos == -1 {
+		buf.WriteString(e.Path)
+	} else {
+		buf.WriteString(e.Path[:e.Pos])
+		buf.WriteString(fmt.Sprintf("|%c|", e.Path[e.Pos]))
+		if e.Pos != len(e.Path)-1 {
+			buf.WriteString(e.Path[e.Pos+1:])
+		}
+	}
+
+	return fmt.Sprintf("path: %s invalid as %s", buf.String(), e.Reason)
+}
 
 // Config ...
 func (c *Client) Config(path string) (string, error) {
@@ -74,13 +101,12 @@ func (c *Client) ConfigSetL(pairs ...string) error {
 	}
 
 	if len(pairs)%2 != 0 {
-		return errors.New("uneven pairs provided, not enough values to paths") // print out the offending path
+		return fmt.Errorf("config paths mismatch. path: %s is missing a corresponding value", pairs[len(pairs)-1])
 	}
 
 	for i := 0; i < len(pairs); i += 2 {
-		fmt.Println(pairs[i])
-		if !ValidConfigPath(pairs[i]) {
-			return errors.New("path is not valid") // must be made up of ...
+		if err := CheckConfigPath(pairs[i]); err != nil {
+			return err
 		}
 	}
 
@@ -93,24 +119,36 @@ func (c *Client) ConfigSetL(pairs ...string) error {
 	return nil
 }
 
-// ValidConfigPath ...
-func ValidConfigPath(path string) bool {
+// CheckConfigPath ...
+func CheckConfigPath(path string) error {
 	lastDot := strings.LastIndex(path, ".")
 	if lastDot == -1 || lastDot == len(path)-1 {
-		return false
+		return ErrInvalidConfigPath{
+			Path:   path,
+			Pos:    lastDot,
+			Reason: "dot separator is missing or is the last character",
+		}
 	}
 
 	for i, c := range path {
 		if i == lastDot+1 && !unicode.IsLetter(c) {
-			return false
+			return ErrInvalidConfigPath{
+				Path:   path,
+				Pos:    i,
+				Reason: "first character after final dot must be a letter [a-zA-Z]",
+			}
 		}
 
 		if unicode.IsDigit(c) || unicode.IsLetter(c) || c == '.' {
 			continue
 		}
 
-		return false
+		return ErrInvalidConfigPath{
+			Path:   path,
+			Pos:    i,
+			Reason: "non alphanumeric character detected [a-zA-Z0-9]",
+		}
 	}
 
-	return true
+	return nil
 }
