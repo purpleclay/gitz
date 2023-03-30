@@ -65,7 +65,7 @@ func (c *Client) Config(path string) ([]string, error) {
 	cmd.WriteString("git config --local --get-all ")
 	cmd.WriteString(path)
 
-	cfg, err := exec(cmd.String())
+	cfg, err := c.exec(cmd.String())
 	if err != nil {
 		return nil, nil
 	}
@@ -103,7 +103,7 @@ func (c *Client) ConfigSet(path, value string) error {
 	cmd.WriteString("git config --add ")
 	cmd.WriteString(fmt.Sprintf("%s '%s'", path, value))
 
-	_, err := exec(cmd.String())
+	_, err := c.exec(cmd.String())
 	return err
 }
 

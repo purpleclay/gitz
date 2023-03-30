@@ -345,8 +345,8 @@ func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
 }
 
 func tempFile(t *testing.T, path, content string) {
-	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
-	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o750))
+	require.NoError(t, os.WriteFile(path, []byte(content), 0o640))
 }
 
 func importLog(t *testing.T, log []LogEntry) {

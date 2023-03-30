@@ -270,6 +270,7 @@ func overwriteFile(t *testing.T, path, content string) {
 	defer fi.Close()
 
 	fi.WriteString(content)
+	require.NoError(t, fi.Sync())
 }
 
 func TestLogWithSkip(t *testing.T) {

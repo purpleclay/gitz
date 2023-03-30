@@ -89,7 +89,7 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 		buffer.WriteString(" origin ")
 		buffer.WriteString(strings.Join(options.RefSpecs, " "))
 	} else {
-		out, err := exec("git branch --show-current")
+		out, err := c.exec("git branch --show-current")
 		if err != nil {
 			return out, err
 		}
@@ -97,10 +97,10 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 		buffer.WriteString(fmt.Sprintf(" origin %s", out))
 	}
 
-	return exec(buffer.String())
+	return c.exec(buffer.String())
 }
 
 // PushRef will push an individual reference to the remote repository
 func (c *Client) PushRef(ref string) (string, error) {
-	return exec(fmt.Sprintf("git push origin %s", ref))
+	return c.exec(fmt.Sprintf("git push origin %s", ref))
 }

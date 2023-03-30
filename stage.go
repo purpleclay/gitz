@@ -70,5 +70,5 @@ func (c *Client) Stage(opts ...StageOption) (string, error) {
 		stageCmd.WriteString("--all")
 	}
 
-	return exec(stageCmd.String())
+	return c.exec(stageCmd.String())
 }

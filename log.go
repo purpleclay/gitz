@@ -243,7 +243,7 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		}
 	}
 
-	out, err := exec(logCmd.String())
+	out, err := c.exec(logCmd.String())
 	if err != nil {
 		return nil, err
 	}

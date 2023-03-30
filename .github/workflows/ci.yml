@@ -21,6 +21,8 @@
 name: ci
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
       - main
     paths:
@@ -66,3 +68,9 @@ jobs:
     with:
       version: ${{ vars.GOLANGCI_LINT_VERSION }}
       go-version: ${{ vars.GO_VERSION }}
+
+  deepsource-coverage:
+    uses: purpleclay/github/.github/workflows/deepsource-coverage.yml@deepsource-workflow
+    secrets:
+      deepsource-dsn: ${{ secrets.GH_DEEPSOURCE_DSN }}
+    needs: [test]
