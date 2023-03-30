@@ -70,7 +70,7 @@ jobs:
       go-version: ${{ vars.GO_VERSION }}
 
   deepsource-coverage:
-    uses: purpleclay/github/.github/workflows/deepsource-coverage.yml@deepsource-workflow
+    uses: purpleclay/github/.github/workflows/deepsource-coverage.yml@main
     secrets:
       deepsource-dsn: ${{ secrets.GH_DEEPSOURCE_DSN }}
     needs: [test]
