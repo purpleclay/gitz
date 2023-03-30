@@ -94,7 +94,7 @@ func WithRefRange(fromRef string, toRef string) LogOption {
 // automatically be ignored if it matches the [RelativeAtRoot] constant
 func WithPaths(paths ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.LogPaths = TrimAndRemove(RelativeAtRoot, paths...)
+		opts.LogPaths = trimAndRemove(RelativeAtRoot, paths...)
 	}
 }
 
@@ -135,7 +135,7 @@ func WithTake(n int) LogOption {
 // will be trimmed, allowing empty matches to be ignored
 func WithGrep(matches ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.Matches = Trim(matches...)
+		opts.Matches = trim(matches...)
 	}
 }
 

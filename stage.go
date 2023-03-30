@@ -42,7 +42,7 @@ type stageOptions struct {
 // [PathSpecs]: https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
 func WithPathSpecs(specs ...string) StageOption {
 	return func(opts *stageOptions) {
-		opts.PathSpecs = Trim(specs...)
+		opts.PathSpecs = trim(specs...)
 	}
 }
 

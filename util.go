@@ -27,10 +27,7 @@ import (
 	"strings"
 )
 
-// Trim iterates through a slice, trimming leading and trailing
-// whitespace from each string. Empty strings are ignored
-// and removed from the slice
-func Trim(strs ...string) []string {
+func trim(strs ...string) []string {
 	out := make([]string, 0, len(strs))
 	for _, s := range strs {
 		trimmed := strings.TrimSpace(s)
@@ -44,11 +41,7 @@ func Trim(strs ...string) []string {
 	return out
 }
 
-// TrimAndPrefix iterates through a slice, trimming leading and
-// trailing whitespace from each string before appending the
-// provided prefix. Empty strings are ignored and removed from
-// the slice
-func TrimAndPrefix(prefix string, strs ...string) []string {
+func trimAndPrefix(prefix string, strs ...string) []string {
 	out := make([]string, 0, len(strs))
 	for _, s := range strs {
 		trimmed := strings.TrimSpace(s)
@@ -65,10 +58,7 @@ func TrimAndPrefix(prefix string, strs ...string) []string {
 	return out
 }
 
-// TrimAndRemove iterates through a slice, trimming leading and
-// trailing whitespace from each string. Strings that are empty
-// or match the removal string, are removed from the slice
-func TrimAndRemove(rem string, strs ...string) []string {
+func trimAndRemove(rem string, strs ...string) []string {
 	out := make([]string, 0, len(strs))
 	for _, s := range strs {
 		trimmed := strings.TrimSpace(s)
