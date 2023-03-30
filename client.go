@@ -153,7 +153,7 @@ func (c *Client) Repository() (Repository, error) {
 	}, nil
 }
 
-func (c *Client) exec(cmd string) (string, error) {
+func (_ *Client) exec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
 	var buf bytes.Buffer
