@@ -22,5 +22,9 @@ version = 1
 [[analyzers]]
 name = "go"
 
+[[analyzers]]
+name = "test-coverage"
+enabled = true
+
   [analyzers.meta]
   import_root = "github.com/purpleclay/gitz"
