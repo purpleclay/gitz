@@ -60,10 +60,12 @@ func (e ErrInvalidConfigPath) Error() string {
 // Config attempts to query a local git config setting for its value.
 // If multiple values have been set, all are returned, ordered by the
 // most recent value first
-func (c *Client) Config(path string) (string, error) {
+func (c *Client) Config(path string) ([]string, error) {
 	var cmd strings.Builder
-	cmd.WriteString("git config --get ")
+	cmd.WriteString("git config --get-all ")
 	cmd.WriteString(path)
+
+	// TODO: switch to parsing the result into separate values and reversing the slice
 
 	return exec(cmd.String())
 }
@@ -72,7 +74,7 @@ func (c *Client) Config(path string) (string, error) {
 // their values. If multiple values have been set for any config item,
 // all are returned, ordered by most recent value first. A partial batch
 // is never returned, all config settings must exist
-func (c *Client) ConfigL(paths ...string) (map[string]string, error) {
+func (c *Client) ConfigL(paths ...string) (map[string][]string, error) {
 	if len(paths) == 0 {
 		return nil, nil
 	}
