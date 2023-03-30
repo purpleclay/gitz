@@ -28,35 +28,38 @@ import (
 	"unicode"
 )
 
-// ErrInvalidConfigPath is raised ...
+// ErrInvalidConfigPath is raised when a config setting is to be accessed
+// with an invalid config path
 type ErrInvalidConfigPath struct {
-	// Path ...
+	// Path to the config setting
 	Path string
 
-	// Pos ...
-	Pos int
+	// Position of the first offending character within the path
+	Position int
 
-	// Reason ...
+	// Reason why the path is invalid
 	Reason string
 }
 
 // Error returns a friendly formatted message of the current error
 func (e ErrInvalidConfigPath) Error() string {
 	var buf strings.Builder
-	if e.Pos == -1 {
+	if e.Position == -1 {
 		buf.WriteString(e.Path)
 	} else {
-		buf.WriteString(e.Path[:e.Pos])
-		buf.WriteString(fmt.Sprintf("|%c|", e.Path[e.Pos]))
-		if e.Pos != len(e.Path)-1 {
-			buf.WriteString(e.Path[e.Pos+1:])
+		buf.WriteString(e.Path[:e.Position])
+		buf.WriteString(fmt.Sprintf("|%c|", e.Path[e.Position]))
+		if e.Position != len(e.Path)-1 {
+			buf.WriteString(e.Path[e.Position+1:])
 		}
 	}
 
 	return fmt.Sprintf("path: %s invalid as %s", buf.String(), e.Reason)
 }
 
-// Config ...
+// Config attempts to query a local git config setting for its value.
+// If multiple values have been set, all are returned, ordered by the
+// most recent value first
 func (c *Client) Config(path string) (string, error) {
 	var cmd strings.Builder
 	cmd.WriteString("git config --get ")
@@ -65,7 +68,10 @@ func (c *Client) Config(path string) (string, error) {
 	return exec(cmd.String())
 }
 
-// ConfigL ...
+// ConfigL attempts to query a batch of local git config settings for
+// their values. If multiple values have been set for any config item,
+// all are returned, ordered by most recent value first. A partial batch
+// is never returned, all config settings must exist
 func (c *Client) ConfigL(paths ...string) (map[string]string, error) {
 	if len(paths) == 0 {
 		return nil, nil
@@ -84,7 +90,9 @@ func (c *Client) ConfigL(paths ...string) (map[string]string, error) {
 	return cfg, nil
 }
 
-// ConfigSet ...
+// ConfigSet attempts to assign a value to a local git config setting.
+// If the setting already exists, a new line is added to the local git
+// config, effectively assigning multiple values to the same setting
 func (c *Client) ConfigSet(path, value string) error {
 	var cmd strings.Builder
 	cmd.WriteString("git config --add ")
@@ -94,7 +102,11 @@ func (c *Client) ConfigSet(path, value string) error {
 	return err
 }
 
-// ConfigSetL ...
+// ConfigSetL attempts to batch assign values to a group of local git
+// config settings. If any setting exists, a new line is added to the
+// local git config, effectively assigning multiple values to the same
+// setting. Basic validation is performed to minimize the possibility
+// of a partial batch update
 func (c *Client) ConfigSetL(pairs ...string) error {
 	if len(pairs) == 0 {
 		return nil
@@ -119,23 +131,28 @@ func (c *Client) ConfigSetL(pairs ...string) error {
 	return nil
 }
 
-// CheckConfigPath ...
+// CheckConfigPath performs rudimentary checks to ensure the config path
+// conforms to the git config specification. A config path is invalid if:
+//
+//   - No dot separator exists, or the last character is a dot separator
+//   - First character after the last dot separator is not a letter
+//   - Path contains non-alphanumeric characters
 func CheckConfigPath(path string) error {
 	lastDot := strings.LastIndex(path, ".")
 	if lastDot == -1 || lastDot == len(path)-1 {
 		return ErrInvalidConfigPath{
-			Path:   path,
-			Pos:    lastDot,
-			Reason: "dot separator is missing or is the last character",
+			Path:     path,
+			Position: lastDot,
+			Reason:   "dot separator is missing or is the last character",
 		}
 	}
 
 	for i, c := range path {
 		if i == lastDot+1 && !unicode.IsLetter(c) {
 			return ErrInvalidConfigPath{
-				Path:   path,
-				Pos:    i,
-				Reason: "first character after final dot must be a letter [a-zA-Z]",
+				Path:     path,
+				Position: i,
+				Reason:   "first character after final dot must be a letter [a-zA-Z]",
 			}
 		}
 
@@ -144,9 +161,9 @@ func CheckConfigPath(path string) error {
 		}
 
 		return ErrInvalidConfigPath{
-			Path:   path,
-			Pos:    i,
-			Reason: "non alphanumeric character detected [a-zA-Z0-9]",
+			Path:     path,
+			Position: i,
+			Reason:   "non alphanumeric character detected [a-zA-Z0-9]",
 		}
 	}
 
