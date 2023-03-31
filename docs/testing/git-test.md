@@ -1,5 +1,6 @@
 ---
 icon: material/test-tube
+status: new
 title: Testing your interactions with git
 description: A dedicated package for testing your interactions with git
 ---
@@ -72,6 +73,20 @@ ci: include github release workflow`
     assert.Equal(t, "ci: include github release workflow",
        repoLog.Commits[2].Message)
 }
+```
+
+#### Multi-line commits :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+
+Import multi-line commits by prefixing each commit with a `>` token. The expected format is equivalent to the output from the git command:
+
+`git log --pretty='format:> %d %s%+b%-N'`
+
+```{ .text .no-select .no-copy }
+> (tag: 0.1.0, main, origin/main) feat: multi-line commits is supported
+> feat(deps): bump github.com/stretchr/testify from 1.8.1 to 1.8.2
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
 ```
 
 ### With a remote log

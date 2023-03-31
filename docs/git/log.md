@@ -1,5 +1,6 @@
 ---
 icon: material/list-box-outline
+status: new
 title: Inspecting the commit log of a repository
 description: Retrieve the commit log of a repository in an easy-to-parse format
 ---
@@ -173,6 +174,10 @@ Printing the `Raw` output from this command:
 d611a22c1a009bd74bc2c691b331b9df38828dae fix: typos in file content
 9b342465255d1a8ec4f5517eef6049e5bcc8fb45 feat: a brand new feature
 ```
+
+### Resolving explicit file paths :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+
+Querying the log with explicit paths isn't supported and will return no history. Converting to a relative one can be achieved with the `ToRelativePath` helper, as it resolves paths against the root working directory of the current repository.
 
 ## Cherry-picking a section of the log
 
