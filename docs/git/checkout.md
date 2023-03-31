@@ -1,6 +1,5 @@
 ---
 icon: material/source-branch-sync
-status: new
 title: Checking out a branch
 description: Clone a repository by its provided URL into a newly created directory
 ---

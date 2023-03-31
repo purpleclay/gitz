@@ -1,6 +1,5 @@
 ---
 icon: material/sheep
-status: new
 title: Cloning a repository
 description: Clone a repository by its provided URL into a newly created directory
 ---
@@ -74,7 +73,7 @@ func main() {
 
 Printing the log results in:
 
-```text
+```{ .text .no-select .no-copy }
 feat: add options that can configure the size of the repository during a clone
 ```
 
@@ -114,7 +113,7 @@ func main() {
 
 Printing the output results in:
 
-```text
+```{ .text .no-select .no-copy }
 repository has no tags
 ```
 

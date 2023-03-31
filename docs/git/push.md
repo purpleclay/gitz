@@ -1,6 +1,5 @@
 ---
 icon: material/arrow-right-bold-box-outline
-status: new
 title: Pushing the latest changes back to a remote
 description: Push all local repository changes back to the remote
 ---

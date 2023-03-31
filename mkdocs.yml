@@ -42,6 +42,7 @@ nav:
   - Getting Started:
       - Git Checks: git/checks.md
       - Git Clone: git/clone.md
+      - Git Config: git/config.md
       - Git Checkout: git/checkout.md
       - Git Pull: git/pull.md
       - Git Push: git/push.md
