@@ -9,7 +9,7 @@ description: Get and set your local git repository config
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-config) | :material-beaker-outline: Experimental
 
-TODO
+Manage settings within your local git config, changing the behavior of the git client.
 
 ## Retrieve a local setting :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
 
@@ -27,7 +27,7 @@ import (
 
 func main() {
     client, _ := git.NewClient()
-    // setting user.name to cover up real identity
+    // setting user.name to purpleclay to cover up real identity
 
     cfg, err := client.Config("user.name")
     if err != nil {
@@ -42,14 +42,14 @@ func main() {
 
 The values for the config setting would be:
 
-```text
+```{ .text .no-select .no-copy }
 purpleclay
 ****
 ```
 
 ## Retrieve a batch of local settings :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
 
-TODO
+For convenience, multiple local settings can be retrieved in a batch using `ConfigL`. A partial batch is not supported and will fail if any setting does not exist.
 
 ```{ .go .select linenums="1" }
 package main
@@ -63,30 +63,31 @@ import (
 
 func main() {
     client, _ := git.NewClient()
-
-    // Repository contains tags 0.1.0, 0.2.0, 0.3.0, 0.4.0
-
-    tags, err := client.Tags(git.WithSortBy(git.VersionDesc),
-        git.WithCount(2))
+    cfg, err := client.ConfigL("user.name", "user.email")
     if err != nil {
-        log.Fatal("failed to retrieve local repository tags")
+        log.Fatal("failed to retrieve config settings")
     }
 
-    for _, tag := range tags {
-        fmt.Println(tag)
-    }
+    fmt.Println(cfg["user.name"][0])
+    fmt.Println(cfg["user.email"][0])
 }
+```
+
+The value for each config setting would be:
+
+```{ .text .no-select .no-copy }
+purpleclay
+**********************
 ```
 
 ## Update a local setting :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
 
-TODO
+To update a local git setting, call `ConfigSet`` with a path and corresponding value.
 
 ```{ .go .select linenums="1" }
 package main
 
 import (
-    "fmt"
     "log"
 
     git "github.com/purpleclay/gitz"
@@ -94,30 +95,21 @@ import (
 
 func main() {
     client, _ := git.NewClient()
-
-    // Repository contains tags 0.1.0, 0.2.0, 0.3.0, 0.4.0
-
-    tags, err := client.Tags(git.WithSortBy(git.VersionDesc),
-        git.WithCount(2))
+    err := client.ConfigSet("custom.setting", "value")
     if err != nil {
-        log.Fatal("failed to retrieve local repository tags")
-    }
-
-    for _, tag := range tags {
-        fmt.Println(tag)
+        log.Fatal("failed to set config setting")
     }
 }
 ```
 
 ## Updating a batch of local settings :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
 
-TODO
+Multiple local settings can be updated in a batch using `ConfigSetL`. Pre-validation of config paths improves the chance of a successful update, but a partial batch may occur upon failure.
 
 ```{ .go .select linenums="1" }
 package main
 
 import (
-    "fmt"
     "log"
 
     git "github.com/purpleclay/gitz"
@@ -125,17 +117,10 @@ import (
 
 func main() {
     client, _ := git.NewClient()
-
-    // Repository contains tags 0.1.0, 0.2.0, 0.3.0, 0.4.0
-
-    tags, err := client.Tags(git.WithSortBy(git.VersionDesc),
-        git.WithCount(2))
+    err := client.ConfigSetL("custom.setting1", "value",
+        "custom.setting2", "value")
     if err != nil {
-        log.Fatal("failed to retrieve local repository tags")
-    }
-
-    for _, tag := range tags {
-        fmt.Println(tag)
+        log.Fatal("failed to set config setting")
     }
 }
 ```
