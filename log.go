@@ -90,11 +90,10 @@ func WithRefRange(fromRef string, toRef string) LogOption {
 // root of the repository. All leading and trailing whitespace will be
 // trimmed from the file paths, allowing empty paths to be ignored.
 //
-// A relative path can be resolved using [ToRelativePath] and will
-// automatically be ignored if it matches the [RelativeAtRoot] constant
+// A relative path can be resolved using [ToRelativePath].
 func WithPaths(paths ...string) LogOption {
 	return func(opts *logOptions) {
-		opts.LogPaths = trimAndRemove(RelativeAtRoot, paths...)
+		opts.LogPaths = trim(paths...)
 	}
 }
 
