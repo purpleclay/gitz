@@ -58,20 +58,6 @@ func trimAndPrefix(prefix string, strs ...string) []string {
 	return out
 }
 
-func trimAndRemove(rem string, strs ...string) []string {
-	out := make([]string, 0, len(strs))
-	for _, s := range strs {
-		trimmed := strings.TrimSpace(s)
-		if trimmed == "" || trimmed == rem {
-			continue
-		}
-
-		out = append(out, trimmed)
-	}
-
-	return out
-}
-
 func reverse(strs ...string) []string {
 	out := make([]string, 0, len(strs))
 	for i := len(strs) - 1; i >= 0; i-- {
