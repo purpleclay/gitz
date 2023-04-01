@@ -178,7 +178,9 @@ func (c *Client) rootDir() (string, error) {
 // ToRelativePath determines if a path is relative to the
 // working directory of the repository and returns the resolved
 // relative path. A [ErrGitNonRelativePath] error will be returned
-// if the path exists outside of the working directory
+// if the path exists outside of the working directory.
+// [RelativeAtRoot] is returned if the path and working directory
+// are equivalent
 func (c *Client) ToRelativePath(path string) (string, error) {
 	root, err := c.rootDir()
 	if err != nil {
