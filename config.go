@@ -60,17 +60,21 @@ func (e ErrInvalidConfigPath) Error() string {
 // Config attempts to query a local git config setting for its value.
 // If multiple values have been set, all are returned, ordered by the
 // most recent value first
-func (c *Client) Config(path string) ([]string, error) {
-	var cmd strings.Builder
-	cmd.WriteString("git config --local --get-all ")
-	cmd.WriteString(path)
-
-	cfg, err := c.exec(cmd.String())
+func (c *Client) Config() (map[string]string, error) {
+	cfg, err := c.exec("git config --list")
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
-	return reverse(strings.Split(cfg, "\n")...), nil
+	values := map[string]string{}
+
+	lines := strings.Split(cfg, "\n")
+	for _, line := range lines {
+		pos := strings.Index(line, "=")
+		values[line[:pos]] = line[pos:]
+	}
+
+	return values, nil
 }
 
 // ConfigL attempts to query a batch of local git config settings for
@@ -78,33 +82,50 @@ func (c *Client) Config(path string) ([]string, error) {
 // all are returned, ordered by most recent value first. A partial batch
 // is never returned, all config settings must exist
 func (c *Client) ConfigL(paths ...string) (map[string][]string, error) {
+	return c.config("local", paths...)
+}
+
+func (c *Client) config(location string, paths ...string) (map[string][]string, error) {
 	if len(paths) == 0 {
 		return nil, nil
 	}
 
-	cfg := map[string][]string{}
+	values := map[string][]string{}
+
+	var cmd strings.Builder
 	for _, path := range paths {
-		v, err := c.Config(path)
+		cmd.WriteString("git config ")
+		cmd.WriteString("--" + location)
+		cmd.WriteString(" --get-all ")
+		cmd.WriteString(path)
+
+		cfg, err := c.exec(cmd.String())
 		if err != nil {
 			return nil, err
 		}
+		cmd.Reset()
 
-		cfg[path] = v
+		v := reverse(strings.Split(cfg, "\n")...)
+		values[path] = v
 	}
 
-	return cfg, nil
+	return values, nil
 }
 
-// ConfigSet attempts to assign a value to a local git config setting.
-// If the setting already exists, a new line is added to the local git
-// config, effectively assigning multiple values to the same setting
-func (c *Client) ConfigSet(path, value string) error {
-	var cmd strings.Builder
-	cmd.WriteString("git config --add ")
-	cmd.WriteString(fmt.Sprintf("%s '%s'", path, value))
+// ConfigG attempts to query a batch of global git config settings for
+// their values. If multiple values have been set for any config item,
+// all are returned, ordered by most recent value first. A partial batch
+// is never returned, all config settings must exist
+func (c *Client) ConfigG(paths ...string) (map[string][]string, error) {
+	return c.config("global", paths...)
+}
 
-	_, err := c.exec(cmd.String())
-	return err
+// ConfigS attempts to query a batch of system git config settings for
+// their values. If multiple values have been set for any config item,
+// all are returned, ordered by most recent value first. A partial batch
+// is never returned, all config settings must exist
+func (c *Client) ConfigS(paths ...string) (map[string][]string, error) {
+	return c.config("system", paths...)
 }
 
 // ConfigSetL attempts to batch assign values to a group of local git
@@ -113,6 +134,10 @@ func (c *Client) ConfigSet(path, value string) error {
 // setting. Basic validation is performed to minimize the possibility
 // of a partial batch update
 func (c *Client) ConfigSetL(pairs ...string) error {
+	return c.configSet("local", pairs...)
+}
+
+func (c *Client) configSet(location string, pairs ...string) error {
 	if len(pairs) == 0 {
 		return nil
 	}
@@ -127,13 +152,38 @@ func (c *Client) ConfigSetL(pairs ...string) error {
 		}
 	}
 
+	var cmd strings.Builder
 	for i := 0; i < len(pairs); i += 2 {
-		if err := c.ConfigSet(pairs[i], pairs[i+1]); err != nil {
+		cmd.WriteString("git config ")
+		cmd.WriteString("--" + location)
+		cmd.WriteString(" --add ")
+		cmd.WriteString(fmt.Sprintf("%s '%s'", pairs[i], pairs[i+1]))
+
+		if _, err := c.exec(cmd.String()); err != nil {
 			return err
 		}
+		cmd.Reset()
 	}
 
 	return nil
+}
+
+// ConfigSetG attempts to batch assign values to a group of global git
+// config settings. If any setting exists, a new line is added to the
+// local git config, effectively assigning multiple values to the same
+// setting. Basic validation is performed to minimize the possibility
+// of a partial batch update
+func (c *Client) ConfigSetG(pairs ...string) error {
+	return c.configSet("global", pairs...)
+}
+
+// ConfigSetS attempts to batch assign values to a group of system git
+// config settings. If any setting exists, a new line is added to the
+// local git config, effectively assigning multiple values to the same
+// setting. Basic validation is performed to minimize the possibility
+// of a partial batch update
+func (c *Client) ConfigSetS(pairs ...string) error {
+	return c.configSet("system", pairs...)
 }
 
 // CheckConfigPath performs rudimentary checks to ensure the config path

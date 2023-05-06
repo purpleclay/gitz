@@ -19,8 +19,16 @@
 # SOFTWARE.
 version = 1
 
+test_patterns = [
+  "**/*_test.go"
+]
+
 [[analyzers]]
 name = "go"
 
     [analyzers.meta]
     import_root = "github.com/purpleclay/gitz"
+
+[[analyzers]]
+name = "secret"
+enabled = true
