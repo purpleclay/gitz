@@ -23,7 +23,6 @@ SOFTWARE.
 package git_test
 
 import (
-	"fmt"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -34,26 +33,30 @@ import (
 
 func TestConfig(t *testing.T) {
 	gittest.InitRepository(t)
-	setConfig(t, "user.name", "joker")
+	gittest.ConfigSet(t, "user.name", "joker", "user.email", "joker@dc.com")
 
 	client, _ := git.NewClient()
-	cfg, err := client.Config("user.name")
+	cfg, err := client.Config()
 
 	require.NoError(t, err)
-	require.Len(t, cfg, 2)
-	assert.Equal(t, "joker", cfg[0])
-	assert.Equal(t, gittest.DefaultAuthorName, cfg[1])
+	assert.Equal(t, "joker", cfg["user.name"])
+	assert.Equal(t, "joker@dc.com", cfg["user.email"])
 }
 
-func setConfig(t *testing.T, path, value string) {
-	t.Helper()
-	_, err := gittest.Exec(t, fmt.Sprintf("git config --add %s '%s'", path, value))
+func TestConfigOnlyLatestValues(t *testing.T) {
+	gittest.InitRepository(t)
+	gittest.ConfigSet(t, "user.name", "joker", "user.name", "scarecrow")
+
+	client, _ := git.NewClient()
+	cfg, err := client.Config()
+
 	require.NoError(t, err)
+	assert.Equal(t, "scarecrow", cfg["user.name"])
 }
 
 func TestConfigL(t *testing.T) {
 	gittest.InitRepository(t)
-	setConfig(t, "user.name", "alfred")
+	gittest.ConfigSet(t, "user.name", "alfred")
 
 	client, _ := git.NewClient()
 	cfg, err := client.ConfigL("user.name", "user.email")
@@ -65,16 +68,6 @@ func TestConfigL(t *testing.T) {
 
 	require.Len(t, cfg["user.email"], 1)
 	assert.Equal(t, gittest.DefaultAuthorEmail, cfg["user.email"][0])
-}
-
-func TestConfigSet(t *testing.T) {
-	gittest.InitRepository(t)
-
-	client, _ := git.NewClient()
-	err := client.ConfigSet("user.age", "unknown")
-
-	require.NoError(t, err)
-	configEquals(t, "user.age", "unknown")
 }
 
 func configEquals(t *testing.T, path, expected string) {

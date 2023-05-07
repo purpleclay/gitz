@@ -14,9 +14,6 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Built dependencies
-unittest-cover.txt
-
 # Mkdocs
 .cache/
 site/

@@ -503,6 +503,20 @@ func MustExec(t *testing.T, cmd string) string {
 	return out
 }
 
+// ConfigSet will set any number of local git config items for the current
+// repository. Input must contain an even number of pairs. The following git
+// command is executed for each config pair:
+//
+//	git config --add <path> '<value>'
+func ConfigSet(t *testing.T, pairs ...string) {
+	t.Helper()
+
+	require.Equal(t, len(pairs)%2, 0, "mismatch in number of config pairs")
+	for i := 0; i < len(pairs); i += 2 {
+		MustExec(t, fmt.Sprintf("git config --add %s '%s'", pairs[i], pairs[i+1]))
+	}
+}
+
 // Tags returns a list of all local tags associated with the current
 // repository. Raw output is returned from the git command:
 //
