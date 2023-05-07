@@ -71,7 +71,7 @@ func (c *Client) Config() (map[string]string, error) {
 	lines := strings.Split(cfg, "\n")
 	for _, line := range lines {
 		pos := strings.Index(line, "=")
-		values[line[:pos]] = line[pos:]
+		values[line[:pos]] = line[pos+1:]
 	}
 
 	return values, nil
@@ -82,10 +82,10 @@ func (c *Client) Config() (map[string]string, error) {
 // all are returned, ordered by most recent value first. A partial batch
 // is never returned, all config settings must exist
 func (c *Client) ConfigL(paths ...string) (map[string][]string, error) {
-	return c.config("local", paths...)
+	return c.configQuery("local", paths...)
 }
 
-func (c *Client) config(location string, paths ...string) (map[string][]string, error) {
+func (c *Client) configQuery(location string, paths ...string) (map[string][]string, error) {
 	if len(paths) == 0 {
 		return nil, nil
 	}
@@ -117,7 +117,7 @@ func (c *Client) config(location string, paths ...string) (map[string][]string, 
 // all are returned, ordered by most recent value first. A partial batch
 // is never returned, all config settings must exist
 func (c *Client) ConfigG(paths ...string) (map[string][]string, error) {
-	return c.config("global", paths...)
+	return c.configQuery("global", paths...)
 }
 
 // ConfigS attempts to query a batch of system git config settings for
@@ -125,7 +125,7 @@ func (c *Client) ConfigG(paths ...string) (map[string][]string, error) {
 // all are returned, ordered by most recent value first. A partial batch
 // is never returned, all config settings must exist
 func (c *Client) ConfigS(paths ...string) (map[string][]string, error) {
-	return c.config("system", paths...)
+	return c.configQuery("system", paths...)
 }
 
 // ConfigSetL attempts to batch assign values to a group of local git

@@ -23,7 +23,6 @@ SOFTWARE.
 package git_test
 
 import (
-	"fmt"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -32,33 +31,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: add a test method that sets any number of local config items ConfigSetL
-
 func TestConfig(t *testing.T) {
 	gittest.InitRepository(t)
-	setConfig(t, "user.name", "joker")
+	gittest.ConfigSet(t, "user.name", "joker", "user.email", "joker@dc.com")
 
 	client, _ := git.NewClient()
-	_, err := client.Config()
+	cfg, err := client.Config()
 
 	require.NoError(t, err)
-	// TODO: check for what has been set
-	// TODO: check for known defaults set by the testing library (other values will vary across runtimes)
-	// assert.Equal(t, "joker", cfg[0])
-	// assert.Equal(t, gittest.DefaultAuthorName, cfg[1])
+	assert.Equal(t, "joker", cfg["user.name"])
+	assert.Equal(t, "joker@dc.com", cfg["user.email"])
 }
 
-// TODO: TestConfig only returns latest values
+func TestConfigOnlyLatestValues(t *testing.T) {
+	gittest.InitRepository(t)
+	gittest.ConfigSet(t, "user.name", "joker", "user.name", "scarecrow")
 
-func setConfig(t *testing.T, path, value string) {
-	t.Helper()
-	_, err := gittest.Exec(t, fmt.Sprintf("git config --add %s '%s'", path, value))
+	client, _ := git.NewClient()
+	cfg, err := client.Config()
+
 	require.NoError(t, err)
+	assert.Equal(t, "scarecrow", cfg["user.name"])
 }
 
 func TestConfigL(t *testing.T) {
 	gittest.InitRepository(t)
-	setConfig(t, "user.name", "alfred")
+	gittest.ConfigSet(t, "user.name", "alfred")
 
 	client, _ := git.NewClient()
 	cfg, err := client.ConfigL("user.name", "user.email")
