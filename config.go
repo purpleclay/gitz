@@ -57,9 +57,9 @@ func (e ErrInvalidConfigPath) Error() string {
 	return fmt.Sprintf("path: %s invalid as %s", buf.String(), e.Reason)
 }
 
-// Config attempts to query a local git config setting for its value.
-// If multiple values have been set, all are returned, ordered by the
-// most recent value first
+// Config attempts to retrieve all git config for the current repository.
+// A map is returned containing each config item and its corresponding
+// latest value. Values are resolved from local, system and global config
 func (c *Client) Config() (map[string]string, error) {
 	cfg, err := c.exec("git config --list")
 	if err != nil {
