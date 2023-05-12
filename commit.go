@@ -24,6 +24,14 @@ package git
 
 import "fmt"
 
+// TODO: include options for GPG signing
+/*
+-S[<keyid>]
+--gpg-sign[=<keyid>]
+--no-gpg-sign
+*/
+// TODO: GPG integration test (spin up container, Dockerfile copies in code, runs the specific test needed)
+
 // Commit a snapshot of changes within the current repository (working directory)
 // and describe those changes with a given log message
 func (c *Client) Commit(msg string) (string, error) {

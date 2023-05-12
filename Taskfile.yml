@@ -38,6 +38,12 @@ tasks:
     cmds:
       - go mod tidy
 
+  test:
+    desc: Run all of the tests
+    cmds:
+      - task: unit-test
+      - task: docker-test
+
   unit-test:
     desc: Run the unit tests
     vars:
@@ -46,6 +52,12 @@ tasks:
       TEST_OPTIONS: '{{default "-short -race -vet=off -shuffle=on -p 1" .TEST_OPTIONS}}'
     cmds:
       - go test {{.TEST_OPTIONS}} -covermode=atomic -coverprofile={{.COVER_PROFILE}} {{.TEST_FORMAT}} ./...
+
+  docker-test:
+    desc: Run the docker-based tests
+    cmds:
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=withsigned
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=withsigningkey
 
   lint:
     desc: Lint the code using golangci-lint
