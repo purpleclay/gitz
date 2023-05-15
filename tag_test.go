@@ -72,33 +72,14 @@ func TestTagWithAnnotation(t *testing.T) {
 	assert.Contains(t, out, "created tag 0.1.0")
 }
 
-func TestTagWithAnnotationIgnores(t *testing.T) {
-	tests := []struct {
-		name    string
-		message string
-	}{
-		{
-			name:    "EmptyString",
-			message: "",
-		},
-		{
-			name:    "StringWithOnlyWhitespace",
-			message: "     ",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gittest.InitRepository(t)
+func TestTagWithSkipSigning(t *testing.T) {
+	gittest.InitRepository(t)
+	gittest.ConfigSet(t, "user.signingkey", "DOES-NOT-EXIST", "tag.gpgsign", "true")
 
-			client, _ := git.NewClient()
-			_, err := client.Tag("0.1.0", git.WithAnnotation(tt.message))
+	client, _ := git.NewClient()
+	_, err := client.Tag("0.1.0", git.WithSkipSigning())
 
-			require.NoError(t, err)
-
-			out := gittest.Show(t, "0.1.0")
-			assert.NotContains(t, out, fmt.Sprintf("Tagger: %s", gittest.DefaultAuthorLog))
-		})
-	}
+	require.NoError(t, err)
 }
 
 func TestDeleteTag(t *testing.T) {

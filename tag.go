@@ -75,7 +75,10 @@ func (k SortKey) String() string {
 type CreateTagOption func(*createTagOptions)
 
 type createTagOptions struct {
-	Annotation string
+	Annotation    string
+	ForceNoSigned bool
+	Signed        bool
+	SigningKey    string
 }
 
 // WithAnnotation ensures the created tag is annotated with the provided
@@ -86,6 +89,43 @@ type createTagOptions struct {
 func WithAnnotation(message string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
+	}
+}
+
+// WithSigned will create a GPG-signed tag using the GPG key associated
+// with the taggers email address. Overriding this behavior is possible
+// through the user.signingkey config setting. This option does not need
+// to be explicitly called if the tag.gpgSign config setting is set to
+// true. An annotated tag is mandatory when signing. A default annotation
+// will be assigned, unless overridden with the [WithAnnotation] option:
+//
+//	created tag 0.1.0
+func WithSigned() CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.Signed = true
+	}
+}
+
+// WithSigningKey will create a GPG-signed tag using the provided GPG
+// key ID, overridding any default GPG key set by the user.signingKey
+// config setting. An annotated tag is mandatory when signing. A default
+// annotation will be assigned, unless overridden with the [WithAnnotation]
+// option:
+//
+//	created tag 0.1.0
+func WithSigningKey(key string) CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.Signed = true
+		opts.SigningKey = strings.TrimSpace(key)
+	}
+}
+
+// WithSkipSigning ensures the created tag will not be GPG signed
+// regardless of the value assigned to the repositories tag.gpgSign
+// git config setting
+func WithSkipSigning() CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.ForceNoSigned = true
 	}
 }
 
@@ -106,12 +146,27 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 
 	// Build command based on the provided options
 	var tagCmd strings.Builder
-	tagCmd.WriteString("git tag ")
+	tagCmd.WriteString("git tag")
+
+	if options.Signed {
+		if options.Annotation == "" {
+			options.Annotation = "created tag " + tag
+		}
+		tagCmd.WriteString(" -s")
+	}
+
+	if options.SigningKey != "" {
+		tagCmd.WriteString(" -u " + options.SigningKey)
+	}
+
+	if options.ForceNoSigned {
+		tagCmd.WriteString(" --no-sign")
+	}
 
 	if options.Annotation != "" {
-		tagCmd.WriteString(fmt.Sprintf("-m '%s' -a ", options.Annotation))
+		tagCmd.WriteString(fmt.Sprintf(" -a -m '%s'", options.Annotation))
 	}
-	tagCmd.WriteString(fmt.Sprintf("'%s'", tag))
+	tagCmd.WriteString(fmt.Sprintf(" '%s'", tag))
 
 	if out, err := c.exec(tagCmd.String()); err != nil {
 		return out, err
@@ -269,4 +324,83 @@ func filterTags(tags []string, filters []TagFilter) []string {
 	}
 
 	return filtered
+}
+
+const (
+	taggerPrefix       = "tagger "
+	taggerEnd          = ">"
+	fingerprintPrefix  = "using RSA key "
+	signedByPrefix     = "Good signature from \""
+	noSigningPublicKey = "Can't check signature: No public key"
+)
+
+// TagVerification contains details about a GPG signed tag
+type TagVerification struct {
+	Ref         string
+	Tagger      Author
+	Fingerprint string
+	SignedBy    *Author
+}
+
+// Author contains details about the user whom made or
+// uploaded a specific change to the remote repository
+type Author struct {
+	Name  string
+	Email string
+}
+
+func parseAuthor(str string) Author {
+	name, email, found := strings.Cut(str, "<")
+	if !found {
+		return Author{}
+	}
+
+	return Author{
+		Name:  strings.TrimSuffix(name, " "),
+		Email: strings.TrimSuffix(email, ">"),
+	}
+}
+
+// VerifyTag validates that a given tag has a valid GPG signature
+// and returns details about that signature
+func (c *Client) VerifyTag(ref string) (*TagVerification, error) {
+	out, err := c.exec("git tag -v " + ref)
+	if err != nil {
+		return nil, err
+	}
+
+	tagger := out[strings.Index(out, taggerPrefix)+len(taggerPrefix) : strings.Index(out, taggerEnd)+1]
+	fingerprint := chompCRLF(out[strings.Index(out, fingerprintPrefix)+len(fingerprintPrefix):])
+
+	var signedByAuthor *Author
+	if strings.Contains(out, signedByPrefix) {
+		signedBy := chompUntil(out[strings.Index(out, signedByPrefix)+len(signedByPrefix):], '"')
+		author := parseAuthor(signedBy)
+		signedByAuthor = &author
+	}
+
+	return &TagVerification{
+		Ref:         ref,
+		Tagger:      parseAuthor(tagger),
+		Fingerprint: fingerprint,
+		SignedBy:    signedByAuthor,
+	}, nil
+}
+
+func chompCRLF(str string) string {
+	if idx := strings.Index(str, "\r"); idx > 1 {
+		return str[:idx]
+	}
+
+	if idx := strings.Index(str, "\n"); idx > 1 {
+		return str[:idx]
+	}
+	return str
+}
+
+func chompUntil(str string, until byte) string {
+	if idx := strings.IndexByte(str, until); idx > -1 {
+		return str[:idx]
+	}
+	return str
 }
