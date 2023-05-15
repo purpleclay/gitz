@@ -333,7 +333,7 @@ const (
 	signedByPrefix    = "Good signature from \""
 )
 
-// TagVerfification contains details about a GPG signature
+// TagVerification contains details about a GPG signature
 // from either a tag or commmit
 type TagVerification struct {
 	Ref         string
