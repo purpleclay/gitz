@@ -327,19 +327,19 @@ func filterTags(tags []string, filters []TagFilter) []string {
 }
 
 const (
-	taggerPrefix      = "tagger "
-	taggerEnd         = ">"
-	fingerprintPrefix = "using RSA key "
-	signedByPrefix    = "Good signature from \""
+	taggerPrefix       = "tagger "
+	taggerEnd          = ">"
+	fingerprintPrefix  = "using RSA key "
+	signedByPrefix     = "Good signature from \""
+	noSigningPublicKey = "Can't check signature: No public key"
 )
 
-// TagVerification contains details about a GPG signature
-// from either a tag or commmit
+// TagVerification contains details about a GPG signed tag
 type TagVerification struct {
 	Ref         string
 	Tagger      Author
 	Fingerprint string
-	SignedBy    Author
+	SignedBy    *Author
 }
 
 // Author contains details about the user whom made or
@@ -350,7 +350,10 @@ type Author struct {
 }
 
 func parseAuthor(str string) Author {
-	name, email, _ := strings.Cut(str, "<")
+	name, email, found := strings.Cut(str, "<")
+	if !found {
+		return Author{}
+	}
 
 	return Author{
 		Name:  strings.TrimSuffix(name, " "),
@@ -368,13 +371,19 @@ func (c *Client) VerifyTag(ref string) (*TagVerification, error) {
 
 	tagger := out[strings.Index(out, taggerPrefix)+len(taggerPrefix) : strings.Index(out, taggerEnd)+1]
 	fingerprint := chompCRLF(out[strings.Index(out, fingerprintPrefix)+len(fingerprintPrefix):])
-	signedBy := chompUntil(out[strings.Index(out, signedByPrefix)+len(signedByPrefix):], '"')
+
+	var signedByAuthor *Author
+	if strings.Contains(out, signedByPrefix) {
+		signedBy := chompUntil(out[strings.Index(out, signedByPrefix)+len(signedByPrefix):], '"')
+		author := parseAuthor(signedBy)
+		signedByAuthor = &author
+	}
 
 	return &TagVerification{
 		Ref:         ref,
 		Tagger:      parseAuthor(tagger),
 		Fingerprint: fingerprint,
-		SignedBy:    parseAuthor(signedBy),
+		SignedBy:    signedByAuthor,
 	}, nil
 }
 

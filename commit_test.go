@@ -45,15 +45,22 @@ func TestCommit(t *testing.T) {
 	assert.Equal(t, lastCommit.Message, "this is an example commit message")
 }
 
-func TestCommitCleanWorkingTreeError(t *testing.T) {
+func TestCommitWithAllowEmpty(t *testing.T) {
 	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	_, err := client.Commit("this is an example commit message")
+	_, err := client.Commit("this will be a an empty commit", git.WithAllowEmpty())
 
-	var errGit git.ErrGitExecCommand
-	require.ErrorAs(t, err, &errGit)
+	require.NoError(t, err)
+}
 
-	assert.Equal(t, "git commit -m 'this is an example commit message'", errGit.Cmd)
-	assert.Contains(t, errGit.Out, "nothing to commit, working tree clean")
+func TestCommitWithNoGpgSign(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("test.txt"))
+	gittest.ConfigSet(t, "user.signingkey", "DOES-NOT-EXIST", "commit.gpgsign", "true")
+	gittest.StageFile(t, "test.txt")
+
+	client, _ := git.NewClient()
+	_, err := client.Commit("this will be a regular commit", git.WithNoGpgSign())
+
+	require.NoError(t, err)
 }

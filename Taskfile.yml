@@ -56,8 +56,10 @@ tasks:
   docker-test:
     desc: Run the docker-based tests
     cmds:
-      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=withsigned
-      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=withsigningkey
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=tagsigned
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=tagsigningkey
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=commitsigned
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=commitsigningkey
 
   lint:
     desc: Lint the code using golangci-lint
