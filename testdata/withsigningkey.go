@@ -7,7 +7,10 @@ import (
 	git "github.com/purpleclay/gitz"
 )
 
-var gpgFingerprint = os.Getenv("GPG_FINGERPRINT")
+var (
+	gpgPublicKeyID = os.Getenv("GPG_PUBLIC_KEY_ID")
+	gpgFingerprint = os.Getenv("GPG_FINGERPRINT")
+)
 
 func main() {
 	gitc, err := git.NewClient()
@@ -16,7 +19,7 @@ func main() {
 	}
 
 	if _, err := gitc.Tag("0.1.0",
-		git.WithSigningKey(gpgFingerprint),
+		git.WithSigningKey(gpgPublicKeyID),
 		git.WithAnnotation("withsigningkey")); err != nil {
 		log.Fatal(err.Error())
 	}

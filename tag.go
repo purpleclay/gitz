@@ -333,7 +333,8 @@ const (
 	signedByPrefix    = "Good signature from \""
 )
 
-// TagVerfification ...
+// TagVerfification contains details about a GPG signature
+// from either a tag or commmit
 type TagVerification struct {
 	Ref         string
 	Tagger      Author
@@ -341,7 +342,8 @@ type TagVerification struct {
 	SignedBy    Author
 }
 
-// Author ...
+// Author contains details about the user whom made or
+// uploaded a specific change to the remote repository
 type Author struct {
 	Name  string
 	Email string
@@ -356,7 +358,8 @@ func parseAuthor(str string) Author {
 	}
 }
 
-// VerifyTag ...
+// VerifyTag validates that a given tag has a valid GPG signature
+// and returns details about that signature
 func (c *Client) VerifyTag(ref string) (*TagVerification, error) {
 	out, err := c.exec("git tag -v " + ref)
 	if err != nil {
