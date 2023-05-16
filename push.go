@@ -33,9 +33,10 @@ import (
 type PushOption func(*pushOptions)
 
 type pushOptions struct {
-	All      bool
-	Tags     bool
-	RefSpecs []string
+	All         bool
+	PushOptions []string
+	Tags        bool
+	RefSpecs    []string
 }
 
 // WithAllBranches will push all locally created branch references
@@ -51,6 +52,16 @@ func WithAllBranches() PushOption {
 func WithAllTags() PushOption {
 	return func(opts *pushOptions) {
 		opts.Tags = true
+	}
+}
+
+// WithPushOptions allows any number of aribitrary strings to be pushed
+// to the remote server. All options are transmitted in their received
+// order. A server must have the git config setting receive.advertisePushOptions
+// set to true to receive push options
+func WithPushOptions(options ...string) PushOption {
+	return func(opts *pushOptions) {
+		opts.PushOptions = trim(options...)
 	}
 }
 
@@ -80,6 +91,10 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 
 	var buffer strings.Builder
 	buffer.WriteString("git push")
+
+	for _, po := range options.PushOptions {
+		buffer.WriteString(" --push-option=" + po)
+	}
 
 	if options.All {
 		buffer.WriteString(" --all")
