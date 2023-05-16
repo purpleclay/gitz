@@ -45,6 +45,15 @@ func TestPush(t *testing.T) {
 	require.Equal(t, "testing git push", remoteLog[0].Message)
 }
 
+func TestPushWithPushOptions(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithLocalCommits("testing git push options"))
+
+	client, _ := git.NewClient()
+	_, err := client.Push(git.WithPushOptions("option1", "option2"))
+
+	require.NoError(t, err)
+}
+
 func TestPushResolveBranchError(t *testing.T) {
 	nonWorkingDirectory(t)
 

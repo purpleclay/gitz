@@ -273,6 +273,7 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	changeToDir(t, tmpDir)
 
 	Exec(t, fmt.Sprintf("git init --bare --initial-branch %s %s", DefaultBranch, BareRepositoryName))
+	setRemoteConfig(t, BareRepositoryName)
 	cloneRemoteAndInit(t, ClonedRepositoryName)
 
 	// Process any provided options to ensure repository is initialized as required
@@ -325,6 +326,12 @@ func changeToDir(t *testing.T, dir string) string {
 
 	require.NoError(t, os.Chdir(dir))
 	return changedFrom
+}
+
+func setRemoteConfig(t *testing.T, dir string) {
+	currentDir := changeToDir(t, dir)
+	setConfig(t, "receive.advertisePushOptions", "true")
+	changeToDir(t, currentDir)
 }
 
 func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
