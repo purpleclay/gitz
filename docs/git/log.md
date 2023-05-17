@@ -1,6 +1,5 @@
 ---
 icon: material/list-box-outline
-status: new
 title: Inspecting the commit log of a repository
 description: Retrieve the commit log of a repository in an easy-to-parse format
 ---

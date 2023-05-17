@@ -204,7 +204,7 @@ The filtered output would be:
 1.0.0
 ```
 
-### User-defined filters :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+### User-defined filters
 
 Extend filtering by applying user-defined filters to the list of retrieved tags with the `WithFilters` option. Execution of filters is in the order defined.
 
@@ -250,7 +250,7 @@ The filtered output would be:
 ui/0.1.0
 ```
 
-### Limiting the number of tags :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+### Limiting the number of tags
 
 Define the maximum number of returned tags through the `WithCount` option. Limiting is applied as a post-processing step after all other options.
 
@@ -314,3 +314,76 @@ func main() {
 ```
 
 [^1]: Gitz defers the validation of a tag name to the git client. Any error is captured and returned back to the caller
+
+## Signing a tag using GPG :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+
+Any tag against a repository can be GPG signed by the tagger to prove its authenticity through GPG verification. By setting the `tag.gpgSign` and `user.signingKey` git config options, GPG signing, can become an automatic process. `gitz` provides options to control this process and manually overwrite existing settings per tag.
+
+### Annotating the signed tag
+
+A signed tag must have an annotation. `gitz` defaults this to `created tag <ref>`, but you can change this with the `WithAnnotation` option.
+
+### Sign an individual tag
+
+If the `tag.gpgSign` git config setting is not enabled, you can selectively GPG sign a tag using the `WithSigned` option.
+
+```{ .go .select linenums="1" }
+package main
+
+import (
+    "log"
+
+    git "github.com/purpleclay/gitz"
+)
+
+func main() {
+    client, _ := git.NewClient()
+
+    _, err := client.Tag("0.1.0", git.WithSigned())
+    if err != nil {
+        log.Fatal("failed to gpg sign tag with user.signingKey")
+    }
+}
+```
+
+### Select a GPG signing key
+
+If multiple GPG keys exist, you can cherry-pick a key when tagging using the `WithSigningKey` option, overriding the `user.signingKey` git config setting, if set.
+
+```{ .go .select linenums="1" }
+package main
+
+import (
+    "log"
+
+    git "github.com/purpleclay/gitz"
+)
+
+func main() {
+    client, _ := git.NewClient()
+
+    _, err := client.Tag("0.1.0", git.WithSigningKey("E5389A1079D5A52F"))
+    if err != nil {
+        log.Fatal("failed to gpg sign tag with provided public key")
+    }
+}
+```
+
+### Prevent a tag from being signed
+
+You can disable the GPG signing of a tag by using the `WithSkipSigning` option, overriding the `tag.gpgSign` git config setting if set.
+
+```{ .go .select linenums="1" }
+package main
+
+import (
+    "log"
+
+    git "github.com/purpleclay/gitz"
+)
+
+func main() {
+    client, _ := git.NewClient()
+    client.Tag("0.1.0", git.WithSkipSigning())
+}
+```

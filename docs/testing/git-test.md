@@ -1,6 +1,5 @@
 ---
 icon: material/test-tube
-status: new
 title: Testing your interactions with git
 description: A dedicated package for testing your interactions with git
 ---
@@ -75,7 +74,7 @@ ci: include github release workflow`
 }
 ```
 
-#### Multi-line commits :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+#### Multi-line commits
 
 Import multi-line commits by prefixing each commit with a `>` token. The expected format is equivalent to the output from the git command:
 
