@@ -7,13 +7,13 @@ description: Get and set your local git repository config
 
 # Managing your git config
 
-[:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-config) | :material-beaker-outline: Experimental
+[:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-config)
 
 Manage settings within your local git config, changing the behavior of the git client.
 
-## Retrieve a local setting :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+## Retrieve all settings :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
 
-Providing a valid path to `Config` will retrieve all values associated with a setting in modification order.
+Retrieve all git config for the current repository using `Config`.
 
 ```{ .go .select linenums="1" }
 package main
@@ -27,29 +27,25 @@ import (
 
 func main() {
     client, _ := git.NewClient()
-    // setting user.name to purpleclay to cover up real identity
 
-    cfg, err := client.Config("user.name")
+    cfg, err := client.Config()
     if err != nil {
-        log.Fatal("failed to retrieve config setting")
+        log.Fatal("failed to retrieve config for current repository")
     }
 
-    for _, v := range cfg {
-        fmt.Println(v)
-    }
+    fmt.Println(cfg["user.name"])
 }
 ```
 
-The values for the config setting would be:
+The value for the config setting would be:
 
 ```{ .text .no-select .no-copy }
 purpleclay
-****
 ```
 
-## Retrieve a batch of local settings :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+## Retrieve a batch of settings :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
 
-For convenience, multiple local settings can be retrieved in a batch using `ConfigL`. A partial batch is not supported and will fail if any setting does not exist.
+A batch of settings can be retrieved using `ConfigL` (_local_), `ConfigS` (_system_), or `ConfigG` (_global_). A partial retrieval is not supported and will fail if any are missing. All values for a setting are retrieved and ordered by the latest.
 
 ```{ .go .select linenums="1" }
 package main
@@ -65,7 +61,7 @@ func main() {
     client, _ := git.NewClient()
     cfg, err := client.ConfigL("user.name", "user.email")
     if err != nil {
-        log.Fatal("failed to retrieve config settings")
+        log.Fatal("failed to retrieve local config settings")
     }
 
     fmt.Println(cfg["user.name"][0])
@@ -80,31 +76,9 @@ purpleclay
 **********************
 ```
 
-## Update a local setting :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
+## Update a batch of settings :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
 
-To update a local git setting, call `ConfigSet`` with a path and corresponding value.
-
-```{ .go .select linenums="1" }
-package main
-
-import (
-    "log"
-
-    git "github.com/purpleclay/gitz"
-)
-
-func main() {
-    client, _ := git.NewClient()
-    err := client.ConfigSet("custom.setting", "value")
-    if err != nil {
-        log.Fatal("failed to set config setting")
-    }
-}
-```
-
-## Updating a batch of local settings :material-new-box:{.new-feature title="Feature added on the 31st March of 2023"}
-
-Multiple local settings can be updated in a batch using `ConfigSetL`. Pre-validation of config paths improves the chance of a successful update, but a partial batch may occur upon failure.
+You can update multiple settings in a batch using `ConfigSetL` (_local_), `ConfigSetS` (_system_), or `ConfigSetG` (_global_). Pre-validation of config paths improves the chance of a successful update, but a partial batch may occur upon failure.
 
 ```{ .go .select linenums="1" }
 package main
@@ -117,10 +91,11 @@ import (
 
 func main() {
     client, _ := git.NewClient()
+
     err := client.ConfigSetL("custom.setting1", "value",
         "custom.setting2", "value")
     if err != nil {
-        log.Fatal("failed to set config setting")
+        log.Fatal("failed to set local config settings")
     }
 }
 ```
