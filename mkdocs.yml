@@ -10,6 +10,8 @@ edit_uri: ""
 theme:
   name: material
   custom_dir: docs/overrides
+  logo: static/logo.png
+  favicon: static/favicon.ico
   palette:
     primary: deep purple
     accent: purple
@@ -80,12 +82,15 @@ extra:
 
 plugins:
   - git-revision-date-localized:
+      enabled: !ENV [CI, false]
       enable_creation_date: true
       type: timeago
   - git-committers:
+      enabled: !ENV [CI, false]
       repository: purpleclay/gitz
       branch: main
   - minify:
+      enabled: !ENV [CI, false]
       minify_html: true
   - search
   - social

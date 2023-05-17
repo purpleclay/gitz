@@ -1,5 +1,6 @@
 ---
 icon: material/arrow-right-bold-box-outline
+status: new
 title: Pushing the latest changes back to a remote
 description: Push all local repository changes back to the remote
 ---
@@ -35,7 +36,7 @@ func main() {
 }
 ```
 
-## Pushing all local branches :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Pushing all local branches
 
 To push changes spread across multiple branches back to the remote in a single atomic operation, use the `WillAllBranches` option:
 
@@ -66,7 +67,7 @@ func main() {
 }
 ```
 
-## Pushing all local tags :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Pushing all local tags
 
 All locally created tags can also be pushed back to the remote in a single atomic operation using the `WithAllTags` option:
 
@@ -91,7 +92,7 @@ func main() {
 }
 ```
 
-## Cherry-pick what is pushed to the remote :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Cherry-pick what is pushed to the remote
 
 The `WithRefSpecs` option provides greater freedom to cherry-pick locally created references (_branches and tags_) and push them back to the remote. A reference can be as simple as a name or as explicit as providing a source (_local_) to destination (_remote_) mapping. Please read the official git specification on how to construct [refspecs](https://git-scm.com/docs/git-push#Documentation/git-push.txt-ltrefspecgt82308203).
 
@@ -116,7 +117,7 @@ func main() {
 }
 ```
 
-## Push a single branch or tag :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Push a single branch or tag
 
 `PushRef` can be called to cherry-pick and push a single reference (_branch or tag_) back to the remote:
 
@@ -137,6 +138,31 @@ func main() {
     _, err := client.PushRef("0.1.0")
     if err != nil {
         log.Fatal("failed to push tag 0.1.0 to the remote")
+    }
+}
+```
+
+## Push options :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+
+Support the transmission of arbitrary strings to the remote server using the `WithPushOptions` option.
+
+```{ .go .select linenums="1" }
+package main
+
+import (
+    "log"
+
+    git "github.com/purpleclay/gitz"
+)
+
+func main() {
+    client, _ := git.NewClient()
+
+    // all changes have been staged and committed locally
+
+    _, err := client.Push(git.WithPushOptions("ci.skip=true"))
+    if err != nil {
+        log.Fatal("failed to push committed changes to the remote")
     }
 }
 ```
