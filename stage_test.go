@@ -78,3 +78,14 @@ func TestStageWithPathSpecsIgnoresEmptyPathSpecs(t *testing.T) {
 	status := gittest.PorcelainStatus(t)
 	assert.ElementsMatch(t, []string{"?? file1.txt", "A  file2.txt"}, status)
 }
+
+func TestStaged(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("README.md"),
+		gittest.WithStagedFiles("go.mod", "pkg/config/config.go"))
+
+	client, _ := git.NewClient()
+	staged, err := client.Staged()
+	require.NoError(t, err)
+
+	assert.ElementsMatch(t, []string{"go.mod", "pkg/config/config.go"}, staged)
+}
