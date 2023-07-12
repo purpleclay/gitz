@@ -100,22 +100,27 @@ func (e ErrGitNonRelativePath) Error() string {
 // Repository provides a snapshot of the current state of a repository
 // (working directory)
 type Repository struct {
-	// DetachedHead ...
+	// DetachedHead is true if the current repository HEAD points to a
+	// specific commit, rather than a branch
 	DetachedHead bool
 
-	// DefaultBranch ...
+	// DefaultBranch is the initial branch that is checked out when
+	// a repository is cloned
 	DefaultBranch string
 
-	// Origin ... Store the origin URL (git ls-remote --get-url)
+	// Origin contains the URL of the remote which this repository
+	// was cloned from
 	Origin string
 
-	// Remotes ...
+	// Remotes will contain all of the remotes and their URLs as
+	// configured for this repository
 	Remotes map[string]string
 
-	// RootDir ...
+	// RootDir contains the path to the cloned directory
 	RootDir string
 
-	// ShallowClone ...
+	// ShallowClone is true if the current repository has been cloned
+	// to a specified depth without the entire commit history
 	ShallowClone bool
 }
 
