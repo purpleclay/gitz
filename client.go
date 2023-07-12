@@ -100,10 +100,23 @@ func (e ErrGitNonRelativePath) Error() string {
 // Repository provides a snapshot of the current state of a repository
 // (working directory)
 type Repository struct {
-	ShallowClone  bool
-	DetachedHead  bool
+	// DetachedHead ...
+	DetachedHead bool
+
+	// DefaultBranch ...
 	DefaultBranch string
-	RootDir       string
+
+	// Origin ... Store the origin URL (git ls-remote --get-url)
+	Origin string
+
+	// Remotes ...
+	Remotes map[string]string
+
+	// RootDir ...
+	RootDir string
+
+	// ShallowClone ...
+	ShallowClone bool
 }
 
 // Client provides a way of performing fluent operations against git.
@@ -131,9 +144,8 @@ func (c *Client) Version() string {
 	return c.gitVersion
 }
 
-// Repository returns details about the current repository (working directory),
-// by carrying out a series of checks. Answers to which are returned as a
-// snapshot for querying
+// Repository captures and returns a snapshot of the current repository
+// (working directory) state
 func (c *Client) Repository() (Repository, error) {
 	isRepo, _ := c.exec("git rev-parse --is-inside-work-tree")
 	if strings.TrimSpace(isRepo) != "true" {
@@ -145,11 +157,27 @@ func (c *Client) Repository() (Repository, error) {
 	defaultBranch, _ := c.exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
 	rootDir, _ := c.rootDir()
 
+	// Identify all remotes associated with this repository. If this is a new
+	// locally initialized repository, this could be empty
+	rmts, _ := c.exec("git remote")
+	remotes := map[string]string{}
+	for _, remote := range strings.Split(rmts, "\n") {
+		remoteURL, _ := c.exec("git remote get-url " + remote)
+		remotes[remote] = remoteURL
+	}
+
+	origin := ""
+	if orig, found := remotes["origin"]; found {
+		origin = orig
+	}
+
 	return Repository{
-		ShallowClone:  strings.TrimSpace(isShallow) == "true",
 		DetachedHead:  strings.TrimSpace(isDetached) == "",
 		DefaultBranch: strings.TrimPrefix(defaultBranch, "origin/"),
+		Origin:        origin,
+		Remotes:       remotes,
 		RootDir:       rootDir,
+		ShallowClone:  strings.TrimSpace(isShallow) == "true",
 	}, nil
 }
 
