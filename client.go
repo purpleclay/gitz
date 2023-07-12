@@ -163,7 +163,7 @@ func (c *Client) Repository() (Repository, error) {
 	remotes := map[string]string{}
 	for _, remote := range strings.Split(rmts, "\n") {
 		remoteURL, _ := c.exec("git remote get-url " + remote)
-		remotes[remote] = remoteURL
+		remotes[remote] = filepath.ToSlash(remoteURL)
 	}
 
 	origin := ""
