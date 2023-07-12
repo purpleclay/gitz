@@ -54,7 +54,7 @@ func TestClean(t *testing.T) {
 	assert.True(t, clean)
 }
 
-func TestClean_WithStagedChanges(t *testing.T) {
+func TestCleanWithStagedChanges(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithStagedFiles("example.txt"))
 
 	client, _ := git.NewClient()

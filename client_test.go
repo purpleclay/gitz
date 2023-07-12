@@ -64,6 +64,9 @@ func TestRepository(t *testing.T) {
 	assert.False(t, repo.ShallowClone)
 	assert.Equal(t, gittest.DefaultBranch, repo.DefaultBranch)
 	assert.Equal(t, gittest.WorkingDirectory(t), repo.RootDir)
+	assert.Equal(t, repo.Origin, gittest.Remote(t))
+	require.Len(t, repo.Remotes, 1)
+	assert.Equal(t, repo.Remotes[gittest.DefaultOrigin], gittest.Remote(t))
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
@@ -84,8 +87,8 @@ func TestRepositoryDetectsDetachedHead(t *testing.T) {
 
 	client, _ := git.NewClient()
 	repo, err := client.Repository()
-
 	require.NoError(t, err)
+
 	assert.True(t, repo.DetachedHead)
 }
 
@@ -96,6 +99,19 @@ func TestRepositoryNotWorkingDirectory(t *testing.T) {
 	_, err := client.Repository()
 
 	require.EqualError(t, err, "current working directory is not a git repository")
+}
+
+func TestRepositoryWithMultipleRemotes(t *testing.T) {
+	gittest.InitRepository(t)
+	gittest.Exec(t, "git remote add gitlab git@gitlab.com:purpleclay/test.git")
+
+	client, _ := git.NewClient()
+	repo, err := client.Repository()
+	require.NoError(t, err)
+
+	require.Len(t, repo.Remotes, 2)
+	assert.Equal(t, repo.Remotes[gittest.DefaultOrigin], gittest.Remote(t))
+	assert.Equal(t, repo.Remotes["gitlab"], "git@gitlab.com:purpleclay/test.git")
 }
 
 func TestToRelativePath(t *testing.T) {

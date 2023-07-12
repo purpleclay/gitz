@@ -100,10 +100,28 @@ func (e ErrGitNonRelativePath) Error() string {
 // Repository provides a snapshot of the current state of a repository
 // (working directory)
 type Repository struct {
-	ShallowClone  bool
-	DetachedHead  bool
+	// DetachedHead is true if the current repository HEAD points to a
+	// specific commit, rather than a branch
+	DetachedHead bool
+
+	// DefaultBranch is the initial branch that is checked out when
+	// a repository is cloned
 	DefaultBranch string
-	RootDir       string
+
+	// Origin contains the URL of the remote which this repository
+	// was cloned from
+	Origin string
+
+	// Remotes will contain all of the remotes and their URLs as
+	// configured for this repository
+	Remotes map[string]string
+
+	// RootDir contains the path to the cloned directory
+	RootDir string
+
+	// ShallowClone is true if the current repository has been cloned
+	// to a specified depth without the entire commit history
+	ShallowClone bool
 }
 
 // Client provides a way of performing fluent operations against git.
@@ -131,9 +149,8 @@ func (c *Client) Version() string {
 	return c.gitVersion
 }
 
-// Repository returns details about the current repository (working directory),
-// by carrying out a series of checks. Answers to which are returned as a
-// snapshot for querying
+// Repository captures and returns a snapshot of the current repository
+// (working directory) state
 func (c *Client) Repository() (Repository, error) {
 	isRepo, _ := c.exec("git rev-parse --is-inside-work-tree")
 	if strings.TrimSpace(isRepo) != "true" {
@@ -145,11 +162,27 @@ func (c *Client) Repository() (Repository, error) {
 	defaultBranch, _ := c.exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
 	rootDir, _ := c.rootDir()
 
+	// Identify all remotes associated with this repository. If this is a new
+	// locally initialized repository, this could be empty
+	rmts, _ := c.exec("git remote")
+	remotes := map[string]string{}
+	for _, remote := range strings.Split(rmts, "\n") {
+		remoteURL, _ := c.exec("git remote get-url " + remote)
+		remotes[remote] = filepath.ToSlash(remoteURL)
+	}
+
+	origin := ""
+	if orig, found := remotes["origin"]; found {
+		origin = orig
+	}
+
 	return Repository{
-		ShallowClone:  strings.TrimSpace(isShallow) == "true",
 		DetachedHead:  strings.TrimSpace(isDetached) == "",
 		DefaultBranch: strings.TrimPrefix(defaultBranch, "origin/"),
+		Origin:        origin,
+		Remotes:       remotes,
 		RootDir:       rootDir,
+		ShallowClone:  strings.TrimSpace(isShallow) == "true",
 	}, nil
 }
 
