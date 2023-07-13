@@ -31,61 +31,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStage(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("file.txt", "dir1/file.txt", "dir2/file.txt"))
+func TestPorcelainStatus(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("README.md"), gittest.WithStagedFiles("go.mod"))
 
 	client, _ := git.NewClient()
-	_, err := client.Stage()
-
+	statuses, err := client.PorcelainStatus()
 	require.NoError(t, err)
-	status := gittest.PorcelainStatus(t)
-	assert.ElementsMatch(t, []string{
-		"A  file.txt",
-		"A  dir1/file.txt",
-		"A  dir2/file.txt",
-	}, status)
+
+	require.Len(t, statuses, 2)
+	assert.ElementsMatch(t,
+		[]string{"?? README.md", "A  go.mod"},
+		[]string{statuses[0].String(), statuses[1].String()})
 }
 
-func TestStageWithPathSpecs(t *testing.T) {
-	files := []string{
-		"file.txt",
-		"dir1/file.txt",
-		"dir1/file.gif",
-		"dir2/file.txt",
-	}
-	gittest.InitRepository(t, gittest.WithFiles(files...))
+func TestClean(t *testing.T) {
+	gittest.InitRepository(t)
 
 	client, _ := git.NewClient()
-	_, err := client.Stage(git.WithPathSpecs("file.txt", "dir1/*.gif"))
-
+	clean, err := client.Clean()
 	require.NoError(t, err)
-	status := gittest.PorcelainStatus(t)
-	assert.ElementsMatch(t, []string{
-		"A  file.txt",
-		"?? dir1/file.txt",
-		"A  dir1/file.gif",
-		"?? dir2/",
-	}, status)
+
+	assert.True(t, clean)
 }
 
-func TestStageWithPathSpecsIgnoresEmptyPathSpecs(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("file1.txt", "file2.txt"))
+func TestCleanWithStagedChanges(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithStagedFiles("example.txt"))
 
 	client, _ := git.NewClient()
-	_, err := client.Stage(git.WithPathSpecs(" ", "   file2.txt   "))
-
-	require.NoError(t, err)
-	status := gittest.PorcelainStatus(t)
-	assert.ElementsMatch(t, []string{"?? file1.txt", "A  file2.txt"}, status)
-}
-
-func TestStaged(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("README.md"),
-		gittest.WithStagedFiles("go.mod", "pkg/config/config.go"))
-
-	client, _ := git.NewClient()
-	staged, err := client.Staged()
+	clean, err := client.Clean()
 	require.NoError(t, err)
 
-	assert.ElementsMatch(t, []string{"go.mod", "pkg/config/config.go"}, staged)
+	assert.False(t, clean)
 }

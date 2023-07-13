@@ -175,15 +175,6 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 	return c.exec(fmt.Sprintf("git push origin '%s'", tag))
 }
 
-// DeleteTag a tag both locally and from the remote origin
-func (c *Client) DeleteTag(tag string) (string, error) {
-	if out, err := c.exec(fmt.Sprintf(`git tag -d "%s"`, tag)); err != nil {
-		return out, err
-	}
-
-	return c.exec(fmt.Sprintf("git push --delete origin '%s'", tag))
-}
-
 // ListTagsOption provides a way for setting specific options during a list
 // tags operation. Each supported option can customize the way in which the
 // tags are queried and returned from the current repository (workng directory)
@@ -403,4 +394,51 @@ func chompUntil(str string, until byte) string {
 		return str[:idx]
 	}
 	return str
+}
+
+// DeleteTagsOption provides a way for setting specific options during
+// a tag deletion operation
+type DeleteTagsOption func(*deleteTagsOptions)
+
+type deleteTagsOptions struct {
+	LocalOnly bool
+}
+
+// WithLocalDelete ensures the reference to the tag is deleted from
+// the local index only and is not pushed back to the remote. Useful
+// if working with temporary tags that need to be removed
+func WithLocalDelete() DeleteTagsOption {
+	return func(opts *deleteTagsOptions) {
+		opts.LocalOnly = true
+	}
+}
+
+// DeleteTag a tag both locally and from the remote origin
+func (c *Client) DeleteTag(tag string, opts ...DeleteTagsOption) (string, error) {
+	return c.DeleteTags([]string{tag}, opts...)
+}
+
+// DeleteTags will attempt to delete a series of tags from the current
+// repository and push those deletions back to the remote
+func (c *Client) DeleteTags(tags []string, opts ...DeleteTagsOption) (string, error) {
+	if len(tags) == 0 {
+		return "", nil
+	}
+
+	options := &deleteTagsOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	for _, tag := range tags {
+		if _, err := c.exec("git tag -d " + tag); err != nil {
+			return "", err
+		}
+	}
+
+	if options.LocalOnly {
+		return "", nil
+	}
+
+	return c.PushRefs(tags, WithRefDelete())
 }
