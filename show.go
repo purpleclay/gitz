@@ -153,9 +153,10 @@ func (c *Client) ShowCommits(refs ...string) (map[string]CommitDetails, error) {
 func parseCommit(str string) CommitDetails {
 	str, _ = line()(str)
 	var signature *Signature
-	if strings.HasPrefix(str, "gpg") {
-		str, _ = until("Author:")(str)
-		signature = parseSignature(str)
+	if strings.HasPrefix(str, "gpg:") {
+		var gpg string
+		str, gpg = until("Author:")(str)
+		signature = parseSignature(gpg)
 	}
 	str, pair := separatedPair(tag("Author:"), ws(), until("AuthorDate:"))(str)
 	author := parsePerson(pair[1])
