@@ -32,20 +32,14 @@ import (
 // LogEntry represents a single log entry from the history
 // of a git repository
 type LogEntry struct {
-	// Commit contains the commit message
-	//
-	// Deprecated: use [LogEntry.Message] instead
-	Commit string
+	// Hash contains the unique identifier associated with the commit
+	Hash string
+
+	// AbbrevHash contains the seven character abbreviated commit hash
+	AbbrevHash string
 
 	// Message contains the log message associated with the commit
 	Message string
-
-	// Tag contains a valid tag reference to an associated
-	// commit within a log entry. If using multiple tags,
-	// only the first will be referenced
-	//
-	// Deprecated: Use [LogEntry.Tags] instead.
-	Tag string
 
 	// Tags contains all tag references that are associated
 	// with the current commit
@@ -67,9 +61,10 @@ type LogEntry struct {
 // ParseLog will attempt to parse a log extract from a given repository
 // into a series of commits, branches and tags. The log will be returned
 // in the chronological order provided. The parser is designed to not
-// error and parses each line with best endeavors.
+// error and parses each line with best endeavors. Multiple log formats
+// are supported:
 //
-// The log is expected to be in the following format:
+// 1. A condensed single line log format:
 //
 //	(HEAD -> new-feature, origin/new-feature) pass tests
 //	write tests for new feature
@@ -82,12 +77,9 @@ type LogEntry struct {
 //
 //	git log --pretty='format:%d %s'
 //
-// The parser is also designed to support multi-line commits, which is
-// denotoed with the presence of the prefix marker >. The parser will
-// switch between parsing modes if it detects the existence of this marker
-// on the first character of the provided log extract.
-//
-// The log is expected to be in the following format for multi-mode:
+// 2. A multi-line commit format, which is denotoed with the presence of the prefix
+// marker >. The parser will switch between parsing modes if it detects the existence
+// of this marker on the first character of the provided log extract:
 //
 //	> (HEAD -> new-feature, origin/new-feature) pass tests
 //	> write tests for new feature
@@ -97,6 +89,17 @@ type LogEntry struct {
 //
 //	git log --pretty='format:> %d %s%+b%-N'
 //
+// 3. A log containing an optional leading forty character hash. Can be used
+// in conjunction with both single line and multi-line formats:
+//
+//	> b0d5429b967b9af0a0805fc2981b4420e10be38d (HEAD -> new-feature, origin/new-feature) pass tests
+//	> 58d708cb071df97e2561903aadcd4129419e9631 write tests for new feature
+//	> 4edd1a7e492aeeaf2a97ad57433e236bc72e1d93 (tag: 0.2.0, tag: v1, main, origin/main) feat: improve existing cli documentation
+//
+// This is the equivalent to the format produced using the git command:
+//
+//	git log --pretty='format:> %H %d %s%+b%-N'
+//
 // [%m]: https://git-scm.com/docs/git-log#Documentation/git-log.txt-emmem
 func ParseLog(log string) []LogEntry {
 	if log == "" {
@@ -104,7 +107,6 @@ func ParseLog(log string) []LogEntry {
 	}
 
 	entries := make([]LogEntry, 0)
-
 	scanner := bufio.NewScanner(strings.NewReader(log))
 
 	// Detect if the log requires multi-line parsing by checking for the git marker > (%m)
@@ -118,7 +120,19 @@ func ParseLog(log string) []LogEntry {
 		line := scanner.Text()
 		line = strings.TrimSpace(line)
 
-		entry := LogEntry{Commit: line, Message: line}
+		var hash string
+		var abbrevHash string
+		if hash, line = chompHash(line); len(hash) > 0 {
+			abbrevHash = hash[:7]
+			// Ensure any leading whitespace is removed before proceeding
+			line = strings.TrimSpace(line)
+		}
+
+		entry := LogEntry{
+			Hash:       hash,
+			AbbrevHash: abbrevHash,
+			Message:    line,
+		}
 		if strings.HasPrefix(line, "(") {
 			// Cut based on the first occurrence of a closing parentheses, if one doesn't
 			// exist, then append the line as a raw log entry
@@ -126,8 +140,6 @@ func ParseLog(log string) []LogEntry {
 			if !found {
 				goto append
 			}
-
-			entry.Commit = msg
 			entry.Message = msg
 
 			// Process the comma separated list of ref names, preceding the commit message
@@ -148,11 +160,6 @@ func ParseLog(log string) []LogEntry {
 						entry.IsTrunk = true
 					}
 				}
-			}
-
-			// For backwards compatibility, store a reference to the first tag
-			if len(entry.Tags) > 0 {
-				entry.Tag = entry.Tags[0]
 			}
 		}
 
@@ -181,4 +188,18 @@ func hasBranchPrefix(branch string, prefixes ...string) bool {
 		}
 	}
 	return false
+}
+
+func chompHash(str string) (string, string) {
+	if len(str) < 40 {
+		return "", str
+	}
+
+	hash := str[:40]
+	for _, b := range []byte(hash) {
+		if !(b >= '0' && b <= '9' || b >= 'a' && b <= 'f' || b >= 'A' && b <= 'F') {
+			return "", str
+		}
+	}
+	return hash, str[40:]
 }

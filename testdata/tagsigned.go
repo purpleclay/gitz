@@ -33,15 +33,19 @@ func main() {
 		log.Fatalf("invalid tagger email, expecting: 'batman@dc.com' but received: '%s'", verif.Tagger.Email)
 	}
 
-	if verif.Fingerprint != gpgFingerprint {
-		log.Fatalf("invalid fingerprint, expecting: '%s' but received: '%s'", gpgFingerprint, verif.Fingerprint)
+	if verif.Annotation != "withsigned" {
+		log.Fatalf("invalid annotation, expecting: 'withsigned' but received: '%s'", verif.Annotation)
 	}
 
-	if verif.SignedBy.Name != "batman" {
-		log.Fatalf("invalid signed-by name, expecting: 'batman' but received: '%s'", verif.SignedBy.Name)
+	if verif.Signature.Fingerprint != gpgFingerprint {
+		log.Fatalf("invalid fingerprint, expecting: '%s' but received: '%s'", gpgFingerprint, verif.Signature.Fingerprint)
 	}
 
-	if verif.SignedBy.Email != "batman@dc.com" {
-		log.Fatalf("invalid signed-by email, expecting: 'batman@dc.com' but received: '%s'", verif.SignedBy.Email)
+	if verif.Signature.Author.Name != "batman" {
+		log.Fatalf("invalid signed-by name, expecting: 'batman' but received: '%s'", verif.Signature.Author.Name)
+	}
+
+	if verif.Signature.Author.Email != "batman@dc.com" {
+		log.Fatalf("invalid signed-by email, expecting: 'batman@dc.com' but received: '%s'", verif.Signature.Author.Email)
 	}
 }

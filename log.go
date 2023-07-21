@@ -180,24 +180,6 @@ type LogEntry struct {
 
 	// Message contains the message associated with the commit
 	Message string
-
-	// Author represents a person who originally created the files
-	// within the repository
-	Author Person
-
-	// Committer represents a person who changed any existing files
-	// within the repository
-	Committer Person
-}
-
-// Person represents a human that has performed an interaction against
-// a repository
-type Person struct {
-	// Name of the person
-	Name string
-
-	// Email address associated with the person
-	Email string
 }
 
 // Log retrieves the commit log of the current repository (working directory)

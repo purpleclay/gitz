@@ -110,45 +110,49 @@ func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 	return c.exec(commitCmd.String())
 }
 
-const (
-	authorPrefix    = "author "
-	committerPrefix = "committer "
-	emailEnd        = '>'
-)
-
 // CommitVerification contains details about a GPG signed commit
 type CommitVerification struct {
-	Sha         string
-	Author      Author
-	Committer   Author
-	Fingerprint string
-	SignedBy    *Author
+	// Author represents a person who originally created the files
+	// within the repository
+	Author Person
+
+	// Committer represents a person who changed any existing files
+	// within the repository
+	Committer Person
+
+	// Hash contains the unique identifier associated with the commit
+	Hash string
+
+	// Message contains the message associated with the commit
+	Message string
+
+	// Signature contains details of the verified GPG signature
+	Signature *Signature
 }
 
 // VerifyCommit validates that a given commit has a valid GPG signature
 // and returns details about that signature
-func (c *Client) VerifyCommit(sha string) (*CommitVerification, error) {
-	out, err := c.exec("git verify-commit -v " + sha)
+func (c *Client) VerifyCommit(hash string) (*CommitVerification, error) {
+	out, err := c.exec("git verify-commit -v " + hash)
 	if err != nil {
 		return nil, err
 	}
 
-	author := chompUntil(out[strings.Index(out, authorPrefix)+len(authorPrefix):], emailEnd)
-	committer := chompUntil(out[strings.Index(out, committerPrefix)+len(committerPrefix):], emailEnd)
-	fingerprint := chompCRLF(out[strings.Index(out, fingerprintPrefix)+len(fingerprintPrefix):])
+	out, _ = until("author ")(out)
+	out, pair := separatedPair(tag("author "), ws(), until("committer "))(out)
+	author := parsePerson(pair[1])
 
-	var signedByAuthor *Author
-	if strings.Contains(out, signedByPrefix) {
-		signedBy := chompUntil(out[strings.Index(out, signedByPrefix)+len(signedByPrefix):], '"')
-		author := parseAuthor(signedBy)
-		signedByAuthor = &author
-	}
+	out, pair = separatedPair(tag("committer "), ws(), takeUntil(lineEnding))(out)
+	committer := parsePerson(pair[1])
+	out, _ = line()(out)
+
+	out, mesage := until("gpg: ")(out)
 
 	return &CommitVerification{
-		Sha:         sha,
-		Author:      parseAuthor(author),
-		Committer:   parseAuthor(committer),
-		Fingerprint: fingerprint,
-		SignedBy:    signedByAuthor,
+		Author:    author,
+		Committer: committer,
+		Hash:      hash,
+		Message:   strings.TrimSpace(mesage),
+		Signature: parseSignature(out),
 	}, nil
 }
