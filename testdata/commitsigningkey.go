@@ -43,15 +43,19 @@ func main() {
 		log.Fatalf("invalid committer email, expecting: 'batman@dc.com' but received: '%s'", verif.Committer.Email)
 	}
 
-	if verif.Fingerprint != gpgFingerprint {
-		log.Fatalf("invalid fingerprint, expecting: '%s' but received: '%s'", gpgFingerprint, verif.Fingerprint)
+	if verif.Message != "this is a signed commit" {
+		log.Fatalf("invalid commit message, expecting: 'this is a signed commit' but received: '%s'", verif.Message)
 	}
 
-	if verif.SignedBy.Name != "batman" {
-		log.Fatalf("invalid signed-by name, expecting: 'batman' but received: '%s'", verif.SignedBy.Name)
+	if verif.Signature.Fingerprint != gpgFingerprint {
+		log.Fatalf("invalid fingerprint, expecting: '%s' but received: '%s'", gpgFingerprint, verif.Signature.Fingerprint)
 	}
 
-	if verif.SignedBy.Email != "batman@dc.com" {
-		log.Fatalf("invalid signed-by email, expecting: 'batman@dc.com' but received: '%s'", verif.SignedBy.Email)
+	if verif.Signature.Author.Name != "batman" {
+		log.Fatalf("invalid signed-by name, expecting: 'batman' but received: '%s'", verif.Signature.Author.Name)
+	}
+
+	if verif.Signature.Author.Email != "batman@dc.com" {
+		log.Fatalf("invalid signed-by email, expecting: 'batman@dc.com' but received: '%s'", verif.Signature.Author.Email)
 	}
 }

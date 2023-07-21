@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.4
-FROM golang:1.19-alpine3.17 AS build
+FROM golang:1.19-alpine3.18 AS build
 
 WORKDIR /work
 COPY . /work
@@ -18,7 +18,7 @@ require (
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
-	mvdan.cc/sh/v3 v3.6.0 // indirect
+	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
 EOF
 

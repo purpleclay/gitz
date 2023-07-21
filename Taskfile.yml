@@ -60,6 +60,7 @@ tasks:
       - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=tagsigningkey
       - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=commitsigned
       - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=commitsigningkey
+      - docker build . -t gitz-test:latest -f testdata/Dockerfile --build-arg test=showcommit
 
   lint:
     desc: Lint the code using golangci-lint

@@ -40,7 +40,7 @@ import (
 func gitExec(t *testing.T, args ...string) string {
 	t.Helper()
 	out, err := exec.Command("git", args...).CombinedOutput()
-	require.NoError(t, err)
+	require.NoError(t, err, string(out))
 
 	return strings.TrimSuffix(string(out), "\n")
 }
@@ -339,6 +339,35 @@ func TestCommit(t *testing.T) {
 	assert.Contains(t, log, "include file.txt")
 }
 
+func TestCommitWithAuthor(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithStagedFiles("file.txt"))
+
+	gittest.CommitWithAuthor(t, "joker", "joker@dc.com", "include file.txt")
+
+	log := gitExec(t, "log", "-n1")
+	assert.Contains(t, log, "Author: joker <joker@dc.com>")
+	assert.Contains(t, log, "include file.txt")
+}
+
+func TestCommitEmpty(t *testing.T) {
+	gittest.InitRepository(t)
+
+	gittest.CommitEmpty(t, "include file.txt")
+
+	log := gitExec(t, "log", "-n1", "--oneline")
+	assert.Contains(t, log, "include file.txt")
+}
+
+func TestCommitEmptyWithAuthor(t *testing.T) {
+	gittest.InitRepository(t)
+
+	gittest.CommitEmptyWithAuthor(t, "joker", "joker@dc.com", "include file.txt")
+
+	log := gitExec(t, "log", "-n1")
+	assert.Contains(t, log, "Author: joker <joker@dc.com>")
+	assert.Contains(t, log, "include file.txt")
+}
+
 func TestLastCommit(t *testing.T) {
 	gittest.InitRepository(t)
 
@@ -365,17 +394,6 @@ func TestProcelainStatusNoChanges(t *testing.T) {
 	assert.Empty(t, gittest.PorcelainStatus(t))
 }
 
-func TestLogRemote(t *testing.T) {
-	gittest.InitRepository(t)
-	gitExec(t, "commit", "--allow-empty", "-m", "this commit is on the remote")
-	gitExec(t, "push", "origin", gittest.DefaultBranch)
-
-	log := gittest.LogRemote(t)
-
-	require.Len(t, log, 2)
-	require.Equal(t, "this commit is on the remote", log[0].Commit)
-}
-
 func TestRemoteLog(t *testing.T) {
 	gittest.InitRepository(t)
 	gitExec(t, "commit", "--allow-empty", "-m", "this commit is on the remote")
@@ -384,7 +402,7 @@ func TestRemoteLog(t *testing.T) {
 	log := gittest.RemoteLog(t)
 
 	require.Len(t, log, 2)
-	require.Equal(t, "this commit is on the remote", log[0].Commit)
+	require.Equal(t, "this commit is on the remote", log[0].Message)
 }
 
 func TestRemoteLogDoesNotContainLocalCommits(t *testing.T) {
@@ -394,7 +412,7 @@ func TestRemoteLogDoesNotContainLocalCommits(t *testing.T) {
 	log := gittest.RemoteLog(t)
 
 	require.Len(t, log, 1)
-	assert.NotEqual(t, "this commit is not on the remote", log[0].Commit)
+	assert.NotEqual(t, "this commit is not on the remote", log[0].Message)
 }
 
 func TestLog(t *testing.T) {
@@ -409,16 +427,26 @@ chore: first line of the log`
 	assert.Equal(t, gittest.InitialCommit, localLog[2].Message)
 }
 
-func TestTagLocal(t *testing.T) {
+func TestTag(t *testing.T) {
 	gittest.InitRepository(t)
 
-	gittest.TagLocal(t, "0.1.0")
+	gittest.Tag(t, "0.1.0")
 
 	localTags := localTags(t)
 	assert.ElementsMatch(t, []string{"0.1.0"}, localTags)
 
 	remoteTags := remoteTags(t)
 	assert.Empty(t, remoteTags)
+}
+
+func TestTagAnnotated(t *testing.T) {
+	gittest.InitRepository(t)
+
+	gittest.TagAnnotated(t, "0.1.0", "this is an annotated tag")
+
+	out := gitExec(t, "show", "0.1.0")
+	assert.Contains(t, out, "tag 0.1.0")
+	assert.Contains(t, out, "this is an annotated tag")
 }
 
 func TestShow(t *testing.T) {
@@ -517,4 +545,15 @@ func TestRemoteBranchesOnInitializedRepository(t *testing.T) {
 
 	branches := gittest.RemoteBranches(t)
 	assert.Empty(t, branches)
+}
+
+func TestObjectRef(t *testing.T) {
+	gittest.InitRepository(t)
+	gittest.TempFile(t, "a/b/file.txt", gittest.FileContent)
+	gitExec(t, "add", "a/b/file.txt")
+	gitExec(t, "commit", "-m", "'chore: add nested file'")
+
+	ref := gittest.ObjectRef(t, "a/b/file.txt")
+	// Blob IDs are computed using the SHA-1 hash of the file contents (so remains constant)
+	assert.Equal(t, "08e00ed29169d1c8876c8d593fc2d6", ref)
 }

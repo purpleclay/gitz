@@ -79,7 +79,7 @@ func TestPushAwareOfCurrentBranch(t *testing.T) {
 func TestPushWithAllBranches(t *testing.T) {
 	log := "(main, local-branch-1, local-branch-2) feat: can push all branches"
 	gittest.InitRepository(t, gittest.WithLog(log))
-	gittest.TagLocal(t, "0.1.0")
+	gittest.Tag(t, "0.1.0")
 
 	client, _ := git.NewClient()
 	out, err := client.Push(git.WithAllBranches())
@@ -94,8 +94,8 @@ func TestPushWithAllBranches(t *testing.T) {
 func TestPushWithAllTags(t *testing.T) {
 	log := "(main) feat: can push all tags"
 	gittest.InitRepository(t, gittest.WithLog(log))
-	gittest.TagLocal(t, "0.1.0")
-	gittest.TagLocal(t, "0.2.0")
+	gittest.Tag(t, "0.1.0")
+	gittest.Tag(t, "0.2.0")
 
 	client, _ := git.NewClient()
 	out, err := client.Push(git.WithAllTags())
@@ -109,8 +109,8 @@ func TestPushWithAllTags(t *testing.T) {
 func TestPushWithRefSpecs(t *testing.T) {
 	log := "(main, local-branch-3, local-branch-4) feat: can cherry-pick push"
 	gittest.InitRepository(t, gittest.WithLog(log))
-	gittest.TagLocal(t, "0.3.0")
-	gittest.TagLocal(t, "0.4.0")
+	gittest.Tag(t, "0.3.0")
+	gittest.Tag(t, "0.4.0")
 
 	client, _ := git.NewClient()
 	out, err := client.Push(git.WithRefSpecs("0.3.0", "local-branch-3"))
@@ -124,8 +124,8 @@ func TestPushWithRefSpecs(t *testing.T) {
 
 func TestPushRefs(t *testing.T) {
 	gittest.InitRepository(t)
-	gittest.TagLocal(t, "0.1.0")
-	gittest.TagLocal(t, "0.2.0")
+	gittest.Tag(t, "0.1.0")
+	gittest.Tag(t, "0.2.0")
 
 	client, _ := git.NewClient()
 	_, err := client.PushRefs([]string{"0.1.0", "0.2.0"})
