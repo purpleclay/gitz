@@ -353,10 +353,11 @@ func parsePerson(str string) Person {
 	if !found {
 		return Person{}
 	}
+	_, email = until(">")(email)
 
 	return Person{
-		Name:  strings.TrimSuffix(name, " "),
-		Email: email[:strings.Index(email, ">")],
+		Name:  strings.TrimSpace(name),
+		Email: email,
 	}
 }
 
