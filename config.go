@@ -57,6 +57,18 @@ func (e ErrInvalidConfigPath) Error() string {
 	return fmt.Sprintf("path: %s invalid as %s", buf.String(), e.Reason)
 }
 
+// ErrMissingConfigValue is raised when a git config path does not
+// have a corresponding value
+type ErrMissingConfigValue struct {
+	// Path to the config setting
+	Path string
+}
+
+// Error returns a friendly formatted message of the current error
+func (e ErrMissingConfigValue) Error() string {
+	return fmt.Sprintf("config paths mismatch. path: %s is missing a corresponding value", e.Path)
+}
+
 // Config attempts to retrieve all git config for the current repository.
 // A map is returned containing each config item and its corresponding
 // latest value. Values are resolved from local, system and global config
@@ -142,14 +154,8 @@ func (c *Client) configSet(location string, pairs ...string) error {
 		return nil
 	}
 
-	if len(pairs)%2 != 0 {
-		return fmt.Errorf("config paths mismatch. path: %s is missing a corresponding value", pairs[len(pairs)-1])
-	}
-
-	for i := 0; i < len(pairs); i += 2 {
-		if err := CheckConfigPath(pairs[i]); err != nil {
-			return err
-		}
+	if err := checkConfig(pairs); err != nil {
+		return err
 	}
 
 	var cmd strings.Builder
@@ -223,4 +229,39 @@ func CheckConfigPath(path string) error {
 	}
 
 	return nil
+}
+
+func checkConfig(pairs []string) error {
+	if len(pairs)%2 != 0 {
+		return ErrMissingConfigValue{Path: pairs[len(pairs)-1]}
+	}
+
+	for i := 0; i < len(pairs); i += 2 {
+		if err := CheckConfigPath(pairs[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ToInlineConfig converts a series of config settings from path value notation
+// into the corresponding inline config notation compatible with git commands
+//
+//	"user.name", "penguin" => []string{"-c user.name='penguin'"}
+func ToInlineConfig(pairs ...string) ([]string, error) {
+	if len(pairs) == 0 {
+		return nil, nil
+	}
+
+	if err := checkConfig(pairs); err != nil {
+		return nil, err
+	}
+
+	cfg := make([]string, 0, len(pairs)%2)
+	for i := 0; i < len(pairs); i += 2 {
+		cfg = append(cfg, fmt.Sprintf("-c %s='%s'", pairs[i], pairs[i+1]))
+	}
+
+	return cfg, nil
 }

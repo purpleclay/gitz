@@ -150,3 +150,10 @@ func TestCheckConfigPathError(t *testing.T) {
 		})
 	}
 }
+
+func TestToInlineConfig(t *testing.T) {
+	cfg, err := git.ToInlineConfig("user.name", "penguin", "user.email", "penguin@dc.com")
+
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"-c user.name='penguin'", "-c user.email='penguin@dc.com'"}, cfg)
+}

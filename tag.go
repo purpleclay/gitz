@@ -76,6 +76,7 @@ type CreateTagOption func(*createTagOptions)
 
 type createTagOptions struct {
 	Annotation    string
+	Config        []string
 	ForceNoSigned bool
 	Signed        bool
 	SigningKey    string
@@ -89,6 +90,18 @@ type createTagOptions struct {
 func WithAnnotation(message string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
+	}
+}
+
+// WithTagConfig allows temporary git config to be set during the
+// creation of a tag. Config set using this approach will override
+// any config defined within existing git config files. Config must be
+// provided as key value pairs, mismatched config will result in an
+// [ErrMissingConfigValue] error. Any invalid paths will result in an
+// [ErrInvalidConfigPath] error
+func WithTagConfig(kv ...string) CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.Config = trim(kv...)
 	}
 }
 
@@ -144,9 +157,20 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 		opt(options)
 	}
 
+	cfg, err := ToInlineConfig(options.Config...)
+	if err != nil {
+		return "", err
+	}
+
 	// Build command based on the provided options
 	var tagCmd strings.Builder
-	tagCmd.WriteString("git tag")
+	tagCmd.WriteString("git")
+
+	if len(cfg) > 0 {
+		tagCmd.WriteString(" ")
+		tagCmd.WriteString(strings.Join(cfg, " "))
+	}
+	tagCmd.WriteString(" tag")
 
 	if options.Signed {
 		if options.Annotation == "" {

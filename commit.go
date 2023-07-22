@@ -34,6 +34,7 @@ type CommitOption func(*commitOptions)
 
 type commitOptions struct {
 	AllowEmpty    bool
+	Config        []string
 	ForceNoSigned bool
 	Signed        bool
 	SigningKey    string
@@ -45,6 +46,18 @@ type commitOptions struct {
 func WithAllowEmpty() CommitOption {
 	return func(opts *commitOptions) {
 		opts.AllowEmpty = true
+	}
+}
+
+// WithCommitConfig allows temporary git config to be set during the
+// execution of the commit. Config set using this approach will override
+// any config defined within existing git config files. Config must be
+// provided as key value pairs, mismatched config will result in an
+// [ErrMissingConfigValue] error. Any invalid paths will result in an
+// [ErrInvalidConfigPath] error
+func WithCommitConfig(kv ...string) CommitOption {
+	return func(opts *commitOptions) {
+		opts.Config = trim(kv...)
 	}
 }
 
@@ -87,8 +100,19 @@ func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 		opt(options)
 	}
 
+	cfg, err := ToInlineConfig(options.Config...)
+	if err != nil {
+		return "", err
+	}
+
 	var commitCmd strings.Builder
-	commitCmd.WriteString("git commit")
+	commitCmd.WriteString("git")
+
+	if len(cfg) > 0 {
+		commitCmd.WriteString(" ")
+		commitCmd.WriteString(strings.Join(cfg, " "))
+	}
+	commitCmd.WriteString(" commit")
 
 	if options.AllowEmpty {
 		commitCmd.WriteString(" --allow-empty")

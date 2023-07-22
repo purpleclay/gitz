@@ -40,9 +40,9 @@ func TestCommit(t *testing.T) {
 	require.NoError(t, err)
 
 	lastCommit := gittest.LastCommit(t)
-	assert.Equal(t, lastCommit.AuthorName, gittest.DefaultAuthorName)
-	assert.Equal(t, lastCommit.AuthorEmail, gittest.DefaultAuthorEmail)
-	assert.Equal(t, lastCommit.Message, "this is an example commit message")
+	assert.Equal(t, gittest.DefaultAuthorName, lastCommit.AuthorName)
+	assert.Equal(t, gittest.DefaultAuthorEmail, lastCommit.AuthorEmail)
+	assert.Equal(t, "this is an example commit message", lastCommit.Message)
 }
 
 func TestCommitWithAllowEmpty(t *testing.T) {
@@ -63,4 +63,17 @@ func TestCommitWithNoGpgSign(t *testing.T) {
 	_, err := client.Commit("this will be a regular commit", git.WithNoGpgSign())
 
 	require.NoError(t, err)
+}
+
+func TestCommitWithCommitConfig(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithStagedFiles("test.txt"))
+
+	client, _ := git.NewClient()
+	_, err := client.Commit("commit with inline options",
+		git.WithCommitConfig("user.name", "bane", "user.email", "bane@dc.com"))
+
+	require.NoError(t, err)
+	lastCommit := gittest.LastCommit(t)
+	assert.Equal(t, "bane", lastCommit.AuthorName)
+	assert.Equal(t, "bane@dc.com", lastCommit.AuthorEmail)
 }

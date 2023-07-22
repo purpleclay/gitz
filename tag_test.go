@@ -82,6 +82,19 @@ func TestTagWithSkipSigning(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestTagWithTagConfig(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Tag("0.1.0",
+		git.WithAnnotation("test inline git options"),
+		git.WithTagConfig("user.name", "bane", "user.email", "bane@dc.com"))
+
+	require.NoError(t, err)
+	out := gittest.Show(t, "0.1.0")
+	assert.Contains(t, out, "Tagger: bane <bane@dc.com>")
+}
+
 func TestDeleteTags(t *testing.T) {
 	log := "(tag: 0.1.0, tag: 0.2.0) feat(ui): add new fancy button to ui"
 	gittest.InitRepository(t, gittest.WithLog(log))
