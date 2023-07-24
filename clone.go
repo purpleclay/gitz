@@ -33,6 +33,7 @@ import (
 type CloneOption func(*cloneOptions)
 
 type cloneOptions struct {
+	Config      []string
 	CheckoutRef string
 	Depth       int
 	Dir         string
@@ -45,6 +46,18 @@ type cloneOptions struct {
 func WithCheckoutRef(ref string) CloneOption {
 	return func(opts *cloneOptions) {
 		opts.CheckoutRef = strings.TrimSpace(ref)
+	}
+}
+
+// WithCloneConfig allows temporary git config to be set while cloning
+// the remote into a newly created directory. Config set using this
+// approach will override any config defined within existing git config
+// files. Config must be provided as key value pairs, mismatched config
+// will result in an [ErrMissingConfigValue] error. Any invalid paths will
+// result in an [ErrInvalidConfigPath] error
+func WithCloneConfig(kv ...string) CloneOption {
+	return func(opts *cloneOptions) {
+		opts.Config = trim(kv...)
 	}
 }
 
@@ -86,29 +99,41 @@ func (c *Client) Clone(url string, opts ...CloneOption) (string, error) {
 		opt(options)
 	}
 
-	var buffer strings.Builder
-	buffer.WriteString("git clone")
+	cfg, err := ToInlineConfig(options.Config...)
+	if err != nil {
+		return "", err
+	}
+
+	var buf strings.Builder
+	buf.WriteString("git")
+
+	if len(cfg) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(cfg, " "))
+	}
+	buf.WriteString(" clone")
+
 	if options.NoTags {
-		buffer.WriteString(" --no-tags")
+		buf.WriteString(" --no-tags")
 	}
 
 	if options.CheckoutRef != "" {
-		buffer.WriteString(" --branch ")
-		buffer.WriteString(options.CheckoutRef)
+		buf.WriteString(" --branch ")
+		buf.WriteString(options.CheckoutRef)
 	}
 
 	if options.Depth > 0 {
-		buffer.WriteString(" --depth ")
-		buffer.WriteString(strconv.Itoa(options.Depth))
+		buf.WriteString(" --depth ")
+		buf.WriteString(strconv.Itoa(options.Depth))
 	}
 
-	buffer.WriteString(" -- ")
-	buffer.WriteString(url)
+	buf.WriteString(" -- ")
+	buf.WriteString(url)
 
 	if options.Dir != "" {
-		buffer.WriteRune(' ')
-		buffer.WriteString(options.Dir)
+		buf.WriteRune(' ')
+		buf.WriteString(options.Dir)
 	}
 
-	return c.exec(buffer.String())
+	return c.exec(buf.String())
 }

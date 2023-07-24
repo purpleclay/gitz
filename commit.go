@@ -34,6 +34,7 @@ type CommitOption func(*commitOptions)
 
 type commitOptions struct {
 	AllowEmpty    bool
+	Config        []string
 	ForceNoSigned bool
 	Signed        bool
 	SigningKey    string
@@ -45,6 +46,18 @@ type commitOptions struct {
 func WithAllowEmpty() CommitOption {
 	return func(opts *commitOptions) {
 		opts.AllowEmpty = true
+	}
+}
+
+// WithCommitConfig allows temporary git config to be set during the
+// execution of the commit. Config set using this approach will override
+// any config defined within existing git config files. Config must be
+// provided as key value pairs, mismatched config will result in an
+// [ErrMissingConfigValue] error. Any invalid paths will result in an
+// [ErrInvalidConfigPath] error
+func WithCommitConfig(kv ...string) CommitOption {
+	return func(opts *commitOptions) {
+		opts.Config = trim(kv...)
 	}
 }
 
@@ -87,27 +100,38 @@ func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 		opt(options)
 	}
 
-	var commitCmd strings.Builder
-	commitCmd.WriteString("git commit")
+	cfg, err := ToInlineConfig(options.Config...)
+	if err != nil {
+		return "", err
+	}
+
+	var buf strings.Builder
+	buf.WriteString("git")
+
+	if len(cfg) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(cfg, " "))
+	}
+	buf.WriteString(" commit")
 
 	if options.AllowEmpty {
-		commitCmd.WriteString(" --allow-empty")
+		buf.WriteString(" --allow-empty")
 	}
 
 	if options.Signed {
-		commitCmd.WriteString(" -S")
+		buf.WriteString(" -S")
 	}
 
 	if options.SigningKey != "" {
-		commitCmd.WriteString(" --gpg-sign=" + options.SigningKey)
+		buf.WriteString(" --gpg-sign=" + options.SigningKey)
 	}
 
 	if options.ForceNoSigned {
-		commitCmd.WriteString(" --no-gpg-sign")
+		buf.WriteString(" --no-gpg-sign")
 	}
 
-	commitCmd.WriteString(fmt.Sprintf(" -m '%s'", msg))
-	return c.exec(commitCmd.String())
+	buf.WriteString(fmt.Sprintf(" -m '%s'", msg))
+	return c.exec(buf.String())
 }
 
 // CommitVerification contains details about a GPG signed commit

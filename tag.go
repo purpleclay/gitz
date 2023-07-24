@@ -76,6 +76,7 @@ type CreateTagOption func(*createTagOptions)
 
 type createTagOptions struct {
 	Annotation    string
+	Config        []string
 	ForceNoSigned bool
 	Signed        bool
 	SigningKey    string
@@ -89,6 +90,18 @@ type createTagOptions struct {
 func WithAnnotation(message string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
+	}
+}
+
+// WithTagConfig allows temporary git config to be set during the
+// creation of a tag. Config set using this approach will override
+// any config defined within existing git config files. Config must be
+// provided as key value pairs, mismatched config will result in an
+// [ErrMissingConfigValue] error. Any invalid paths will result in an
+// [ErrInvalidConfigPath] error
+func WithTagConfig(kv ...string) CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.Config = trim(kv...)
 	}
 }
 
@@ -144,31 +157,42 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 		opt(options)
 	}
 
+	cfg, err := ToInlineConfig(options.Config...)
+	if err != nil {
+		return "", err
+	}
+
 	// Build command based on the provided options
-	var tagCmd strings.Builder
-	tagCmd.WriteString("git tag")
+	var buf strings.Builder
+	buf.WriteString("git")
+
+	if len(cfg) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(cfg, " "))
+	}
+	buf.WriteString(" tag")
 
 	if options.Signed {
 		if options.Annotation == "" {
 			options.Annotation = "created tag " + tag
 		}
-		tagCmd.WriteString(" -s")
+		buf.WriteString(" -s")
 	}
 
 	if options.SigningKey != "" {
-		tagCmd.WriteString(" -u " + options.SigningKey)
+		buf.WriteString(" -u " + options.SigningKey)
 	}
 
 	if options.ForceNoSigned {
-		tagCmd.WriteString(" --no-sign")
+		buf.WriteString(" --no-sign")
 	}
 
 	if options.Annotation != "" {
-		tagCmd.WriteString(fmt.Sprintf(" -a -m '%s'", options.Annotation))
+		buf.WriteString(fmt.Sprintf(" -a -m '%s'", options.Annotation))
 	}
-	tagCmd.WriteString(fmt.Sprintf(" '%s'", tag))
+	buf.WriteString(fmt.Sprintf(" '%s'", tag))
 
-	if out, err := c.exec(tagCmd.String()); err != nil {
+	if out, err := c.exec(buf.String()); err != nil {
 		return out, err
 	}
 
@@ -464,5 +488,5 @@ func (c *Client) DeleteTags(tags []string, opts ...DeleteTagsOption) (string, er
 		return "", nil
 	}
 
-	return c.PushRefs(tags, WithRefDelete())
+	return c.Push(WithDeleteRefSpecs(tags...))
 }
