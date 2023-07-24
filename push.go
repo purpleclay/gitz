@@ -35,6 +35,7 @@ type PushOption func(*pushOptions)
 type pushOptions struct {
 	All         bool
 	Config      []string
+	Delete      bool
 	PushOptions []string
 	Tags        bool
 	RefSpecs    []string
@@ -53,6 +54,15 @@ func WithAllBranches() PushOption {
 func WithAllTags() PushOption {
 	return func(opts *pushOptions) {
 		opts.Tags = true
+	}
+}
+
+// WithDeleteRefSpecs will trigger the deletion of any named references
+// when pushed back to the remote
+func WithDeleteRefSpecs(refs ...string) PushOption {
+	return func(opts *pushOptions) {
+		opts.Delete = true
+		opts.RefSpecs = trim(refs...)
 	}
 }
 
@@ -78,8 +88,8 @@ func WithPushOptions(options ...string) PushOption {
 	}
 }
 
-// WithRefSpecs allows locally created references to be cherry-picked
-// and pushed back to the remote. A reference (or refspec) can be as
+// WithRefSpecs allows local references to be cherry-picked and
+// pushed back to the remote. A reference (or refspec) can be as
 // simple as a name, where git will automatically resolve any
 // ambiguity, or as explicit as providing a source and destination
 // for each local reference within the remote. Check out the official
@@ -126,61 +136,24 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 		buf.WriteString(" --tags")
 	} else if len(options.RefSpecs) > 0 {
 		buf.WriteString(" origin ")
+		if options.Delete {
+			buf.WriteString("--delete ")
+		}
+
 		buf.WriteString(strings.Join(options.RefSpecs, " "))
 	} else {
 		out, err := c.exec("git branch --show-current")
 		if err != nil {
 			return out, err
 		}
-
 		buf.WriteString(fmt.Sprintf(" origin %s", out))
 	}
 
 	return c.exec(buf.String())
 }
 
-// PushRefOption provides a way of setting specific options during a
-// git push of a specific reference. Each supported option can customize
-// the way in which a reference is pushed back to the remote
-type PushRefOption func(*pushRefOptions)
-
-type pushRefOptions struct {
-	Delete bool
-}
-
-// WithRefDelete will trigger the deletion of a reference when pushed
-// back to the remote
-func WithRefDelete() PushRefOption {
-	return func(opts *pushRefOptions) {
-		opts.Delete = true
-	}
-}
-
-// TODO: condense into Push() method, add option to specify refs and delete
-
 // PushRef will push an individual reference to the remote repository
-func (c *Client) PushRef(ref string, opts ...PushRefOption) (string, error) {
-	return c.PushRefs([]string{ref}, opts...)
-}
-
-// PushRefs will push a batch of references to the remote repository
-func (c *Client) PushRefs(refs []string, opts ...PushRefOption) (string, error) {
-	if len(refs) == 0 {
-		return "", nil
-	}
-
-	options := &pushRefOptions{}
-	for _, opt := range opts {
-		opt(options)
-	}
-
-	var buffer strings.Builder
-	buffer.WriteString("git push origin ")
-
-	if options.Delete {
-		buffer.WriteString("--delete ")
-	}
-
-	buffer.WriteString(strings.Join(refs, " "))
-	return c.exec(buffer.String())
+// Deprecated: use [Push] instead
+func (c *Client) PushRef(ref string) (string, error) {
+	return c.exec(fmt.Sprintf("git push origin %s", ref))
 }

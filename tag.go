@@ -488,5 +488,5 @@ func (c *Client) DeleteTags(tags []string, opts ...DeleteTagsOption) (string, er
 		return "", nil
 	}
 
-	return c.PushRefs(tags, WithRefDelete())
+	return c.Push(WithDeleteRefSpecs(tags...))
 }

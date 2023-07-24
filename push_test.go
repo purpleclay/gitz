@@ -122,27 +122,14 @@ func TestPushWithRefSpecs(t *testing.T) {
 	assert.NotContains(t, out, fmt.Sprintf("%[1]s -> %[1]s", "local-branch-4"))
 }
 
-func TestPushRefs(t *testing.T) {
-	gittest.InitRepository(t)
-	gittest.Tag(t, "0.1.0")
-	gittest.Tag(t, "0.2.0")
-
-	client, _ := git.NewClient()
-	_, err := client.PushRefs([]string{"0.1.0", "0.2.0"})
-	require.NoError(t, err)
-
-	remoteTags := gittest.RemoteTags(t)
-	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0"}, remoteTags)
-}
-
-func TestPushRefsWithDeletion(t *testing.T) {
+func TestPushWithDeleteRefSpecs(t *testing.T) {
 	log := "(tag: 0.1.0, tag: 0.2.0) feat: recreate user data indexes for speedier queries"
 	gittest.InitRepository(t, gittest.WithLog(log))
 
 	client, _ := git.NewClient()
-	_, err := client.PushRefs([]string{"0.1.0", "0.2.0"}, git.WithRefDelete())
+	_, err := client.Push(git.WithDeleteRefSpecs("0.2.0"))
 	require.NoError(t, err)
 
 	remoteTags := gittest.RemoteTags(t)
-	assert.Empty(t, remoteTags)
+	assert.ElementsMatch(t, []string{"0.1.0"}, remoteTags)
 }
