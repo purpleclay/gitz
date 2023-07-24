@@ -34,6 +34,7 @@ type PushOption func(*pushOptions)
 
 type pushOptions struct {
 	All         bool
+	Config      []string
 	PushOptions []string
 	Tags        bool
 	RefSpecs    []string
@@ -52,6 +53,18 @@ func WithAllBranches() PushOption {
 func WithAllTags() PushOption {
 	return func(opts *pushOptions) {
 		opts.Tags = true
+	}
+}
+
+// WithPushConfig allows temporary git config to be set while pushing
+// changes to the remote. Config set using this approach will override
+// any config defined within existing git config files. Config must be
+// provided as key value pairs, mismatched config will result in an
+// [ErrMissingConfigValue] error. Any invalid paths will result in an
+// [ErrInvalidConfigPath] error
+func WithPushConfig(kv ...string) PushOption {
+	return func(opts *pushOptions) {
+		opts.Config = trim(kv...)
 	}
 }
 
@@ -89,30 +102,41 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 		opt(options)
 	}
 
-	var buffer strings.Builder
-	buffer.WriteString("git push")
+	cfg, err := ToInlineConfig(options.Config...)
+	if err != nil {
+		return "", err
+	}
+
+	var buf strings.Builder
+	buf.WriteString("git")
+
+	if len(cfg) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(cfg, " "))
+	}
+	buf.WriteString(" push")
 
 	for _, po := range options.PushOptions {
-		buffer.WriteString(" --push-option=" + po)
+		buf.WriteString(" --push-option=" + po)
 	}
 
 	if options.All {
-		buffer.WriteString(" --all")
+		buf.WriteString(" --all")
 	} else if options.Tags {
-		buffer.WriteString(" --tags")
+		buf.WriteString(" --tags")
 	} else if len(options.RefSpecs) > 0 {
-		buffer.WriteString(" origin ")
-		buffer.WriteString(strings.Join(options.RefSpecs, " "))
+		buf.WriteString(" origin ")
+		buf.WriteString(strings.Join(options.RefSpecs, " "))
 	} else {
 		out, err := c.exec("git branch --show-current")
 		if err != nil {
 			return out, err
 		}
 
-		buffer.WriteString(fmt.Sprintf(" origin %s", out))
+		buf.WriteString(fmt.Sprintf(" origin %s", out))
 	}
 
-	return c.exec(buffer.String())
+	return c.exec(buf.String())
 }
 
 // PushRefOption provides a way of setting specific options during a
@@ -131,6 +155,8 @@ func WithRefDelete() PushRefOption {
 		opts.Delete = true
 	}
 }
+
+// TODO: condense into Push() method, add option to specify refs and delete
 
 // PushRef will push an individual reference to the remote repository
 func (c *Client) PushRef(ref string, opts ...PushRefOption) (string, error) {

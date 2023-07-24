@@ -105,33 +105,33 @@ func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 		return "", err
 	}
 
-	var commitCmd strings.Builder
-	commitCmd.WriteString("git")
+	var buf strings.Builder
+	buf.WriteString("git")
 
 	if len(cfg) > 0 {
-		commitCmd.WriteString(" ")
-		commitCmd.WriteString(strings.Join(cfg, " "))
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(cfg, " "))
 	}
-	commitCmd.WriteString(" commit")
+	buf.WriteString(" commit")
 
 	if options.AllowEmpty {
-		commitCmd.WriteString(" --allow-empty")
+		buf.WriteString(" --allow-empty")
 	}
 
 	if options.Signed {
-		commitCmd.WriteString(" -S")
+		buf.WriteString(" -S")
 	}
 
 	if options.SigningKey != "" {
-		commitCmd.WriteString(" --gpg-sign=" + options.SigningKey)
+		buf.WriteString(" --gpg-sign=" + options.SigningKey)
 	}
 
 	if options.ForceNoSigned {
-		commitCmd.WriteString(" --no-gpg-sign")
+		buf.WriteString(" --no-gpg-sign")
 	}
 
-	commitCmd.WriteString(fmt.Sprintf(" -m '%s'", msg))
-	return c.exec(commitCmd.String())
+	buf.WriteString(fmt.Sprintf(" -m '%s'", msg))
+	return c.exec(buf.String())
 }
 
 // CommitVerification contains details about a GPG signed commit

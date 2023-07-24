@@ -163,36 +163,36 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 	}
 
 	// Build command based on the provided options
-	var tagCmd strings.Builder
-	tagCmd.WriteString("git")
+	var buf strings.Builder
+	buf.WriteString("git")
 
 	if len(cfg) > 0 {
-		tagCmd.WriteString(" ")
-		tagCmd.WriteString(strings.Join(cfg, " "))
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(cfg, " "))
 	}
-	tagCmd.WriteString(" tag")
+	buf.WriteString(" tag")
 
 	if options.Signed {
 		if options.Annotation == "" {
 			options.Annotation = "created tag " + tag
 		}
-		tagCmd.WriteString(" -s")
+		buf.WriteString(" -s")
 	}
 
 	if options.SigningKey != "" {
-		tagCmd.WriteString(" -u " + options.SigningKey)
+		buf.WriteString(" -u " + options.SigningKey)
 	}
 
 	if options.ForceNoSigned {
-		tagCmd.WriteString(" --no-sign")
+		buf.WriteString(" --no-sign")
 	}
 
 	if options.Annotation != "" {
-		tagCmd.WriteString(fmt.Sprintf(" -a -m '%s'", options.Annotation))
+		buf.WriteString(fmt.Sprintf(" -a -m '%s'", options.Annotation))
 	}
-	tagCmd.WriteString(fmt.Sprintf(" '%s'", tag))
+	buf.WriteString(fmt.Sprintf(" '%s'", tag))
 
-	if out, err := c.exec(tagCmd.String()); err != nil {
+	if out, err := c.exec(buf.String()); err != nil {
 		return out, err
 	}
 
