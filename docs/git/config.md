@@ -1,6 +1,5 @@
 ---
 icon: material/keyboard-settings-outline
-status: new
 title: Managing your git config
 description: Get and set your local git repository config
 ---
@@ -11,7 +10,7 @@ description: Get and set your local git repository config
 
 Manage settings within your local git config, changing the behavior of the git client.
 
-## Retrieve all settings :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Retrieve all settings
 
 Retrieve all git config for the current repository using `Config`.
 
@@ -43,7 +42,7 @@ The value for the config setting would be:
 purpleclay
 ```
 
-## Retrieve a batch of settings :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Retrieve a batch of settings
 
 A batch of settings can be retrieved using `ConfigL` (_local_), `ConfigS` (_system_), or `ConfigG` (_global_). A partial retrieval is not supported and will fail if any are missing. All values for a setting are retrieved and ordered by the latest.
 
@@ -76,7 +75,7 @@ purpleclay
 **********************
 ```
 
-## Update a batch of settings :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Update a batch of settings
 
 You can update multiple settings in a batch using `ConfigSetL` (_local_), `ConfigSetS` (_system_), or `ConfigSetG` (_global_). Pre-validation of config paths improves the chance of a successful update, but a partial batch may occur upon failure.
 

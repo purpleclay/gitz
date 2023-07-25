@@ -48,7 +48,7 @@ Date:   Mon Feb 20 20:43:49 2023 +0000
     feat: a brand new feature
 ```
 
-## Allowing an empty commit :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Allowing an empty commit
 
 You can create empty commits without staging any files using the `WithAllowEmpty` option.
 
@@ -67,7 +67,7 @@ func main() {
 }
 ```
 
-## Signing a commit using GPG :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Signing a commit using GPG
 
 Any commit to a repository can be GPG signed by an author to prove its authenticity through GPG verification. By setting the `commit.gpgSign` and `user.signingKey` git config options, GPG signing, can become an automatic process. `gitz` provides options to control this process and manually overwrite existing settings per commit.
 

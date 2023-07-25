@@ -1,5 +1,6 @@
 ---
 icon: material/arrow-left-bold-box-outline
+status: new
 title: Pulling the latest changes from a remote
 description: Pull all changes from a remote into the current working directory
 ---

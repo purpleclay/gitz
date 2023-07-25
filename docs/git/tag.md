@@ -315,7 +315,7 @@ func main() {
 
 [^1]: Gitz defers the validation of a tag name to the git client. Any error is captured and returned back to the caller
 
-## Signing a tag using GPG :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Signing a tag using GPG
 
 Any tag against a repository can be GPG signed by the tagger to prove its authenticity through GPG verification. By setting the `tag.gpgSign` and `user.signingKey` git config options, GPG signing, can become an automatic process. `gitz` provides options to control this process and manually overwrite existing settings per tag.
 

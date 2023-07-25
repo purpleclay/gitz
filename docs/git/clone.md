@@ -1,5 +1,6 @@
 ---
 icon: material/sheep
+status: new
 title: Cloning a repository
 description: Clone a repository by its provided URL into a newly created directory
 ---
@@ -33,7 +34,7 @@ func main() {
 }
 ```
 
-## With a truncated history :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## With a truncated history
 
 If a complete git history isn't desirable, a faster approach to cloning is to provide a clone depth using the `WithDepth` option. This results in a truncated history, better known as a `shallow clone`. Great for large established repositories.
 
@@ -77,7 +78,7 @@ Printing the log results in:
 feat: add options that can configure the size of the repository during a clone
 ```
 
-## Without tags :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Without tags
 
 To further streamline a clone, the `WithNoTags` option prevents the downloading of tags from the remote.
 
@@ -117,7 +118,7 @@ Printing the output results in:
 repository has no tags
 ```
 
-## Clone into a named directory :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Clone into a named directory
 
 By default, git will always clone the repository into a directory based on the human-friendly part of the clone URL. To clone into a different directory, use the `WithDirectory` option.
 
@@ -141,7 +142,7 @@ func main() {
 }
 ```
 
-## Clone a branch or tag :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Clone a branch or tag
 
 Git will always clone and checkout the default branch of a repository. To change this behavior, provide a branch or tag reference with the `WithCheckoutRef` option. The latter results in a `detached HEAD` where the `HEAD` of a repository points to a specific commit reference.
 

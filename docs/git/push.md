@@ -142,7 +142,7 @@ func main() {
 }
 ```
 
-## Push options :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Push options
 
 Support the transmission of arbitrary strings to the remote server using the `WithPushOptions` option.
 

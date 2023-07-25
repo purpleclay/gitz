@@ -49,6 +49,7 @@ nav:
       - Git Pull: git/pull.md
       - Git Push: git/push.md
       - Git Stage: git/stage.md
+      - Git Status: git/status.md
       - Git Commit: git/commit.md
       - Git Tag: git/tag.md
       - Git Log: git/log.md
