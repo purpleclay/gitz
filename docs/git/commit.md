@@ -142,6 +142,6 @@ func main() {
 }
 ```
 
-## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Inline git config can be provided through the `WithCommitConfig` option and will only take effect during the execution of a `Commit`. This is useful if you do not wish to make a permanent config change.
+You can provide git config through the `WithCommitConfig` option to only take effect during the execution of a `Commit`, removing the need to change config permanently.

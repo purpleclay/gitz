@@ -142,9 +142,9 @@ func main() {
 }
 ```
 
-## Deleting references from the remote :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Deleting references from the remote :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Ensure any number of references are deleted from the remote by using the `WithDeleteRefSpecs` option.
+Delete any number of references from the remote by using the `WithDeleteRefSpecs` option.
 
 ```{ .go .select linenums="1" }
 package main
@@ -167,6 +167,6 @@ func main() {
 }
 ```
 
-## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Inline git config can be provided through the `WithPushConfig` option and will only take effect during the execution of a `Push`. This is useful if you do not wish to make a permanent config change.
+You can provide git config through the `WithPushConfig` option to only take effect during the execution of a `Push`, removing the need to change config permanently.

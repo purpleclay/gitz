@@ -315,13 +315,13 @@ func main() {
 
 [^1]: Gitz defers the validation of a tag name to the git client. Any error is captured and returned back to the caller
 
-### Only delete local reference :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+### Only delete local reference :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-The `WithLocalDelete` option can also be used to enforce a local deletion of the tag. With no deletion being pushed back to the remote.
+To prevent a deletion from being pushed back to the remote, use the `WithLocalDelete` option.
 
-## Deleting multiple tags :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Deleting multiple tags :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Call `DeleteTags` if you need to delete a batch of tags and sync it with the remote. The `WithLocalDelete` option can also be used here to enforce a local deletion only.
+Call `DeleteTags` if you need to delete a batch of tags and sync it with the remote. Use the `WithLocalDelete` option to prevent any deletion from being pushed back to the remote.
 
 ## Signing a tag using GPG
 
@@ -396,6 +396,6 @@ func main() {
 }
 ```
 
-## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Inline git config can be provided through the `WithTagConfig` option and will only take effect during the execution of a `Tag`. This is useful if you do not wish to make a permanent config change.
+You can provide git config through the `WithTagConfig` option to only take effect during the execution of a `Tag`, removing the need to change config permanently.

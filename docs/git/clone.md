@@ -166,6 +166,6 @@ func main() {
 }
 ```
 
-## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Inline git config can be provided through the `WithCloneConfig` option and will only take effect during the execution of a `Clone`. This is useful if you do not wish to make a permanent config change.
+You can provide git config through the `WithCloneConfig` option to only take effect during the execution of a `Clone`, removing the need to change config permanently.

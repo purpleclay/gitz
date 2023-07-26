@@ -9,11 +9,11 @@ description: Check the status of the current repository and identify if any chan
 
 [:simple-git:{ .git-icon } Git Documentation](https://git-scm.com/docs/git-status)
 
-Indentify if any differences exist between the git staging area (_known as the index_) and the latest commit.
+Identify if any differences exist between the git staging area (_known as the index_) and the latest commit.
 
-## Porcelain status :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Porcelain status :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-To retrieve a parseable list of a changes within a repository, call `PorcelainStatus`. Changes are listed using the porcelain V1 format, consisting of a two character indicator, followed by a path to the identified change.
+To retrieve a parseable list of changes within a repository, call `PorcelainStatus`. Changes are listed using the porcelain V1 format, consisting of a two-character indicator followed by a path to the identified change.
 
 ```{ .go .select linenums="1" }
 package main
@@ -46,7 +46,7 @@ A  staged.txt
 
 ### Supported indicators
 
-A two character indicator `' A'` denotes the status of a file. It should be read as the status within the index, followed by the status within the working tree. Staging a file will move it from the working tree to the index, moving the indicator from right (`' A'`) to left (`'A '`).
+A two-character indicator, `' A'`, denotes the status of a file. It should be read as its status within the index, followed by its status within the working tree. Staging a file will move it from the working tree to the index, moving the indicator from the right (`' A'`) to the left (`'A '`).
 
 ```{ .text .no-select .no-copy }
 'A' Added
@@ -61,9 +61,9 @@ A two character indicator `' A'` denotes the status of a file. It should be read
 '?' Untracked
 ```
 
-## Check if a repository is clean :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Check if a repository is clean :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
-Calling `Clean` will return `true` if a repository has no oustanding changes.
+Calling `Clean` will return `true` if a repository has no outstanding changes.
 
 ```{ .go .select linenums="1" }
 package main

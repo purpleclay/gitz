@@ -33,7 +33,7 @@ func main() {
 }
 ```
 
-## Checking the integrity of a Repository :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+## Checking the integrity of a Repository :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
 Check the integrity of a repository by running a series of tests and capturing the results for inspection.
 

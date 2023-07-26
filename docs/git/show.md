@@ -13,7 +13,7 @@ Retrieve detailed information about an object within a repository by its unique 
 
 ## Inspect a tag
 
-Detailed information about a tag, and its associated commit, can be retreived from a repository by passing its reference to `ShowTags`. If present, the annotation and GPG signature of the commit will be retrieved.
+Detailed information about a tag, and its associated commit, can be retrieved from a repository by passing its reference to `ShowTags`. The GPG signature of the commit is also retrieved if present.
 
 ```{ .go .select linenums="1" }
 package main
@@ -71,11 +71,11 @@ Fingerprint: 4AEE18**********
 
 ## Inspect a commit
 
-Retrieve details about a specific commit by passing its reference to `ShowCommits`. If present, the GPG signature will be retrieved.
+Retrieve information about a specific commit by passing its reference to `ShowCommits`. Including its GPG signature, if present.
 
 ## Inspect a tree
 
-Call `ShowTrees` to retrieve a listing of all files and directories contained within a specific tree index of a repository.
+Call `ShowTrees` to retrieve a listing of all files and directories within a specific tree index of a repository.
 
 ```{ .go .select linenums="1" }
 package main
