@@ -2,72 +2,82 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.purpleclay.dev/gitz/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/license/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/checkout/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/checks/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/clone/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/commit/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/config/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/log/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/pull/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/push/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.purpleclay.dev/gitz/git/show/</loc>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/stage/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.purpleclay.dev/gitz/git/status/</loc>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/git/tag/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/install/package/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.purpleclay.dev/gitz/testing/git-test/</loc>
-         <lastmod>2023-05-17</lastmod>
+         <lastmod>2023-07-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
