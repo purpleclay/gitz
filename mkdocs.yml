@@ -48,6 +48,7 @@ nav:
       - Git Checkout: git/checkout.md
       - Git Pull: git/pull.md
       - Git Push: git/push.md
+      - Git Show: git/show.md
       - Git Stage: git/stage.md
       - Git Status: git/status.md
       - Git Commit: git/commit.md

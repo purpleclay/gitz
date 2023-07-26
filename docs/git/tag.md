@@ -315,6 +315,14 @@ func main() {
 
 [^1]: Gitz defers the validation of a tag name to the git client. Any error is captured and returned back to the caller
 
+### Only delete local reference :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+
+The `WithLocalDelete` option can also be used to enforce a local deletion of the tag. With no deletion being pushed back to the remote.
+
+## Deleting multiple tags :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+
+Call `DeleteTags` if you need to delete a batch of tags and sync it with the remote. The `WithLocalDelete` option can also be used here to enforce a local deletion only.
+
 ## Signing a tag using GPG
 
 Any tag against a repository can be GPG signed by the tagger to prove its authenticity through GPG verification. By setting the `tag.gpgSign` and `user.signingKey` git config options, GPG signing, can become an automatic process. `gitz` provides options to control this process and manually overwrite existing settings per tag.
@@ -387,3 +395,7 @@ func main() {
     client.Tag("0.1.0", git.WithSkipSigning())
 }
 ```
+
+## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+
+Inline git config can be provided through the `WithTagConfig` option and will only take effect during the execution of a `Tag`. This is useful if you do not wish to make a permanent config change.

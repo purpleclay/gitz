@@ -57,3 +57,7 @@ Fast-forward
  1 file changed, 1 insertion(+)
  create mode 100644 folder/c.txt
 ```
+
+## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+
+Inline git config can be provided through the `WithPullConfig` option and will only take effect during the execution of a `Pull`. This is useful if you do not wish to make a permanent config change.

@@ -1,7 +1,7 @@
 ---
 icon: material/format-list-checkbox
 status: new
-title: Retrieve the status of the current repository
+title: Inspecting the status of a repository
 description: Check the status of the current repository and identify if any changes exist
 ---
 
@@ -11,7 +11,7 @@ description: Check the status of the current repository and identify if any chan
 
 Indentify if any differences exist between the git staging area (_known as the index_) and the latest commit.
 
-## Porcelain status
+## Porcelain status :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
 
 To retrieve a parseable list of a changes within a repository, call `PorcelainStatus`. Changes are listed using the porcelain V1 format, consisting of a two character indicator, followed by a path to the identified change.
 
@@ -61,7 +61,7 @@ A two character indicator `' A'` denotes the status of a file. It should be read
 '?' Untracked
 ```
 
-## Check if a repository is clean
+## Check if a repository is clean :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
 
 Calling `Clean` will return `true` if a repository has no oustanding changes.
 

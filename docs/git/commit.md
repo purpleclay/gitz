@@ -141,3 +141,7 @@ func main() {
         git.WithNoGpgSign())
 }
 ```
+
+## Providing inline git config :material-new-box:{.new-feature title="Feature added on the 25th of July 2023"}
+
+Inline git config can be provided through the `WithCommitConfig` option and will only take effect during the execution of a `Commit`. This is useful if you do not wish to make a permanent config change.
