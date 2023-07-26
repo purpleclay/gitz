@@ -117,32 +117,7 @@ func main() {
 }
 ```
 
-## Push a single branch or tag
-
-`PushRef` can be called to cherry-pick and push a single reference (_branch or tag_) back to the remote:
-
-```{ .go .select linenums="1" }
-package main
-
-import (
-    "log"
-
-    git "github.com/purpleclay/gitz"
-)
-
-func main() {
-    client, _ := git.NewClient()
-
-    // tag 0.1.0 has been created and is tracked locally
-
-    _, err := client.PushRef("0.1.0")
-    if err != nil {
-        log.Fatal("failed to push tag 0.1.0 to the remote")
-    }
-}
-```
-
-## Push options :material-new-box:{.new-feature title="Feature added on the 16th of May 2023"}
+## Push options
 
 Support the transmission of arbitrary strings to the remote server using the `WithPushOptions` option.
 
@@ -166,3 +141,32 @@ func main() {
     }
 }
 ```
+
+## Deleting references from the remote :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+
+Delete any number of references from the remote by using the `WithDeleteRefSpecs` option.
+
+```{ .go .select linenums="1" }
+package main
+
+import (
+    "log"
+
+    git "github.com/purpleclay/gitz"
+)
+
+func main() {
+    client, _ := git.NewClient()
+
+    // a tag and branch have been deleted locally
+
+    _, err := client.Push(git.WithDeleteRefSpecs("branch", "0.1.0"))
+    if err != nil {
+        log.Fatal("failed to delete references from the remote")
+    }
+}
+```
+
+## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+
+You can provide git config through the `WithPushConfig` option to only take effect during the execution of a `Push`, removing the need to change config permanently.

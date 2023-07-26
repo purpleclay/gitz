@@ -1,5 +1,6 @@
 ---
 icon: material/arrow-left-bold-box-outline
+status: new
 title: Pulling the latest changes from a remote
 description: Pull all changes from a remote into the current working directory
 ---
@@ -56,3 +57,7 @@ Fast-forward
  1 file changed, 1 insertion(+)
  create mode 100644 folder/c.txt
 ```
+
+## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+
+You can provide git config through the `WithPullConfig` option to only take effect during the execution of a `Pull`, removing the need to change config permanently.

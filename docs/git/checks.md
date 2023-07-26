@@ -1,5 +1,6 @@
 ---
 icon: material/clipboard-check-outline
+status: new
 title: Git checks and how to use them
 description: A series of inbuilt check for inspecting the environment and current repository
 ---
@@ -32,7 +33,7 @@ func main() {
 }
 ```
 
-## Checking the integrity of a Repository
+## Checking the integrity of a Repository :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
 
 Check the integrity of a repository by running a series of tests and capturing the results for inspection.
 
@@ -55,8 +56,11 @@ func main() {
     }
 
     fmt.Printf("Default Branch: %s\n", repo.DefaultBranch)
-    fmt.Printf("Shallow Clone:  %t\n", repo.ShallowClone)
     fmt.Printf("Detached Head:  %t\n", repo.DetachedHead)
+    fmt.Printf("Origin:         %s\n", repo.Origin)
+    fmt.Printf("Remotes:        %#v\n", repo.Remotes)
+    fmt.Printf("Root Directory: %s\n", repo.RootDir)
+    fmt.Printf("Shallow Clone:  %t\n", repo.ShallowClone)
 }
 ```
 
@@ -64,6 +68,9 @@ Example output when checking the integrity of a repository cloned within a CI sy
 
 ```{ .text .no-select .no-copy }
 Default Branch: main
-Shallow Clone:  false
 Detached Head:  true
+Origin:         git@github.com:purpleclay/gitz.git
+Remotes:        map[string]string{"origin":"git@github.com:purpleclay/gitz.git"}
+Root Directory: /dev/github.com/purpleclay/gitz
+Shallow Clone:  false
 ```

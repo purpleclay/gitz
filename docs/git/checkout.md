@@ -10,7 +10,7 @@ description: Clone a repository by its provided URL into a newly created directo
 
 Switch from the default branch of a repository (working directory) to a new or existing one, syncing any file changes. All future actions are associated with this branch.
 
-## Context-aware checking out :material-new-box:{.new-feature title="Feature added on the 23rd March of 2023"}
+## Context-aware checking out
 
 During a checkout, `gitz` inspects the repository for the existence of a branch and intelligently switches between creating a new one or checking out the existing reference.
 
