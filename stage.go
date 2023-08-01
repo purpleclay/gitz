@@ -81,5 +81,9 @@ func (c *Client) Staged() ([]string, error) {
 		return nil, err
 	}
 
+	if diff == "" {
+		return nil, nil
+	}
+
 	return strings.Split(diff, "\n"), nil
 }
