@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	dateFormat   = "Mon Jan 02 15:04:05 2006 -0700"
+	dateFormat   = "Mon Jan _2 15:04:05 2006 -0700"
 	commitIndent = "    "
 )
 
