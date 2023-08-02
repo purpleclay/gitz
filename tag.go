@@ -78,6 +78,7 @@ type createTagOptions struct {
 	Annotation    string
 	Config        []string
 	ForceNoSigned bool
+	LocalOnly     bool
 	Signed        bool
 	SigningKey    string
 }
@@ -90,6 +91,14 @@ type createTagOptions struct {
 func WithAnnotation(message string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
+	}
+}
+
+// WithLocalOnly ensures the created tag will not be pushed back to
+// the remote and be kept as a local tag only
+func WithLocalOnly() CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.LocalOnly = true
 	}
 }
 
@@ -192,8 +201,13 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 	}
 	buf.WriteString(fmt.Sprintf(" '%s'", tag))
 
-	if out, err := c.exec(buf.String()); err != nil {
+	out, err := c.exec(buf.String())
+	if err != nil {
 		return out, err
+	}
+
+	if options.LocalOnly {
+		return out, nil
 	}
 
 	return c.exec(fmt.Sprintf("git push origin '%s'", tag))

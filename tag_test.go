@@ -95,6 +95,16 @@ func TestTagWithTagConfig(t *testing.T) {
 	assert.Contains(t, out, "Tagger: bane <bane@dc.com>")
 }
 
+func TestTagWithLocalOnly(t *testing.T) {
+	gittest.InitRepository(t)
+
+	client, _ := git.NewClient()
+	_, err := client.Tag("0.1.0", git.WithLocalOnly())
+
+	require.NoError(t, err)
+	assert.Empty(t, gittest.RemoteTags(t))
+}
+
 func TestDeleteTags(t *testing.T) {
 	log := "(tag: 0.1.0, tag: 0.2.0) feat(ui): add new fancy button to ui"
 	gittest.InitRepository(t, gittest.WithLog(log))
