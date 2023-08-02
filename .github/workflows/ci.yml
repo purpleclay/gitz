@@ -21,8 +21,6 @@
 name: ci
 on:
   push:
-    tags:
-      - "v*.*.*"
     branches:
       - main
     paths:
