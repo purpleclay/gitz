@@ -93,11 +93,13 @@ const (
 type RepositoryOption func(*repositoryOptions)
 
 type repositoryOptions struct {
-	Log        []LogEntry
-	RemoteLog  []LogEntry
-	Files      []file
-	Commits    []string
-	CloneDepth int
+	CloneDepth  int
+	CommitFiles bool
+	Commits     []string
+	FileContent map[string]string
+	Files       []file
+	Log         []LogEntry
+	RemoteLog   []LogEntry
 }
 
 type file struct {
@@ -202,6 +204,24 @@ func WithFiles(files ...string) RepositoryOption {
 	}
 }
 
+// WithCommittedFiles ensures the repository will be initialized with a given
+// set of named files. Both relative and full file paths are supported. Each
+// file will be generated using default data, and will be committed under a
+// single commit 'include test files'
+//
+// For example:
+//
+//	gittest.InitRepository(t, gittest.WithCommittedFiles("file1.txt", "file2.txt"))
+//
+// This will result in a repository containing two committed files and no
+// outstanding changes
+func WithCommittedFiles(files ...string) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		WithStagedFiles(files...)(opts)
+		opts.CommitFiles = true
+	}
+}
+
 // WithStagedFiles ensures the repository will be initialized with a given
 // set of named files. Both relative and full file paths are supported. Each
 // file will be generated using default data, and will be staged within the
@@ -221,6 +241,37 @@ func WithStagedFiles(files ...string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		for _, f := range files {
 			opts.Files = append(opts.Files, file{Path: f, Staged: true})
+		}
+	}
+}
+
+// WithFileContent allows the default file content associated with files
+// created through the [WithFiles], [WithCommittedFiles] or [WithStagedFiles]
+// options to be overwritten with user defined content. Input to this option
+// is in the form of path and content pairs.
+//
+// For example:
+//
+//	gittest.InitRepository(gittest.WithFiles("file1.txt", "file2.txt"),
+//		gittest.WithFileContent("file1.txt", "hello", "file2.txt", "world"))
+//
+// Inspecting the contents of the files will output:
+//
+//	file1.txt => "hello"
+//	file2.txt => "world"
+//
+// Mismatched pairs will result in the final file in the list not being
+// updated
+func WithFileContent(pairs ...string) RepositoryOption {
+	return func(opts *repositoryOptions) {
+		l := len(pairs)
+		if l%2 != 0 {
+			l = l - 1
+		}
+
+		opts.FileContent = map[string]string{}
+		for i := 0; i < l; i += 2 {
+			opts.FileContent[pairs[i]] = pairs[i+1]
 		}
 	}
 }
@@ -253,7 +304,8 @@ func WithCloneDepth(depth int) RepositoryOption {
 //  3. Remote log history will be imported, creating a delta between
 //     the current repository (working directory) and the remote
 //  4. All local empty commits are made without pushing back to the remote
-//  5. All named files will be created and staged if required
+//  5. All named files will be created and either staged or committed if
+//     required
 //
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
@@ -310,10 +362,20 @@ func InitRepository(t *testing.T, opts ...RepositoryOption) {
 		Exec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, commit))
 	}
 
-	for _, f := range options.Files {
-		TempFile(t, f.Path, FileContent)
-		if f.Staged {
-			StageFile(t, f.Path)
+	if len(options.Files) > 0 {
+		for _, f := range options.Files {
+			content := FileContent
+			if fc, exists := options.FileContent[f.Path]; exists {
+				content = fc
+			}
+
+			TempFile(t, f.Path, content)
+			if f.Staged {
+				StageFile(t, f.Path)
+			}
+		}
+		if options.CommitFiles {
+			Commit(t, "include test files")
 		}
 	}
 
@@ -570,6 +632,24 @@ func RemoteTags(t *testing.T) []string {
 func StageFile(t *testing.T, path string) {
 	t.Helper()
 	MustExec(t, fmt.Sprintf("git add '%s'", path))
+}
+
+// StageAll will stage all changes to new and existing files, respecting
+// the contents of the .gitignore file. The following git command is
+// executed:
+//
+//	git add -A
+func StageAll(t *testing.T) {
+	t.Helper()
+	MustExec(t, "git add -A")
+}
+
+// StagedFile generates a temporary file with the given content and ensures
+// it is staged. A utility method that calls [TempFile] followed by [StageFile]
+func StagedFile(t *testing.T, path, content string) {
+	t.Helper()
+	TempFile(t, path, content)
+	StageFile(t, path)
 }
 
 // Commit a snapshot of all changes within the current repository (working directory)
@@ -871,4 +951,20 @@ func ObjectRef(t *testing.T, path string) string {
 	}
 
 	return objectID
+}
+
+// Blob retrieves the string representation of a blob within the git tree.
+// The tree is scanned using the provided path to obtain the blob reference.
+// The content is retrieved using this command:
+//
+//	git show -s <ref>
+func Blob(t *testing.T, path string) string {
+	t.Helper()
+
+	ref := ObjectRef(t, path)
+	if ref == "" {
+		return ""
+	}
+
+	return MustExec(t, "git show -s "+ref)
 }

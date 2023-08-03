@@ -207,13 +207,40 @@ func TestInitRepositoryWithFiles(t *testing.T) {
 	assert.ElementsMatch(t, []string{"?? a.txt", "?? b.txt"}, status)
 }
 
+func TestInitRepositoryWithCommittedFiles(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithCommittedFiles("c.txt", "dir/d.txt"))
+
+	out := gitExec(t, "status", "--porcelain")
+
+	assert.Empty(t, out)
+}
+
 func TestInitRepositoryWithStagedFiles(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithStagedFiles("c.txt", "dir/d.txt"))
+	gittest.InitRepository(t, gittest.WithStagedFiles("e.txt", "dir/f.txt"))
 
 	out := gitExec(t, "status", "--porcelain")
 	status := strings.Split(out, "\n")
 
-	assert.ElementsMatch(t, []string{"A  c.txt", "A  dir/d.txt"}, status)
+	assert.ElementsMatch(t, []string{"A  e.txt", "A  dir/f.txt"}, status)
+}
+
+func TestInitRepositoryWithFileContent(t *testing.T) {
+	gittest.InitRepository(t,
+		gittest.WithCommittedFiles("g.txt", "dir/h.txt", "dir/i.txt"),
+		gittest.WithFileContent("g.txt", "hello", "dir/h.txt", "world!"))
+
+	assert.Equal(t, "hello", gittest.Blob(t, "g.txt"))
+	assert.Equal(t, "world!", gittest.Blob(t, "dir/h.txt"))
+	assert.Equal(t, gittest.FileContent, gittest.Blob(t, "dir/i.txt"))
+}
+
+func TestInitRepositoryWithFileContentMismatched(t *testing.T) {
+	gittest.InitRepository(t,
+		gittest.WithCommittedFiles("j.txt", "dir/k.txt"),
+		gittest.WithFileContent("j.txt", "hello", "dir/k.txt"))
+
+	assert.Equal(t, "hello", gittest.Blob(t, "j.txt"))
+	assert.Equal(t, gittest.FileContent, gittest.Blob(t, "dir/k.txt"))
 }
 
 func TestInitRepositoryWithLocalCommits(t *testing.T) {
@@ -328,6 +355,16 @@ func TestStageFile(t *testing.T) {
 
 	status := gitExec(t, "status", "--porcelain")
 	assert.Contains(t, status, "A  test.txt")
+}
+
+func TestStageAll(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithFiles("test1.txt", "test2.txt"))
+
+	gittest.StageAll(t)
+
+	status := gitExec(t, "status", "--porcelain")
+	assert.Contains(t, status, "A  test1.txt")
+	assert.Contains(t, status, "A  test2.txt")
 }
 
 func TestCommit(t *testing.T) {
