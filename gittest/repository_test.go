@@ -89,6 +89,9 @@ ci: include github workflow`
 func localTags(t *testing.T) []string {
 	t.Helper()
 	tags := gitExec(t, "tag", "--format=%(refname:short)")
+	if tags == "" {
+		return nil
+	}
 
 	return strings.Split(tags, "\n")
 }
@@ -96,6 +99,9 @@ func localTags(t *testing.T) []string {
 func remoteTags(t *testing.T) []string {
 	t.Helper()
 	tags := gitExec(t, "ls-remote", "--tags")
+	if tags == "" {
+		return nil
+	}
 
 	cleanedTags := make([]string, 0)
 	for _, tag := range strings.Split(tags, "\n") {
@@ -484,6 +490,18 @@ func TestTagAnnotated(t *testing.T) {
 	out := gitExec(t, "show", "0.1.0")
 	assert.Contains(t, out, "tag 0.1.0")
 	assert.Contains(t, out, "this is an annotated tag")
+}
+
+func TestTagRemote(t *testing.T) {
+	gittest.InitRepository(t)
+
+	gittest.TagRemote(t, "0.1.0")
+
+	localTags := localTags(t)
+	assert.Empty(t, localTags)
+
+	remoteTags := remoteTags(t)
+	assert.ElementsMatch(t, []string{"0.1.0"}, remoteTags)
 }
 
 func TestShow(t *testing.T) {
