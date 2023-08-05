@@ -33,13 +33,13 @@ import (
 type PullOption func(*pullOptions)
 
 type pullOptions struct {
-	All     bool
-	AllTags bool
-	Config  []string
-	Depth   int
-	Force   bool
-	NoTags  bool
-	// TODO: refspecs
+	All      bool
+	AllTags  bool
+	Config   []string
+	Depth    int
+	Force    bool
+	NoTags   bool
+	RefSpecs []string
 }
 
 // WithPullConfig allows temporary git config to be set while pulling
@@ -95,6 +95,22 @@ func WithFetchNoTags() PullOption {
 	}
 }
 
+// WithRefSpecs allows local references to be cherry-picked and
+// pushed back to the remote. A reference (or refspec) can be as
+// simple as a name, where git will automatically resolve any
+// ambiguity, or as explicit as providing a source and destination
+// for each local reference within the remote. Check out the official
+// git documentation on how to write a more complex [refspec]
+//
+
+// WithFetchRefSpecs ...
+// [refspec]: https://git-scm.com/docs/git-fetch#Documentation/git-fetch.txt-ltrefspecgt
+func WithFetchRefSpecs(refs ...string) PullOption {
+	return func(opts *pullOptions) {
+		opts.RefSpecs = trim(refs...)
+	}
+}
+
 // Pull all changes from a remote repository and immediately update the current
 // repository (current working) directory with those changes. This ensures
 // that your current repository keeps track of remote changes and stays in sync
@@ -139,7 +155,11 @@ func (c *Client) Pull(opts ...PullOption) (string, error) {
 		buf.WriteString(" --no-tags")
 	}
 
-	// TODO: refspecs (fetch and pull specific refspecs only)
+	if len(options.RefSpecs) > 0 {
+		//buf.WriteString(" origin ") // TODO: do we need this?
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(options.RefSpecs, " "))
+	}
 
 	return c.exec(buf.String())
 }

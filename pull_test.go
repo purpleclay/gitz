@@ -96,3 +96,15 @@ func shallowClone(t *testing.T, remote string) {
 
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
 }
+
+// func TestPullWithFetchRefSpecs(t *testing.T) {
+// 	log := `(origin/branch) fix: ensure pull supports refspecs
+// (main, origin/main) test: add test for validating refspecs`
+// 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+
+// 	client, _ := git.NewClient()
+// 	_, err := client.Pull(git.WithFetchRefSpecs("origin/branch:branch"), git.WithFetchForce())
+
+// 	require.NoError(t, err)
+// 	assert.ElementsMatch(t, []string{"main", "branch"}, gittest.Branches(t))
+// }
