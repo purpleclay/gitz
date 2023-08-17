@@ -768,18 +768,6 @@ func RemoteLog(t *testing.T) []LogEntry {
 	return ParseLog(log)
 }
 
-// TagLocal creates a tag that is only tracked locally and will not have
-// been pushed back to the remote repository. The following git command
-// is executed:
-//
-//	git tag '<tag>'
-//
-// Deprecated: use [Tag] instead
-func TagLocal(t *testing.T, tag string) {
-	t.Helper()
-	MustExec(t, fmt.Sprintf("git tag '%s'", tag))
-}
-
 // Tag creates a lightweight tag that is only tracked locally and will not
 // have been pushed back to the remote repository. The following git command
 // is executed:
@@ -799,6 +787,20 @@ func Tag(t *testing.T, tag string) {
 func TagAnnotated(t *testing.T, tag, msg string) {
 	t.Helper()
 	MustExec(t, fmt.Sprintf("git tag -a '%s' -m '%s'", tag, msg))
+}
+
+// TagRemote creates lightweight tag that is only tracked at the remote. This is achieved
+// by deleting the local reference to the tag after it has been pushed. The following
+// git commands are executed:
+//
+//	git tag '<tag>'
+//	git push origin '<tag>'
+//	git tag -d '<tag>'
+func TagRemote(t *testing.T, tag string) {
+	t.Helper()
+	Tag(t, tag)
+	MustExec(t, fmt.Sprintf("git push %s '%s'", DefaultOrigin, tag))
+	MustExec(t, fmt.Sprintf("git tag -d '%s'", tag))
 }
 
 // Show will display information about a specific git object. The output
