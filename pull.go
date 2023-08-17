@@ -95,15 +95,12 @@ func WithFetchNoTags() PullOption {
 	}
 }
 
-// WithRefSpecs allows local references to be cherry-picked and
-// pushed back to the remote. A reference (or refspec) can be as
-// simple as a name, where git will automatically resolve any
-// ambiguity, or as explicit as providing a source and destination
-// for each local reference within the remote. Check out the official
-// git documentation on how to write a more complex [refspec]
-//
-
-// WithFetchRefSpecs ...
+// WithFetchRefSpecs allows remote references to be cherry-picked and
+// fetched into the current repository (working copy). A reference
+// (or refspec) can be as simple as a name, where git will automatically
+// resolve any ambiguity, or as explicit as providing a source and destination
+// for reference within the remote. Check out the official git documentation
+// on how to write a more complex [refspec]
 // [refspec]: https://git-scm.com/docs/git-fetch#Documentation/git-fetch.txt-ltrefspecgt
 func WithFetchRefSpecs(refs ...string) PullOption {
 	return func(opts *pullOptions) {

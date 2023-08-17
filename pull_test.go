@@ -108,6 +108,3 @@ func TestPullWithFetchRefSpecs(t *testing.T) {
 	require.NoError(t, err)
 	assert.ElementsMatch(t, []string{"main", "branch1"}, gittest.Branches(t))
 }
-
-// TODO: create a branch with a temp file on it
-// TODO: then pull a remote branch onto that branch (should require a force)
