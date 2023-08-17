@@ -156,8 +156,7 @@ func (c *Client) Pull(opts ...PullOption) (string, error) {
 	}
 
 	if len(options.RefSpecs) > 0 {
-		//buf.WriteString(" origin ") // TODO: do we need this?
-		buf.WriteString(" ")
+		buf.WriteString(" origin ")
 		buf.WriteString(strings.Join(options.RefSpecs, " "))
 	}
 

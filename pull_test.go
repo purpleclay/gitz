@@ -97,14 +97,17 @@ func shallowClone(t *testing.T, remote string) {
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
 }
 
-// func TestPullWithFetchRefSpecs(t *testing.T) {
-// 	log := `(origin/branch) fix: ensure pull supports refspecs
-// (main, origin/main) test: add test for validating refspecs`
-// 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+func TestPullWithFetchRefSpecs(t *testing.T) {
+	log := `(main, origin/main) test: add test for validating refspecs
+(origin/branch) fix: ensure pull supports refspecs`
+	gittest.InitRepository(t, gittest.WithLog(log))
 
-// 	client, _ := git.NewClient()
-// 	_, err := client.Pull(git.WithFetchRefSpecs("origin/branch:branch"), git.WithFetchForce())
+	client, _ := git.NewClient()
+	_, err := client.Pull(git.WithFetchRefSpecs("branch:branch1"))
 
-// 	require.NoError(t, err)
-// 	assert.ElementsMatch(t, []string{"main", "branch"}, gittest.Branches(t))
-// }
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"main", "branch1"}, gittest.Branches(t))
+}
+
+// TODO: create a branch with a temp file on it
+// TODO: then pull a remote branch onto that branch (should require a force)
