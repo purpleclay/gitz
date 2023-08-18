@@ -23,7 +23,6 @@ SOFTWARE.
 package git
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -33,13 +32,8 @@ import (
 type PullOption func(*pullOptions)
 
 type pullOptions struct {
-	All      bool
-	AllTags  bool
-	Config   []string
-	Depth    int
-	Force    bool
-	NoTags   bool
-	RefSpecs []string
+	Config []string
+	fetchOptions
 }
 
 // WithPullConfig allows temporary git config to be set while pulling
@@ -61,18 +55,18 @@ func WithFetchAll() PullOption {
 	}
 }
 
-// WithFetchAllTags will fetch all tags from the remote into local tag
+// WithFetchTags will fetch all tags from the remote into local tag
 // references with the same name
-func WithFetchAllTags() PullOption {
+func WithFetchTags() PullOption {
 	return func(opts *pullOptions) {
-		opts.AllTags = true
+		opts.Tags = true
 	}
 }
 
-// WithFetchDepth will limit the number of commits to be fetched from the
+// WithFetchDepthTo will limit the number of commits to be fetched from the
 // remotes history. If fetching into a shallow clone of a repository,
 // this can be used to shorten or deepen the existing history
-func WithFetchDepth(depth int) PullOption {
+func WithFetchDepthTo(depth int) PullOption {
 	return func(opts *pullOptions) {
 		opts.Depth = depth
 	}
@@ -88,29 +82,29 @@ func WithFetchForce() PullOption {
 	}
 }
 
-// WithFetchNoTags disables local tracking of tags from the remote
-func WithFetchNoTags() PullOption {
+// WithFetchIgnoreTags disables local tracking of tags from the remote
+func WithFetchIgnoreTags() PullOption {
 	return func(opts *pullOptions) {
 		opts.NoTags = true
 	}
 }
 
-// WithFetchRefSpecs allows remote references to be cherry-picked and
-// fetched into the current repository (working copy). A reference
-// (or refspec) can be as simple as a name, where git will automatically
-// resolve any ambiguity, or as explicit as providing a source and destination
-// for reference within the remote. Check out the official git documentation
-// on how to write a more complex [refspec]
-// [refspec]: https://git-scm.com/docs/git-fetch#Documentation/git-fetch.txt-ltrefspecgt
-func WithFetchRefSpecs(refs ...string) PullOption {
+// WithPullRefSpecs allows remote references to be cherry-picked and
+// fetched into the current repository (working copy) during a pull. A
+// reference (or refspec) can be as simple as a name, where git will
+// automatically resolve any ambiguity, or as explicit as providing a
+// source and destination for reference within the remote. Check out the
+// official git documentation on how to write a more complex [refspec]
+// [refspec]: https://git-scm.com/docs/git-pull#Documentation/git-pull.txt-ltrefspecgt
+func WithPullRefSpecs(refs ...string) PullOption {
 	return func(opts *pullOptions) {
 		opts.RefSpecs = trim(refs...)
 	}
 }
 
 // Pull all changes from a remote repository and immediately update the current
-// repository (current working) directory with those changes. This ensures
-// that your current repository keeps track of remote changes and stays in sync
+// repository (working directory) with those changes. This ensures that your current
+// repository keeps track of remote changes and stays in sync
 func (c *Client) Pull(opts ...PullOption) (string, error) {
 	options := &pullOptions{}
 	for _, opt := range opts {
@@ -129,33 +123,8 @@ func (c *Client) Pull(opts ...PullOption) (string, error) {
 		buf.WriteString(" ")
 		buf.WriteString(strings.Join(cfg, " "))
 	}
+
 	buf.WriteString(" pull")
-
-	if options.All {
-		buf.WriteString(" --all")
-	}
-
-	if options.Depth > 0 {
-		buf.WriteString(" --depth ")
-		buf.WriteString(strconv.Itoa(options.Depth))
-	}
-
-	if options.AllTags {
-		buf.WriteString(" --tags")
-	}
-
-	if options.Force {
-		buf.WriteString(" --force")
-	}
-
-	if options.NoTags {
-		buf.WriteString(" --no-tags")
-	}
-
-	if len(options.RefSpecs) > 0 {
-		buf.WriteString(" origin ")
-		buf.WriteString(strings.Join(options.RefSpecs, " "))
-	}
-
+	buf.WriteString(options.fetchOptions.String())
 	return c.exec(buf.String())
 }
