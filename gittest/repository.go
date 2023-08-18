@@ -756,6 +756,16 @@ func Log(t *testing.T) []LogEntry {
 	return ParseLog(log)
 }
 
+// LogBetween returns the log history of a repository (working directory)
+// between two references. Raw output is parsed from this command:
+//
+//	git log --pretty='format:> %%H %%d %%s%%+b%%-N' <from>..<to>
+func LogBetween(t *testing.T, from, to string) []LogEntry {
+	t.Helper()
+	log := MustExec(t, fmt.Sprintf("git log --pretty='format:> %%H %%d %%s%%+b%%-N' %s..%s", from, to))
+	return ParseLog(log)
+}
+
 // RemoteLog returns the log history of a repository (working directory)
 // as it currently exists on the remote. Any local commits that are not
 // pushed, will not appear within this log history. Raw output is

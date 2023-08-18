@@ -470,6 +470,16 @@ chore: first line of the log`
 	assert.Equal(t, gittest.InitialCommit, localLog[2].Message)
 }
 
+func TestLogBetween(t *testing.T) {
+	log := `(tag: 0.2.0) chore: tagged 0.2.0
+(tag: 0.1.0) chore: tagged 0.1.0`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	diffLog := gittest.LogBetween(t, "0.1.0", "0.2.0")
+	require.Len(t, diffLog, 1)
+	assert.Equal(t, "chore: tagged 0.2.0", diffLog[0].Message)
+}
+
 func TestTag(t *testing.T) {
 	gittest.InitRepository(t)
 
