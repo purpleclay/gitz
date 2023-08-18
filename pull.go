@@ -82,7 +82,7 @@ func WithFetchForce() PullOption {
 	}
 }
 
-// WithFetchNoTags disables local tracking of tags from the remote
+// WithFetchIgnoreTags disables local tracking of tags from the remote
 func WithFetchIgnoreTags() PullOption {
 	return func(opts *pullOptions) {
 		opts.NoTags = true
