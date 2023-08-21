@@ -2,6 +2,7 @@
 icon: material/test-tube
 title: Testing your interactions with git
 description: A dedicated package for testing your interactions with git
+status: new
 ---
 
 # Testing your interactions with git
@@ -164,6 +165,53 @@ func TestInitRepositoryWithStagedFiles(t *testing.T) {
 }
 ```
 
+### With committed files :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+
+Create a set of files that will be committed to the repository using the `WithCommittedFiles` option. A single commit of `include test files` will be created.
+
+```{ .go .select linenums="1" }
+package git_test
+
+import (
+    "testing"
+
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryWithCommittedFiles(t *testing.T) {
+    gittest.InitRepository(t,
+       gittest.WithCommittedFiles("a.txt", "dir/b.txt"))
+
+    status := gittest.PorcelainStatus(t)
+    assert.Empty(t, status)
+}
+```
+
+### With file content :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+
+Allows files created with the `WithFiles`, `WithStagedFiles` or `WithCommittedFiles` options to be overwritten with user-defined content. Key value pairs must be provided to the `WithFileContent` option when overriding existing files.
+
+```{ .go .select linenums="1" }
+package git_test
+
+import (
+    "testing"
+
+    "github.com/purpleclay/gitz/gittest"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestInitRepositoryWithFileContent(t *testing.T) {
+    gittest.InitRepository(t,
+		gittest.WithCommittedFiles("a.txt", "dir/b.txt"),
+		gittest.WithFileContent("a.txt", "hello", "dir/b.txt", "world!"))
+
+	assert.Equal(t, "hello", gittest.Blob(t, "a.txt"))
+	assert.Equal(t, "world!", gittest.Blob(t, "dir/b.txt"))
+}
+```
+
 ### With local commits
 
 Generate a set of local empty commits, ready to be pushed back to the remote, with the `WithLocalCommits` option. Generated Commits will be in chronological order.
@@ -235,4 +283,5 @@ You can use any combination of options during repository initialization, but a s
 1. `WithCloneDepth`: shallow clone at the required depth.
 1. `WithRemoteLog`: remote log history imported, creating a delta between local and remote.
 1. `WithLocalCommits`: local commits created and not pushed back to remote.
-1. `WithFiles` and `WithStagedFiles`: files generated and staged if needed.
+1. `WithFiles`, `WithCommittedFiles` and `WithStagedFiles`: files generated and either committed or staged if needed.
+1. `WithFileContent`: Overwrites existing files with user-defined content.

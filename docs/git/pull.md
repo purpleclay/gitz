@@ -2,7 +2,7 @@
 icon: material/arrow-left-bold-box-outline
 status: new
 title: Pulling the latest changes from a remote
-description: Pull all changes from a remote into the current working directory
+description: Pull all changes from a remote and integrate them into the current working directory
 ---
 
 # Pulling the latest changes from a remote
@@ -58,6 +58,10 @@ Fast-forward
  create mode 100644 folder/c.txt
 ```
 
-## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+## Configuring fetch behavior :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+
+TODO: Reference the existing fetch page, as it is the same behavior
+
+## Providing git config at execution
 
 You can provide git config through the `WithPullConfig` option to only take effect during the execution of a `Pull`, removing the need to change config permanently.
