@@ -60,7 +60,9 @@ Fast-forward
 
 ## Configuring fetch behavior :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
 
-TODO: Reference the existing fetch page, as it is the same behavior
+When pulling changes from a remote repository, a fetch happens before merging any changes. Configuring the behavior of this fetch is possible using the supported `WithFetch...` [options](./fetch.md).
+
+For example, you can limit the fetched commit history with the `WithFetchDepthTo` option.
 
 ## Providing git config at execution
 

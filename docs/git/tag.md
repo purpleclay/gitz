@@ -86,7 +86,7 @@ associated commit message
 
 ### Creating a local tag :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
 
-To prevent a tag from being pushed back to the remote, the `WithLocalOnly` option should be used.
+Use the `WithLocalOnly` option to prevent a tag from being pushed back to the remote.
 
 ## Retrieving all tags
 
