@@ -306,6 +306,7 @@ func WithCloneDepth(depth int) RepositoryOption {
 //  4. All local empty commits are made without pushing back to the remote
 //  5. All named files will be created and either staged or committed if
 //     required
+//  6. Overwrites existing files with user-defined content.
 //
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully

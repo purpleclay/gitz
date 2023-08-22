@@ -84,6 +84,10 @@ created tag 0.1.0
 associated commit message
 ```
 
+### Creating a local tag :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+
+Use the `WithLocalOnly` option to prevent a tag from being pushed back to the remote.
+
 ## Retrieving all tags
 
 Calling `Tags` will retrieve all tags from the current repository in ascending lexicographic order:
@@ -315,11 +319,11 @@ func main() {
 
 [^1]: Gitz defers the validation of a tag name to the git client. Any error is captured and returned back to the caller
 
-### Only delete local reference :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+### Only delete local reference
 
 To prevent a deletion from being pushed back to the remote, use the `WithLocalDelete` option.
 
-## Deleting multiple tags :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+## Deleting multiple tags
 
 Call `DeleteTags` if you need to delete a batch of tags and sync it with the remote. Use the `WithLocalDelete` option to prevent any deletion from being pushed back to the remote.
 
@@ -396,6 +400,6 @@ func main() {
 }
 ```
 
-## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+## Providing git config at execution
 
 You can provide git config through the `WithTagConfig` option to only take effect during the execution of a `Tag`, removing the need to change config permanently.

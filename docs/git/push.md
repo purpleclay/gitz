@@ -1,6 +1,5 @@
 ---
 icon: material/arrow-right-bold-box-outline
-status: new
 title: Pushing the latest changes back to a remote
 description: Push all local repository changes back to the remote
 ---
@@ -142,7 +141,7 @@ func main() {
 }
 ```
 
-## Deleting references from the remote :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+## Deleting references from the remote
 
 Delete any number of references from the remote by using the `WithDeleteRefSpecs` option.
 
@@ -167,6 +166,6 @@ func main() {
 }
 ```
 
-## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+## Providing git config at execution
 
 You can provide git config through the `WithPushConfig` option to only take effect during the execution of a `Push`, removing the need to change config permanently.

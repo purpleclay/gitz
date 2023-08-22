@@ -1,6 +1,5 @@
 ---
 icon: material/archive-lock-outline
-status: new
 title: Committing changes to a repository
 description: Create a commit within the current repository and describe those changes with a given log message
 ---
@@ -142,6 +141,6 @@ func main() {
 }
 ```
 
-## Providing git config at execution :material-new-box:{.new-feature title="Feature added on the 26th of July 2023"}
+## Providing git config at execution
 
 You can provide git config through the `WithCommitConfig` option to only take effect during the execution of a `Commit`, removing the need to change config permanently.

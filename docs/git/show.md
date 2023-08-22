@@ -1,6 +1,5 @@
 ---
 icon: material/text-search
-status: new
 title: Inspect an object within a repository
 description: Retrieve details about a specific object from within a repository
 ---
