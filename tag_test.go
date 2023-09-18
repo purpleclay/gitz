@@ -134,7 +134,7 @@ func TestTagBatch(t *testing.T) {
 }
 
 func TestTagBatchAt(t *testing.T) {
-	log := `fix(ui): fix glithcy transitions within dashboard
+	log := `fix(ui): fix glitchy transitions within dashboard
 feat(store): switch to using redis as a cache
 ci: update to use a matrix based testing pipeline`
 	gittest.InitRepository(t, gittest.WithLog(log))
