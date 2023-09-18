@@ -27,6 +27,18 @@ import (
 	"strings"
 )
 
+// ErrMissingTagCommitRef is raised when a git tag is missing an
+// associated commit hash
+type ErrMissingTagCommitRef struct {
+	// Tag reference
+	Tag string
+}
+
+// Error returns a friendly formatted message of the current error
+func (e ErrMissingTagCommitRef) Error() string {
+	return fmt.Sprintf("tag commit ref mismatch. tag: %s is missing a corresponding commit ref", e.Tag)
+}
+
 // SortKey represents a structured [field name] that can be used as a sort key
 // when analysing referenced objects such as tags
 //
@@ -242,18 +254,6 @@ func (c *Client) TagBatch(tags []string, opts ...CreateTagOption) (string, error
 	}
 
 	return c.Push(WithRefSpecs(tags...))
-}
-
-// ErrMissingTagCommitRef is raised when a git tag is missing an
-// associated commit hash
-type ErrMissingTagCommitRef struct {
-	// Tag reference
-	Tag string
-}
-
-// Error returns a friendly formatted message of the current error
-func (e ErrMissingTagCommitRef) Error() string {
-	return ""
 }
 
 // TagBatchAt attempts to create a batch of tags that target specific commits
