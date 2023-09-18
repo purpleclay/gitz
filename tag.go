@@ -227,6 +227,63 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 	return c.exec(fmt.Sprintf("git push origin '%s'", tag))
 }
 
+// TagBatch attempts to create a batch of tags against a specific point within
+// a repositories history. All tags are created locally and then pushed in
+// a single transaction to the remote. This behavior is enforced by explicitly
+// enabling the [WithLocalOnly] option
+func (c *Client) TagBatch(tags []string, opts ...CreateTagOption) (string, error) {
+	if len(tags) == 0 {
+		return "", nil
+	}
+
+	opts = append(opts, WithLocalOnly())
+	for _, tag := range tags {
+		c.Tag(tag, opts...)
+	}
+
+	return c.Push(WithRefSpecs(tags...))
+}
+
+// ErrMissingTagCommitRef is raised when a git tag is missing an
+// associated commit hash
+type ErrMissingTagCommitRef struct {
+	// Tag reference
+	Tag string
+}
+
+// Error returns a friendly formatted message of the current error
+func (e ErrMissingTagCommitRef) Error() string {
+	return ""
+}
+
+// TagBatchAt attempts to create a batch of tags that target specific commits
+// within a repositories history. Any number of pairs consisting of a tag and
+// commit hash must be provided.
+//
+//	TagBatchAt([]string{"0.1.0", "740a8b9", "0.2.0", "9e7dfbb"})
+//
+// All tags are created locally and then pushed in a single transaction to the
+// remote. This behavior is enforced by explicitly enabling the [WithLocalOnly]
+// option
+func (c *Client) TagBatchAt(pairs []string, opts ...CreateTagOption) (string, error) {
+	if len(pairs) == 0 {
+		return "", nil
+	}
+
+	if len(pairs)%2 != 0 {
+		return "", ErrMissingTagCommitRef{Tag: pairs[len(pairs)-1]}
+	}
+
+	opts = append(opts, WithLocalOnly())
+	var refs []string
+	for i := 0; i < len(pairs); i += 2 {
+		c.Tag(pairs[i], append(opts, WithCommitRef(pairs[i+1]))...)
+		refs = append(refs, pairs[i])
+	}
+
+	return c.Push(WithRefSpecs(refs...))
+}
+
 // ListTagsOption provides a way for setting specific options during a list
 // tags operation. Each supported option can customize the way in which the
 // tags are queried and returned from the current repository (workng directory)
