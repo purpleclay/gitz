@@ -120,6 +120,35 @@ test: expand current test suite using golden files`
 	assert.Contains(t, out, "commit "+glog[1].Hash)
 }
 
+func TestTagBatch(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithLog("fix: race condition when writing to map"))
+	glog := gittest.Log(t)
+	require.Len(t, glog, 2)
+
+	client, _ := git.NewClient()
+	_, err := client.TagBatch([]string{"0.1.1", "0.1.2"})
+
+	require.NoError(t, err)
+	assert.Contains(t, gittest.Show(t, "0.1.1"), "commit "+glog[0].Hash)
+	assert.Contains(t, gittest.Show(t, "0.1.2"), "commit "+glog[0].Hash)
+}
+
+func TestTagBatchAt(t *testing.T) {
+	log := `fix(ui): fix glitchy transitions within dashboard
+feat(store): switch to using redis as a cache
+ci: update to use a matrix based testing pipeline`
+	gittest.InitRepository(t, gittest.WithLog(log))
+	glog := gittest.Log(t)
+	require.Len(t, glog, 4)
+
+	client, _ := git.NewClient()
+	_, err := client.TagBatchAt([]string{"store/0.2.0", glog[1].AbbrevHash, "ui/0.3.0", glog[0].Hash})
+
+	require.NoError(t, err)
+	assert.Contains(t, gittest.Show(t, "ui/0.3.0"), "commit "+glog[0].Hash)
+	assert.Contains(t, gittest.Show(t, "store/0.2.0"), "commit "+glog[1].Hash)
+}
+
 func TestDeleteTags(t *testing.T) {
 	log := "(tag: 0.1.0, tag: 0.2.0) feat(ui): add new fancy button to ui"
 	gittest.InitRepository(t, gittest.WithLog(log))
