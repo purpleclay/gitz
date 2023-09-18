@@ -105,6 +105,21 @@ func TestTagWithLocalOnly(t *testing.T) {
 	assert.Empty(t, gittest.RemoteTags(t))
 }
 
+func TestTagWithCommitRef(t *testing.T) {
+	log := `ci: add extra job to workflow for running golden file tests
+test: expand current test suite using golden files`
+	gittest.InitRepository(t, gittest.WithLog(log))
+	glog := gittest.Log(t)
+	require.Len(t, glog, 3)
+
+	client, _ := git.NewClient()
+	_, err := client.Tag("0.1.1", git.WithCommitRef(glog[1].Hash))
+
+	require.NoError(t, err)
+	out := gittest.Show(t, "0.1.1")
+	assert.Contains(t, out, "commit "+glog[1].Hash)
+}
+
 func TestDeleteTags(t *testing.T) {
 	log := "(tag: 0.1.0, tag: 0.2.0) feat(ui): add new fancy button to ui"
 	gittest.InitRepository(t, gittest.WithLog(log))

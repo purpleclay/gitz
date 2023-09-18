@@ -76,6 +76,7 @@ type CreateTagOption func(*createTagOptions)
 
 type createTagOptions struct {
 	Annotation    string
+	CommitRef     string
 	Config        []string
 	ForceNoSigned bool
 	LocalOnly     bool
@@ -91,6 +92,15 @@ type createTagOptions struct {
 func WithAnnotation(message string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
+	}
+}
+
+// WithCommitRef ensures the created tag points to a specific commit
+// within the history of the repository. This changes the default behavior
+// of creating a tag against the HEAD (or latest commit) within the repository
+func WithCommitRef(ref string) CreateTagOption {
+	return func(opts *createTagOptions) {
+		opts.CommitRef = strings.TrimSpace(ref)
 	}
 }
 
@@ -200,6 +210,10 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 		buf.WriteString(fmt.Sprintf(" -a -m '%s'", options.Annotation))
 	}
 	buf.WriteString(fmt.Sprintf(" '%s'", tag))
+
+	if options.CommitRef != "" {
+		buf.WriteString(" " + options.CommitRef)
+	}
 
 	out, err := c.exec(buf.String())
 	if err != nil {
