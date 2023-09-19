@@ -23,7 +23,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  uplift:
+  nsv:
     runs-on: ubuntu-latest
     permissions:
       contents: write
