@@ -1,6 +1,5 @@
 ---
 icon: material/clipboard-arrow-left-outline
-status: new
 title: Fetching the latest changes from a remote
 description: Fetch all changes from a remote without integrating them into the current working directory
 ---

@@ -1,6 +1,5 @@
 ---
 icon: material/arrow-left-bold-box-outline
-status: new
 title: Pulling the latest changes from a remote
 description: Pull all changes from a remote and integrate them into the current working directory
 ---
@@ -58,7 +57,7 @@ Fast-forward
  create mode 100644 folder/c.txt
 ```
 
-## Configuring fetch behavior :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+## Configuring fetch behavior
 
 When pulling changes from a remote repository, a fetch happens before merging any changes. Configuring the behavior of this fetch is possible using the supported `WithFetch...` [options](./fetch.md).
 

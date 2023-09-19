@@ -2,7 +2,6 @@
 icon: material/test-tube
 title: Testing your interactions with git
 description: A dedicated package for testing your interactions with git
-status: new
 ---
 
 # Testing your interactions with git
@@ -165,7 +164,7 @@ func TestInitRepositoryWithStagedFiles(t *testing.T) {
 }
 ```
 
-### With committed files :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+### With committed files
 
 Create a set of files that will be committed to the repository using the `WithCommittedFiles` option. A single commit of `include test files` will be created.
 
@@ -188,7 +187,7 @@ func TestInitRepositoryWithCommittedFiles(t *testing.T) {
 }
 ```
 
-### With file content :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+### With file content
 
 Allows files created with the `WithFiles`, `WithStagedFiles` or `WithCommittedFiles` options to be overwritten with user-defined content. Key value pairs must be provided to the `WithFileContent` option when overriding existing files.
 
