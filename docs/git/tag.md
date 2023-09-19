@@ -84,9 +84,42 @@ created tag 0.1.0
 associated commit message
 ```
 
-### Creating a local tag :material-new-box:{.new-feature title="Feature added on the 21st of August 2023"}
+### Creating a local tag
 
 Use the `WithLocalOnly` option to prevent a tag from being pushed back to the remote.
+
+### Tagging a specific commit :material-new-box:{.new-feature title="Feature added on the 19th of September 2023"}
+
+Use the `WithCommitRef` option to ensure a specific commit within the history is tagged.
+
+### Batch tagging :material-new-box:{.new-feature title="Feature added on the 19th of September 2023"}
+
+By calling `TagBatch`, a batch of tags can be created. `gitz` will enforce the `WithLocalOnly` option before pushing them to the remote in one transaction.
+
+```{ .go .select linenums="1" }
+package main
+
+import (
+    "log"
+
+    git "github.com/purpleclay/gitz"
+)
+
+func main() {
+    client, _ := git.NewClient()
+
+    _, err := client.TagBatch([]string{"1.0.0", "1.0", "1"})
+    if err != nil {
+        log.Fatal("failed to batch tag repository")
+    }
+}
+```
+
+A batch of tags that target specific commits can also be created by calling `TagBatchAt`. `gitz` will enforce the `WithLocalOnly` and `WithCommitRef` options before pushing them back to the remote in one transaction.
+
+```{ .go .no-select linenums="1" }
+client.TagBatchAt([]string{"0.1.0", "740a8b9", "0.2.0", "9e7dfbb"})
+```
 
 ## Retrieving all tags
 
