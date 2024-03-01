@@ -3,7 +3,7 @@ module github.com/purpleclay/gitz
 go 1.19
 
 require (
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	mvdan.cc/sh/v3 v3.7.0
 )
 
