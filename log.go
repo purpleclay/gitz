@@ -265,6 +265,8 @@ func parseLog(log string) []LogEntry {
 	for scanner.Scan() {
 		// Expected format of log from using the --online format is: <hash><space><message>
 		if hash, msg, found := strings.Cut(scanner.Text(), " "); found {
+			msg = cleanLineEndings(msg)
+
 			entries = append(entries, LogEntry{
 				Hash:       hash,
 				AbbrevHash: hash[:7],
