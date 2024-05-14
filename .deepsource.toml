@@ -25,10 +25,11 @@ test_patterns = [
 
 [[analyzers]]
 name = "go"
+enabled = true
 
     [analyzers.meta]
-    import_root = "github.com/purpleclay/gitz"
+    import_root = "github.com/purpleclay/nsv"
 
 [[analyzers]]
-name = "secret"
+name = "secrets"
 enabled = true
