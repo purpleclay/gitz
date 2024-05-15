@@ -14,6 +14,7 @@
 !mkdocs.yml
 !README.md
 !Taskfile.yaml
+!docs/**/*
 
 # Allow Nix files
 !.envrc
