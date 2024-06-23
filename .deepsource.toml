@@ -1,15 +1,13 @@
 version = 1
 
-test_patterns = [
-  "**/*_test.go"
-]
+test_patterns = ["**/*_test.go"]
 
 [[analyzers]]
 name = "go"
 enabled = true
 
-    [analyzers.meta]
-    import_root = "github.com/purpleclay/nsv"
+[analyzers.meta]
+import_root = "github.com/purpleclay/gitz"
 
 [[analyzers]]
 name = "secrets"

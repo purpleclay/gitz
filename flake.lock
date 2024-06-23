@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "dagger": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1718718080,
+        "narHash": "sha256-Obb+1wZtNziOXCa8F+PZ6+FmPVf6bFWHF9m5LxtJNpc=",
+        "owner": "dagger",
+        "repo": "nix",
+        "rev": "0e658d2f7079a823f7092825ec6700323b47e935",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dagger",
+        "repo": "nix",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -36,6 +56,7 @@
     },
     "root": {
       "inputs": {
+        "dagger": "dagger",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs"
       }
