@@ -19,30 +19,26 @@ permissions:
   contents: read
 
 jobs:
-  # By splitting testing into its own job will ensure the needs: clause for
-  # static-analysis runs without waiting on the entire matrix. Jobs that run
-  # against macos and windows are considerably slower
   test:
     uses: purpleclay/github/.github/workflows/go-test.yml@main
-    with:
-      go-version: ${{ vars.GO_VERSION }}
-    secrets:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
-
-  test-by-os:
-    if: "!startsWith(github.ref, 'refs/tags/')"
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
-    uses: purpleclay/github/.github/workflows/go-test.yml@main
+        os: [ubuntu-24.04, macos-14, windows-2022]
     with:
-      os: ${{ matrix.os }}
       go-version: ${{ vars.GO_VERSION }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
-    uses: purpleclay/github/.github/workflows/golangci-lint.yml@main
-    with:
-      version: ${{ vars.GOLANGCI_LINT_VERSION }}
-      go-version: ${{ vars.GO_VERSION }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: golangci-lint
+        uses: dagger/dagger-for-github@v5
+        with:
+          verb: call
+          module: github.com/purpleclay/daggerverse/golang
+          args: --src . lint
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}

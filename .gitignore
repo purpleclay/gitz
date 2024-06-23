@@ -13,7 +13,7 @@
 !LICENSE
 !mkdocs.yml
 !README.md
-!Taskfile.yaml
+!taskfile.yaml
 !docs/**/*
 
 # Allow Nix files
