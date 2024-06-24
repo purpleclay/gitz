@@ -653,6 +653,17 @@ func StagedFile(t *testing.T, path, content string) {
 	StageFile(t, path)
 }
 
+// Move or rename a file within the current repository (working directory). The
+// following git command is executed:
+//
+//	git mv --force '<path>' '<to>'
+func Move(t *testing.T, path, to string) {
+	t.Helper()
+	require.NoError(t, os.MkdirAll(filepath.Dir(to), 0o750))
+
+	MustExec(t, fmt.Sprintf("git mv --force '%s' '%s'", path, to))
+}
+
 // Commit a snapshot of all changes within the current repository (working directory)
 // without pushing it to the remote. The commit will be associated with the
 // provided message. The following git command is executed:

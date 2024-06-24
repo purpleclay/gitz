@@ -373,6 +373,15 @@ func TestStageAll(t *testing.T) {
 	assert.Contains(t, status, "A  test2.txt")
 }
 
+func TestMove(t *testing.T) {
+	gittest.InitRepository(t, gittest.WithCommittedFiles("file1.txt"))
+
+	gittest.Move(t, "file1.txt", "file2.txt")
+
+	status := gitExec(t, "status", "--porcelain")
+	assert.Contains(t, status, "R  file1.txt -> file2.txt")
+}
+
 func TestCommit(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithStagedFiles("file.txt"))
 
