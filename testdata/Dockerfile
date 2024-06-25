@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.8
-FROM golang:1.19-alpine3.18 AS build
+FROM golang:1.22-alpine3.18 AS build
 
 WORKDIR /work
 COPY . /work
