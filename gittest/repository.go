@@ -28,6 +28,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -624,6 +625,13 @@ func RemoteTags(t *testing.T) []string {
 	}
 
 	return tags
+}
+
+// WriteFile the given content to a file. If the file does not exist, it
+// will be created. Any existing file will be truncated
+func WriteFile(t *testing.T, path, content string, perm fs.FileMode) {
+	t.Helper()
+	require.NoError(t, os.WriteFile(path, []byte(content), perm))
 }
 
 // StageFile will attempt to use the provided path to stage a file that

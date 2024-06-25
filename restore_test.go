@@ -27,9 +27,20 @@ func TestRestoreUsingForUntrackedFiles(t *testing.T) {
 }
 
 func TestRestoreUsingForModifiedFiles(t *testing.T) {
-	// TODO: committed files
-	// TODO: modify one and stage
-	// TODO: modify the other and do not stage
+	gittest.InitRepository(t, gittest.WithCommittedFiles("main.go", "doc.go"))
+	gittest.WriteFile(t, "main.go", "updated", 0o644)
+	gittest.WriteFile(t, "doc.go", "updated", 0o644)
+	gittest.StageFile(t, "main.go")
+
+	client, _ := git.NewClient()
+	err := client.RestoreUsing([]git.FileStatus{
+		{Indicators: [2]git.FileStatusIndicator{git.Modified, git.Untracked}, Path: "main.go"},
+		{Indicators: [2]git.FileStatusIndicator{git.Untracked, git.Modified}, Path: "doc.go"},
+	})
+	require.NoError(t, err)
+
+	statuses := gittest.PorcelainStatus(t)
+	assert.Empty(t, statuses)
 }
 
 func TestRestoreUsingForRenamedFiles(t *testing.T) {

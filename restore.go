@@ -5,7 +5,10 @@ import (
 	"strings"
 )
 
-// RestoreUsing ...(against HEAD only)
+// RestoreUsing will restore a given set of files back to their previous
+// known state within the current repository (working directory). By
+// inspecting each files [FileStatus], the correct decision can be made
+// when restoring it
 func (c *Client) RestoreUsing(statuses []FileStatus) error {
 	for _, status := range statuses {
 		var err error
@@ -35,7 +38,7 @@ func (c *Client) restoreFile(status FileStatus) error {
 	var buf strings.Builder
 	buf.WriteString("git restore ")
 	if status.Indicators[0] == Modified {
-		buf.WriteString("--staged ")
+		buf.WriteString("--staged --worktree ")
 	}
 	buf.WriteString(status.Path)
 
