@@ -27,7 +27,7 @@ go get
 CGO_ENABLED=0 go build -o gitz-test ${test}.go
 EOF
 
-FROM alpine:3.17
+FROM alpine:3.20
 RUN apk add --no-cache git gnupg
 
 RUN <<EOF
