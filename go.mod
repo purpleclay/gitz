@@ -2,8 +2,6 @@ module github.com/purpleclay/gitz
 
 go 1.21
 
-toolchain go1.22.4
-
 require (
 	github.com/stretchr/testify v1.9.0
 	mvdan.cc/sh/v3 v3.8.0
