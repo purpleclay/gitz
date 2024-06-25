@@ -28,6 +28,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -626,6 +627,13 @@ func RemoteTags(t *testing.T) []string {
 	return tags
 }
 
+// WriteFile the given content to a file. If the file does not exist, it
+// will be created. Any existing file will be truncated
+func WriteFile(t *testing.T, path, content string, perm fs.FileMode) {
+	t.Helper()
+	require.NoError(t, os.WriteFile(path, []byte(content), perm))
+}
+
 // StageFile will attempt to use the provided path to stage a file that
 // has been modified. The following git command is executed:
 //
@@ -651,6 +659,17 @@ func StagedFile(t *testing.T, path, content string) {
 	t.Helper()
 	TempFile(t, path, content)
 	StageFile(t, path)
+}
+
+// Move or rename a file within the current repository (working directory). The
+// following git command is executed:
+//
+//	git mv --force '<path>' '<to>'
+func Move(t *testing.T, path, to string) {
+	t.Helper()
+	require.NoError(t, os.MkdirAll(filepath.Dir(to), 0o750))
+
+	MustExec(t, fmt.Sprintf("git mv --force '%s' '%s'", path, to))
 }
 
 // Commit a snapshot of all changes within the current repository (working directory)
