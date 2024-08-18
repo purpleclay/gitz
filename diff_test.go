@@ -66,3 +66,18 @@ func print() {
 	assert.Equal(t, 1, diffs[0].Chunks[1].Removed.Count)
 	assert.Equal(t, `	print()`, diffs[0].Chunks[1].Removed.Change)
 }
+
+func TestDiffWithDiffPaths(t *testing.T) {
+	gittest.InitRepository(t,
+		gittest.WithCommittedFiles("file1.txt", "file2.txt"),
+		gittest.WithFileContent("file1.txt", "Hello, World!", "file2.txt", "Goodbye, World!"))
+
+	overwriteFile(t, "file1.txt", "Goodbye, World!")
+	overwriteFile(t, "file2.txt", "Hello, World!")
+
+	client, _ := git.NewClient()
+	diffs, err := client.Diff(git.WithDiffPaths("file1.txt"))
+	require.NoError(t, err)
+
+	assert.Len(t, diffs, 1)
+}

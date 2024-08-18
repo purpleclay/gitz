@@ -18,44 +18,70 @@ const (
 	remPrefix = "-"
 )
 
-// CommitOption provides a way for setting specific options during a commit
-// operation. Each supported option can customize the way the commit is
-// created against the current repository (working directory)
-
-// DiffOption ...
+// DiffOption provides a way for setting specific options during a diff
+// operation. Each supported option can customize the way the diff is
+// executed against the current repository (working directory)
 type DiffOption func(*diffOptions)
 
 type diffOptions struct {
 	DiffPaths []string
 }
 
-// WithDiffPaths ...
+// WithDiffPaths allows the diff to be targetted to specific files and
+// folers within the current repository (working directory). Paths to
+// files and folders are relative to the root of the repository. All
+// leading and trailing whitepsace will be trimmed from the file paths,
+// allowing empty paths to be ignored
 func WithDiffPaths(paths ...string) DiffOption {
 	return func(opts *diffOptions) {
 		opts.DiffPaths = trim(paths...)
 	}
 }
 
-// FileDiff ...
+// FileDiff represents a snapshot containing all of the changes to
+// a file within a repository (working directory)
 type FileDiff struct {
-	Path   string
+	// Path of the file within the repository (working directory)
+	Path string
+
+	// DiffChunk contains all of the identified changes within
+	// the file
 	Chunks []DiffChunk
 }
 
-// DiffChunk ...
+// DiffChunk represents a snapshot of a single change (chunk) to
+// a file within a repository (working directory)
 type DiffChunk struct {
-	Added   DiffChange
+	// Added optionally contains details of the text that has
+	// been added to a file as part of the current change
+	Added DiffChange
+
+	// Removed optionally contains details of the text that has
+	// been removed from a file as part of the current change
 	Removed DiffChange
 }
 
-// DiffChange ...
+// DiffChange captures details about an individual chunk
+// within a git diff. It contains both the changed text and
+// its exact position (and line count) within the file
 type DiffChange struct {
+	// LineNo is the position within the file where the
+	// change starts
 	LineNo int
-	Count  int
+
+	// Count is the number of lines that has changed
+	Count int
+
+	// Change contains the text that has changed
 	Change string
 }
 
-// Diff ...
+// Diff captures the changes made to files within the current repository (working
+// directory). Options can be provided to customize how the current diff is
+// determined. By default, all diffs (or changes) to files within the repository
+// will be retrieved. The diff is generated using the following git options:
+//
+//	git diff -U0 --no-color
 func (c *Client) Diff(opts ...DiffOption) ([]FileDiff, error) {
 	options := &diffOptions{}
 	for _, opt := range opts {
