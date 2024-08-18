@@ -1,25 +1,3 @@
-/*
-Copyright (c) 2023 Purple Clay
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 package scan_test
 
 import (
@@ -104,4 +82,62 @@ and it is spread over two lines`
 this is line #2`, lines[0])
 	assert.Equal(t, `this is line #3
 and it is spread over two lines`, lines[1])
+}
+
+func TestDiffLines(t *testing.T) {
+	text := `diff --git a/clone.go b/clone.go
+index f181e5f..bea7426 100644
+--- a/clone.go
++++ b/clone.go
+@@ -10,6 +10,7 @@ import (
+ // repository is cloned onto the file system into a target working directory
+ type CloneOption func(*cloneOptions)
+
++// Hello
+ type cloneOptions struct {
+        Config      []string
+        CheckoutRef string
+diff --git a/commit.go b/commit.go
+index 906a132..2e6954c 100644
+--- a/commit.go
++++ b/commit.go
+@@ -10,6 +10,7 @@ import (
+ // created against the current repository (working directory)
+ type CommitOption func(*commitOptions)
+
++// Hello, again!
+ type commitOptions struct {
+        AllowEmpty    bool
+        Config        []string
+`
+
+	scanner := bufio.NewScanner(strings.NewReader(text))
+	scanner.Split(scan.DiffLines())
+
+	lines := readUntilEOF(t, scanner)
+	require.Len(t, lines, 2)
+	assert.Equal(t, `diff --git a/clone.go b/clone.go
+index f181e5f..bea7426 100644
+--- a/clone.go
++++ b/clone.go
+@@ -10,6 +10,7 @@ import (
+ // repository is cloned onto the file system into a target working directory
+ type CloneOption func(*cloneOptions)
+
++// Hello
+ type cloneOptions struct {
+        Config      []string
+        CheckoutRef string`, lines[0])
+	assert.Equal(t, `diff --git a/commit.go b/commit.go
+index 906a132..2e6954c 100644
+--- a/commit.go
++++ b/commit.go
+@@ -10,6 +10,7 @@ import (
+ // created against the current repository (working directory)
+ type CommitOption func(*commitOptions)
+
++// Hello, again!
+ type commitOptions struct {
+        AllowEmpty    bool
+        Config        []string`, lines[1])
 }
