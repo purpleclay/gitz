@@ -1,6 +1,5 @@
 ---
 icon: material/tag-outline
-status: new
 title: Creating, listing, and deleting tags
 description: Manage tag creation, deletion, and retrieval within the current repository
 ---
