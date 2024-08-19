@@ -46,6 +46,7 @@ nav:
       - Git Clone: git/clone.md
       - Git Commit: git/commit.md
       - Git Config: git/config.md
+      - Git Diff: git/diff.md
       - Git Checkout: git/checkout.md
       - Git Fetch: git/fetch.md
       - Git Pull: git/pull.md
@@ -111,8 +112,8 @@ markdown_extensions:
   - pymdownx.critic
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
