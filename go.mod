@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/purpleclay/chomp v0.3.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	mvdan.cc/sh/v3 v3.8.0
 )
 
