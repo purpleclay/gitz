@@ -11,13 +11,14 @@ import (
 type FetchOption func(*fetchOptions)
 
 type fetchOptions struct {
-	All      bool
-	Config   []string
-	Depth    int
-	Force    bool
-	NoTags   bool
-	RefSpecs []string
-	Tags     bool
+	All       bool
+	Config    []string
+	Depth     int
+	Force     bool
+	NoTags    bool
+	RefSpecs  []string
+	Tags      bool
+	Unshallow bool
 }
 
 func (o fetchOptions) String() string {
@@ -42,6 +43,10 @@ func (o fetchOptions) String() string {
 
 	if o.NoTags {
 		buf.WriteString(" --no-tags")
+	}
+
+	if o.Unshallow {
+		buf.WriteString(" --unshallow")
 	}
 
 	if len(o.RefSpecs) > 0 {
@@ -116,6 +121,13 @@ func WithIgnoreTags() FetchOption {
 func WithFetchRefSpecs(refs ...string) FetchOption {
 	return func(opts *fetchOptions) {
 		opts.RefSpecs = trim(refs...)
+	}
+}
+
+// WithUnshallow will fetch the complete history from the remote
+func WithUnshallow() FetchOption {
+	return func(opts *fetchOptions) {
+		opts.Unshallow = true
 	}
 }
 
