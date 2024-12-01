@@ -92,3 +92,20 @@ func TestFetchWithFetchRefSpecs(t *testing.T) {
 	require.Len(t, dlog, 1)
 	assert.Equal(t, "test: add test for validating refspecs", dlog[0].Message)
 }
+
+func TestFetchWithUnshallow(t *testing.T) {
+	log := `(main, origin/main) fifth feature
+feat: fourth feature
+feat: third feature
+feat: second feature
+feat: first feature`
+	gittest.InitRepository(t, gittest.WithRemoteLog(log))
+	shallowClone(t, gittest.Remote(t))
+
+	client, _ := git.NewClient()
+	_, err := client.Fetch(git.WithUnshallow())
+	require.NoError(t, err)
+
+	glog := gittest.Log(t)
+	assert.Len(t, glog, 6)
+}
