@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:1.9
+# syntax = docker/dockerfile:1.12
 FROM golang:1.22-alpine3.18 AS build
 
 WORKDIR /work
