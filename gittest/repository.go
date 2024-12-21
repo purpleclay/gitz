@@ -66,7 +66,7 @@ const (
 	ReadmeContent = "# Gitz Test Repository\n\n" + FileContent
 
 	// an internal template for pushing changes back to a remote origin
-	gitPushTemplate = "git push origin %s"
+	gitPushTemplate = "git push -u origin %s"
 )
 
 // RepositoryOption provides a utility for setting repository options during
@@ -764,17 +764,20 @@ func Log(t *testing.T) []LogEntry {
 	return ParseLog(log)
 }
 
-// LogFrom ...
+// LogFor returns the log history of a repository (working directory)
+// at the given paths. Useful if you need to understand the history
+// behind any number of files or directories. This will ignore any
+// empty commits
 //
-//	git log -- '<path>' '<path>'
-func LogFrom(t *testing.T, paths ...string) []LogEntry {
+//	git log --pretty='format:> %%H %%d %%s%%+b%%-N' -- '<path>' '<path>'
+func LogFor(t *testing.T, paths ...string) []LogEntry {
 	t.Helper()
 	var quotedPaths []string
 	for _, path := range paths {
 		quotedPaths = append(quotedPaths, fmt.Sprintf("'%s'", path))
 	}
 
-	log := MustExec(t, fmt.Sprintf("git log -- %s", strings.Join(quotedPaths, " ")))
+	log := MustExec(t, fmt.Sprintf("git log --pretty='format:> %%H %%d %%s%%+b%%-N' -- %s", strings.Join(quotedPaths, " ")))
 	return ParseLog(log)
 }
 
