@@ -62,8 +62,11 @@ const (
 	// options. Grabbed from: https://loremipsum.io/
 	FileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
+	// ReadmeContent is written to the README.md file when initializing the repository
+	ReadmeContent = "# Gitz Test Repository\n\n" + FileContent
+
 	// an internal template for pushing changes back to a remote origin
-	gitPushTemplate = "git push origin %s"
+	gitPushTemplate = "git push -u origin %s"
 )
 
 // RepositoryOption provides a utility for setting repository options during
@@ -290,9 +293,13 @@ func WithCloneDepth(depth int) RepositoryOption {
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
 // working remote. Without customization (options), the test repository
-// will consist of single commit:
+// will consist of a README.md and a single commit:
 //
-//	initialized repository
+//	> git log --oneline
+//	<HASH> initialized repository
+//
+//	> git ls-files
+//	README.md
 func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	t.Helper()
 
@@ -386,9 +393,12 @@ func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
 	setConfig(t, "user.name", DefaultAuthorName)
 	setConfig(t, "user.email", DefaultAuthorEmail)
 
-	// Check if there any any commits, if not, initialize and push back first commit
+	// Check if there any any commits, if not, initialize with readme and push back first commit
 	if out := MustExec(t, "git rev-list -n1 --all"); out == "" {
-		MustExec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
+		TempFile(t, "README.md", ReadmeContent)
+		StageFile(t, "README.md")
+
+		MustExec(t, fmt.Sprintf(`git commit -m "%s"`, InitialCommit))
 		MustExec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
 	}
 
@@ -751,6 +761,23 @@ func PorcelainStatus(t *testing.T) []string {
 func Log(t *testing.T) []LogEntry {
 	t.Helper()
 	log := MustExec(t, fmt.Sprintf("git log --pretty='format:> %%H %%d %%s%%+b%%-N' %s", DefaultBranch))
+	return ParseLog(log)
+}
+
+// LogFor returns the log history of a repository (working directory)
+// at the given paths. Useful if you need to understand the history
+// behind any number of files or directories. This will ignore any
+// empty commits
+//
+//	git log --pretty='format:> %%H %%d %%s%%+b%%-N' -- '<path>' '<path>'
+func LogFor(t *testing.T, paths ...string) []LogEntry {
+	t.Helper()
+	var quotedPaths []string
+	for _, path := range paths {
+		quotedPaths = append(quotedPaths, fmt.Sprintf("'%s'", path))
+	}
+
+	log := MustExec(t, fmt.Sprintf("git log --pretty='format:> %%H %%d %%s%%+b%%-N' -- %s", strings.Join(quotedPaths, " ")))
 	return ParseLog(log)
 }
 
