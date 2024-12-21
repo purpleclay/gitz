@@ -10,13 +10,13 @@ import (
 )
 
 func TestRestoreUsingForUntrackedFiles(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("README.md", ".github/ci.yaml", "go.mod"))
+	gittest.InitRepository(t, gittest.WithFiles("main.go", ".github/ci.yaml", "go.mod"))
 
 	untracked := [2]git.FileStatusIndicator{git.Untracked, git.Untracked}
 
 	client, _ := git.NewClient()
 	err := client.RestoreUsing([]git.FileStatus{
-		{Indicators: untracked, Path: "README.md"},
+		{Indicators: untracked, Path: "main.go"},
 		{Indicators: untracked, Path: ".github/"},
 		{Indicators: untracked, Path: "go.mod"},
 	})
