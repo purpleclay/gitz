@@ -1,7 +1,7 @@
 version: "3"
 
 vars:
-  GOLANG_DAGGER: "github.com/purpleclay/daggerverse/golang@v0.3.0"
+  GOLANG_DAGGER: "github.com/purpleclay/daggerverse/golang"
 
 tasks:
   default:
@@ -29,12 +29,8 @@ tasks:
 
   unit-test:
     desc: Run the unit tests
-    vars:
-      TEST_FORMAT: '{{default "" .TEST_FORMAT}}'
-      COVER_PROFILE: '{{default "coverage.out" .COVER_PROFILE}}'
-      TEST_OPTIONS: '{{default "-short -race -vet=off -shuffle=on -p 1" .TEST_OPTIONS}}'
     cmds:
-      - go test {{.TEST_OPTIONS}} -covermode=atomic -coverprofile={{.COVER_PROFILE}} {{.TEST_FORMAT}} ./...
+      - dagger call -m {{.GOLANG_DAGGER}} --src . test
 
   docker-test:
     desc: Run the docker-based tests

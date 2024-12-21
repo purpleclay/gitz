@@ -62,6 +62,9 @@ const (
 	// options. Grabbed from: https://loremipsum.io/
 	FileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
+	// ReadmeContent is written to the README.md file when initializing the repository
+	ReadmeContent = "# Gitz Test Repository\n\n" + FileContent
+
 	// an internal template for pushing changes back to a remote origin
 	gitPushTemplate = "git push origin %s"
 )
@@ -386,9 +389,12 @@ func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
 	setConfig(t, "user.name", DefaultAuthorName)
 	setConfig(t, "user.email", DefaultAuthorEmail)
 
-	// Check if there any any commits, if not, initialize and push back first commit
+	// Check if there any any commits, if not, initialize with readme and push back first commit
 	if out := MustExec(t, "git rev-list -n1 --all"); out == "" {
-		MustExec(t, fmt.Sprintf(`git commit --allow-empty -m "%s"`, InitialCommit))
+		TempFile(t, "README.md", ReadmeContent)
+		StageFile(t, "README.md")
+
+		MustExec(t, fmt.Sprintf(`git commit -m "%s"`, InitialCommit))
 		MustExec(t, fmt.Sprintf(gitPushTemplate, DefaultBranch))
 	}
 
@@ -751,6 +757,20 @@ func PorcelainStatus(t *testing.T) []string {
 func Log(t *testing.T) []LogEntry {
 	t.Helper()
 	log := MustExec(t, fmt.Sprintf("git log --pretty='format:> %%H %%d %%s%%+b%%-N' %s", DefaultBranch))
+	return ParseLog(log)
+}
+
+// LogFrom ...
+//
+//	git log -- '<path>' '<path>'
+func LogFrom(t *testing.T, paths ...string) []LogEntry {
+	t.Helper()
+	var quotedPaths []string
+	for _, path := range paths {
+		quotedPaths = append(quotedPaths, fmt.Sprintf("'%s'", path))
+	}
+
+	log := MustExec(t, fmt.Sprintf("git log -- %s", strings.Join(quotedPaths, " ")))
 	return ParseLog(log)
 }
 
