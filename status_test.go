@@ -11,7 +11,7 @@ import (
 )
 
 func TestPorcelainStatus(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("README.md"), gittest.WithStagedFiles("go.mod"))
+	gittest.InitRepository(t, gittest.WithFiles("main.go"), gittest.WithStagedFiles("go.mod"))
 
 	client, _ := git.NewClient()
 	statuses, err := client.PorcelainStatus()
@@ -19,13 +19,13 @@ func TestPorcelainStatus(t *testing.T) {
 
 	require.Len(t, statuses, 2)
 	assert.ElementsMatch(t,
-		[]string{"?? README.md", "A  go.mod"},
+		[]string{"?? main.go", "A  go.mod"},
 		[]string{statuses[0].String(), statuses[1].String()},
 	)
 }
 
 func TestPorcelainStatusWithIgnoreUntracked(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("README.md"), gittest.WithStagedFiles("go.mod"))
+	gittest.InitRepository(t, gittest.WithFiles("main.go"), gittest.WithStagedFiles("go.mod"))
 
 	client, _ := git.NewClient()
 	statuses, err := client.PorcelainStatus(git.WithIgnoreUntracked())
@@ -36,7 +36,7 @@ func TestPorcelainStatusWithIgnoreUntracked(t *testing.T) {
 }
 
 func TestPorcelainStatusWithIgnoreRenames(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithFiles("go.mod"), gittest.WithCommittedFiles("README.md"))
+	gittest.InitRepository(t, gittest.WithFiles("go.mod"))
 	gittest.Move(t, "README.md", "CONTRIBUTING.md")
 
 	client, _ := git.NewClient()
