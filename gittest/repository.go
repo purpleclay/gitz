@@ -293,9 +293,13 @@ func WithCloneDepth(depth int) RepositoryOption {
 // Repository creation consists of two phases. First, a bare repository
 // is initialized, before being cloned locally. This ensures a fully
 // working remote. Without customization (options), the test repository
-// will consist of single commit:
+// will consist of a README.md and a single commit:
 //
-//	initialized repository
+//	> git log --oneline
+//	<HASH> initialized repository
+//
+//	> git ls-files
+//	README.md
 func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	t.Helper()
 
