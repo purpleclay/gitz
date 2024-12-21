@@ -29,8 +29,12 @@ tasks:
 
   unit-test:
     desc: Run the unit tests
+    vars:
+      TEST_FORMAT: '{{default "" .TEST_FORMAT}}'
+      COVER_PROFILE: '{{default "coverage.out" .COVER_PROFILE}}'
+      TEST_OPTIONS: '{{default "-short -race -vet=off -shuffle=on -p 1" .TEST_OPTIONS}}'
     cmds:
-      - dagger call -m {{.GOLANG_DAGGER}} --src . test
+      - go test {{.TEST_OPTIONS}} -covermode=atomic -coverprofile={{.COVER_PROFILE}} {{.TEST_FORMAT}} ./...
 
   docker-test:
     desc: Run the docker-based tests
