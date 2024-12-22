@@ -469,12 +469,14 @@ func TestLogBetween(t *testing.T) {
 
 func TestLogFor(t *testing.T) {
 	log := `(main) chore: this should also appear in log
-	chore: this should appear in log`
+chore: this should appear in log`
 	gittest.InitRepository(t, gittest.WithLog(log))
 
 	localLog := gittest.LogFor(t, ".")
-	require.Len(t, localLog, 1)
-	assert.Equal(t, gittest.InitialCommit, localLog[0].Message)
+	require.Len(t, localLog, 3)
+	assert.Equal(t, "chore: this should also appear in log", localLog[0].Message)
+	assert.Equal(t, "chore: this should appear in log", localLog[1].Message)
+	assert.Equal(t, gittest.InitialCommit, localLog[2].Message)
 }
 
 func TestTag(t *testing.T) {

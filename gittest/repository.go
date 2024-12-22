@@ -455,7 +455,12 @@ process:
 }
 
 func importLogEntry(t *testing.T, entry LogEntry) {
-	commitCmd := fmt.Sprintf(`git commit --allow-empty -m "%s"`, entry.Message)
+	// HACK:
+	// Flip the executable bit allowing the commit to be associated to the file
+	// without altering its contents
+	flipExecutableBit(t, "README.md")
+	StageFile(t, "README.md")
+	commitCmd := fmt.Sprintf(`git commit -m "%s"`, entry.Message)
 	MustExec(t, commitCmd)
 
 	// Grab the commit hash and use it when creating branches and tags
@@ -530,6 +535,18 @@ func importTagsAtRef(t *testing.T, tags []string, ref string) {
 	}
 
 	MustExec(t, "git push --tags")
+}
+
+func flipExecutableBit(t *testing.T, path string) {
+	fi, err := os.Stat(path)
+	require.NoError(t, err, "README.md should exist")
+
+	perms := fi.Mode()
+	if perms&0o100 != 0 {
+		require.NoError(t, os.Chmod(path, perms&^0o100), "failed to turn on executable bit")
+	} else {
+		require.NoError(t, os.Chmod(path, perms|0100), "failed to turn off executable bit")
+	}
 }
 
 func setConfig(t *testing.T, key, value string) {
