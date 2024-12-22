@@ -545,7 +545,7 @@ func flipExecutableBit(t *testing.T, path string) {
 	if perms&0o100 != 0 {
 		require.NoError(t, os.Chmod(path, perms&^0o100), "failed to turn on executable bit")
 	} else {
-		require.NoError(t, os.Chmod(path, perms|0100), "failed to turn off executable bit")
+		require.NoError(t, os.Chmod(path, perms|0o100), "failed to turn off executable bit")
 	}
 }
 
