@@ -98,7 +98,7 @@ type Person struct {
 func (c *Client) ShowBlobs(refs ...string) (map[string]BlobDetails, error) {
 	details := map[string]BlobDetails{}
 	for _, ref := range refs {
-		diff, err := c.exec("git show --no-color " + ref)
+		diff, err := c.Exec("git show --no-color " + ref)
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func (c *Client) ShowBlobs(refs ...string) (map[string]BlobDetails, error) {
 func (c *Client) ShowCommits(refs ...string) (map[string]CommitDetails, error) {
 	details := map[string]CommitDetails{}
 	for _, ref := range refs {
-		out, err := c.exec("git show --no-color -s --show-signature --format=fuller " + ref)
+		out, err := c.Exec("git show --no-color -s --show-signature --format=fuller " + ref)
 		if err != nil {
 			return nil, err
 		}
@@ -163,7 +163,7 @@ func parseCommit(str string) CommitDetails {
 func (c *Client) ShowTags(refs ...string) (map[string]TagDetails, error) {
 	details := map[string]TagDetails{}
 	for _, ref := range refs {
-		show, err := c.exec("git show --no-color -s --show-signature --format=fuller " + ref)
+		show, err := c.Exec("git show --no-color -s --show-signature --format=fuller " + ref)
 		if err != nil {
 			return nil, err
 		}
@@ -209,7 +209,7 @@ func (c *Client) ShowTags(refs ...string) (map[string]TagDetails, error) {
 func (c *Client) ShowTrees(refs ...string) (map[string]TreeDetails, error) {
 	details := map[string]TreeDetails{}
 	for _, ref := range refs {
-		tree, err := c.exec("git show --no-color " + ref)
+		tree, err := c.Exec("git show --no-color " + ref)
 		if err != nil {
 			return nil, err
 		}

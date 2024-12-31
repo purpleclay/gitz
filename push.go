@@ -120,18 +120,18 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 
 		buf.WriteString(strings.Join(options.RefSpecs, " "))
 	} else {
-		out, err := c.exec("git branch --show-current")
+		out, err := c.Exec("git branch --show-current")
 		if err != nil {
 			return out, err
 		}
 		buf.WriteString(fmt.Sprintf(" origin %s", out))
 	}
 
-	return c.exec(buf.String())
+	return c.Exec(buf.String())
 }
 
 // PushRef will push an individual reference to the remote repository
 // Deprecated: use [Push] instead
 func (c *Client) PushRef(ref string) (string, error) {
-	return c.exec(fmt.Sprintf("git push origin %s", ref))
+	return c.Exec(fmt.Sprintf("git push origin %s", ref))
 }

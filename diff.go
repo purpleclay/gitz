@@ -96,7 +96,7 @@ func (c *Client) Diff(opts ...DiffOption) ([]FileDiff, error) {
 		buf.WriteString(strings.Join(options.DiffPaths, " "))
 	}
 
-	out, err := c.exec(buf.String())
+	out, err := c.Exec(buf.String())
 	if err != nil {
 		return nil, err
 	}

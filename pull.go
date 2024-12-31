@@ -104,5 +104,5 @@ func (c *Client) Pull(opts ...PullOption) (string, error) {
 
 	buf.WriteString(" pull")
 	buf.WriteString(options.fetchOptions.String())
-	return c.exec(buf.String())
+	return c.Exec(buf.String())
 }

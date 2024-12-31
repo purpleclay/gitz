@@ -51,7 +51,7 @@ func (e ErrMissingConfigValue) Error() string {
 // A map is returned containing each config item and its corresponding
 // latest value. Values are resolved from local, system and global config
 func (c *Client) Config() (map[string]string, error) {
-	cfg, err := c.exec("git config --list")
+	cfg, err := c.Exec("git config --list")
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (c *Client) configQuery(location string, paths ...string) (map[string][]str
 		cmd.WriteString(" --get-all ")
 		cmd.WriteString(path)
 
-		cfg, err := c.exec(cmd.String())
+		cfg, err := c.Exec(cmd.String())
 		if err != nil {
 			return nil, err
 		}
@@ -143,7 +143,7 @@ func (c *Client) configSet(location string, pairs ...string) error {
 		cmd.WriteString(" --add ")
 		cmd.WriteString(fmt.Sprintf("%s '%s'", pairs[i], pairs[i+1]))
 
-		if _, err := c.exec(cmd.String()); err != nil {
+		if _, err := c.Exec(cmd.String()); err != nil {
 			return err
 		}
 		cmd.Reset()

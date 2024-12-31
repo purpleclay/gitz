@@ -109,7 +109,7 @@ func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 	}
 
 	buf.WriteString(fmt.Sprintf(" -m '%s'", msg))
-	return c.exec(buf.String())
+	return c.Exec(buf.String())
 }
 
 // CommitVerification contains details about a GPG signed commit
@@ -135,7 +135,7 @@ type CommitVerification struct {
 // VerifyCommit validates that a given commit has a valid GPG signature
 // and returns details about that signature
 func (c *Client) VerifyCommit(hash string) (*CommitVerification, error) {
-	out, err := c.exec("git verify-commit -v " + hash)
+	out, err := c.Exec("git verify-commit -v " + hash)
 	if err != nil {
 		return nil, err
 	}

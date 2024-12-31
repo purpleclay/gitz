@@ -114,11 +114,11 @@ type Client struct {
 func NewClient() (*Client, error) {
 	c := &Client{}
 
-	if _, err := c.exec("type git"); err != nil {
+	if _, err := c.Exec("type git"); err != nil {
 		return nil, ErrGitMissing{PathEnv: os.Getenv("PATH")}
 	}
 
-	c.gitVersion, _ = c.exec("git --version")
+	c.gitVersion, _ = c.Exec("git --version")
 	return c, nil
 }
 
@@ -130,22 +130,22 @@ func (c *Client) Version() string {
 // Repository captures and returns a snapshot of the current repository
 // (working directory) state
 func (c *Client) Repository() (Repository, error) {
-	isRepo, _ := c.exec("git rev-parse --is-inside-work-tree")
+	isRepo, _ := c.Exec("git rev-parse --is-inside-work-tree")
 	if strings.TrimSpace(isRepo) != "true" {
 		return Repository{}, errors.New("current working directory is not a git repository")
 	}
 
-	isShallow, _ := c.exec("git rev-parse --is-shallow-repository")
-	isDetached, _ := c.exec("git branch --show-current")
-	defaultBranch, _ := c.exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
+	isShallow, _ := c.Exec("git rev-parse --is-shallow-repository")
+	isDetached, _ := c.Exec("git branch --show-current")
+	defaultBranch, _ := c.Exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
 	rootDir, _ := c.rootDir()
 
 	// Identify all remotes associated with this repository. If this is a new
 	// locally initialized repository, this could be empty
-	rmts, _ := c.exec("git remote")
+	rmts, _ := c.Exec("git remote")
 	remotes := map[string]string{}
 	for _, remote := range strings.Split(rmts, "\n") {
-		remoteURL, _ := c.exec("git remote get-url " + remote)
+		remoteURL, _ := c.Exec("git remote get-url " + remote)
 		remotes[remote] = filepath.ToSlash(remoteURL)
 	}
 
@@ -168,10 +168,10 @@ func (c *Client) Repository() (Repository, error) {
 // made to validate the command, and any output will be returned in its
 // raw unparsed form
 func (c *Client) Exec(cmd string) (string, error) {
-	return c.exec(cmd)
+	return c.internExec(cmd)
 }
 
-func (*Client) exec(cmd string) (string, error) {
+func (*Client) internExec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
 	var buf bytes.Buffer
@@ -190,7 +190,7 @@ func (*Client) exec(cmd string) (string, error) {
 }
 
 func (c *Client) rootDir() (string, error) {
-	return c.exec("git rev-parse --show-toplevel")
+	return c.Exec("git rev-parse --show-toplevel")
 }
 
 // ToRelativePath determines if a path is relative to the
