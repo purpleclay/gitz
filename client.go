@@ -164,6 +164,13 @@ func (c *Client) Repository() (Repository, error) {
 	}, nil
 }
 
+// Exec supports the execution of any raw git command. No attempt will be
+// made to validate the command, and any output will be returned in its
+// raw unparsed form
+func (c *Client) Exec(cmd string) (string, error) {
+	return c.exec(cmd)
+}
+
 func (*Client) exec(cmd string) (string, error) {
 	p, _ := syntax.NewParser().Parse(strings.NewReader(cmd), "")
 
