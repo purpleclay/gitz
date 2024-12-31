@@ -2,8 +2,6 @@ module github.com/purpleclay/gitz
 
 go 1.22
 
-toolchain go1.23.3
-
 require (
 	github.com/purpleclay/chomp v0.4.0
 	github.com/stretchr/testify v1.10.0

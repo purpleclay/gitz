@@ -155,5 +155,5 @@ func (c *Client) Fetch(opts ...FetchOption) (string, error) {
 
 	buf.WriteString(" fetch")
 	buf.WriteString(options.String())
-	return c.exec(buf.String())
+	return c.Exec(buf.String())
 }

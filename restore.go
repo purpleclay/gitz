@@ -30,7 +30,7 @@ func (c *Client) RestoreUsing(statuses []FileStatus) error {
 }
 
 func (c *Client) removeUntrackedFile(pathspec string) error {
-	_, err := c.exec("git clean --force -- " + pathspec)
+	_, err := c.Exec("git clean --force -- " + pathspec)
 	return err
 }
 
@@ -42,13 +42,13 @@ func (c *Client) restoreFile(status FileStatus) error {
 	}
 	buf.WriteString(status.Path)
 
-	_, err := c.exec(buf.String())
+	_, err := c.Exec(buf.String())
 	return err
 }
 
 func (c *Client) undoRenamedFile(pathspec string) error {
 	original, renamed, _ := strings.Cut(pathspec, porcelainRenameSeparator)
 
-	_, err := c.exec(fmt.Sprintf("git mv %s %s", renamed, original))
+	_, err := c.Exec(fmt.Sprintf("git mv %s %s", renamed, original))
 	return err
 }

@@ -48,13 +48,13 @@ func (c *Client) Stage(opts ...StageOption) (string, error) {
 		stageCmd.WriteString("--all")
 	}
 
-	return c.exec(stageCmd.String())
+	return c.Exec(stageCmd.String())
 }
 
 // Staged retrieves a list of all currently staged file changes within the
 // current repository
 func (c *Client) Staged() ([]string, error) {
-	diff, err := c.exec("git diff --staged --name-only")
+	diff, err := c.Exec("git diff --staged --name-only")
 	if err != nil {
 		return nil, err
 	}

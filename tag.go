@@ -205,7 +205,7 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 		buf.WriteString(" " + options.CommitRef)
 	}
 
-	out, err := c.exec(buf.String())
+	out, err := c.Exec(buf.String())
 	if err != nil {
 		return out, err
 	}
@@ -214,7 +214,7 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 		return out, nil
 	}
 
-	return c.exec(fmt.Sprintf("git push origin '%s'", tag))
+	return c.Exec(fmt.Sprintf("git push origin '%s'", tag))
 }
 
 // TagBatch attempts to create a batch of tags against a specific point within
@@ -366,7 +366,7 @@ func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 		config = "-c versionsort.suffix=-"
 	}
 
-	tags, err := c.exec(fmt.Sprintf("git %s for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
+	tags, err := c.Exec(fmt.Sprintf("git %s for-each-ref %s --format='%%(refname:lstrip=2)' %s --color=never",
 		config,
 		strings.Join(options.SortBy, " "),
 		strings.Join(options.ShellGlobs, " ")))
@@ -464,7 +464,7 @@ func parseSignature(str string) *Signature {
 // VerifyTag validates that a given tag has a valid GPG signature
 // and returns details about that signature
 func (c *Client) VerifyTag(ref string) (*TagVerification, error) {
-	out, err := c.exec("git tag -v " + ref)
+	out, err := c.Exec("git tag -v " + ref)
 	if err != nil {
 		return nil, err
 	}
@@ -542,7 +542,7 @@ func (c *Client) DeleteTags(tags []string, opts ...DeleteTagsOption) (string, er
 	}
 
 	for _, tag := range tags {
-		if _, err := c.exec("git tag -d " + tag); err != nil {
+		if _, err := c.Exec("git tag -d " + tag); err != nil {
 			return "", err
 		}
 	}

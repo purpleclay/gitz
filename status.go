@@ -111,7 +111,7 @@ func (c *Client) PorcelainStatus(opts ...StatusOption) ([]FileStatus, error) {
 		buf.WriteString(" --untracked-files=no")
 	}
 
-	log, err := c.exec(buf.String())
+	log, err := c.Exec(buf.String())
 	if err != nil {
 		return nil, err
 	}
