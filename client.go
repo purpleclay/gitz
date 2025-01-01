@@ -78,6 +78,10 @@ func (e ErrGitNonRelativePath) Error() string {
 // Repository provides a snapshot of the current state of a repository
 // (working directory)
 type Repository struct {
+	// CloneDepth reflects the amount of history that has been cloned
+	// within the current repository
+	CloneDepth int
+
 	// DetachedHead is true if the current repository HEAD points to a
 	// specific commit, rather than a branch
 	DetachedHead bool
@@ -89,6 +93,11 @@ type Repository struct {
 	// Origin contains the URL of the remote which this repository
 	// was cloned from
 	Origin string
+
+	// Ref contains the current checked out reference. This will either
+	// be the name of the branch, the tag or the commit hash, if the
+	// current repository is in a detached state
+	Ref string
 
 	// Remotes will contain all of the remotes and their URLs as
 	// configured for this repository
@@ -139,6 +148,8 @@ func (c *Client) Repository() (Repository, error) {
 	isDetached, _ := c.Exec("git branch --show-current")
 	defaultBranch, _ := c.Exec("git rev-parse --abbrev-ref remotes/origin/HEAD")
 	rootDir, _ := c.rootDir()
+	ref, _ := c.identifyRef()
+	cloneDepth, _ := c.depth()
 
 	// Identify all remotes associated with this repository. If this is a new
 	// locally initialized repository, this could be empty
@@ -155,9 +166,11 @@ func (c *Client) Repository() (Repository, error) {
 	}
 
 	return Repository{
+		CloneDepth:    cloneDepth,
 		DetachedHead:  strings.TrimSpace(isDetached) == "",
 		DefaultBranch: strings.TrimPrefix(defaultBranch, "origin/"),
 		Origin:        origin,
+		Ref:           ref,
 		Remotes:       remotes,
 		RootDir:       rootDir,
 		ShallowClone:  strings.TrimSpace(isShallow) == "true",
@@ -191,6 +204,27 @@ func (*Client) internExec(cmd string) (string, error) {
 
 func (c *Client) rootDir() (string, error) {
 	return c.Exec("git rev-parse --show-toplevel")
+}
+
+func (c *Client) identifyRef() (string, error) {
+	if out, err := c.Exec("git symbolic-ref --short -q HEAD"); err == nil {
+		return out, nil
+	}
+
+	if out, err := c.Exec("git describe --tags --exact-match"); err == nil {
+		return out, nil
+	}
+
+	return c.Exec("git rev-parse HEAD")
+}
+
+func (c *Client) depth() (int, error) {
+	out, err := c.Exec("git log --oneline")
+	if err != nil {
+		return 0, err
+	}
+
+	return len(strings.Split(out, "\n")), nil
 }
 
 // ToRelativePath determines if a path is relative to the
