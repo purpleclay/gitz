@@ -32,29 +32,66 @@ func TestNewClientGitMissingError(t *testing.T) {
 }
 
 func TestRepository(t *testing.T) {
-	gittest.InitRepository(t)
+	log := `(main) docs: include section on how to run with nix
+ci: extend workflow to patch default.nix file
+feat: include support for building app using nix build`
+	gittest.InitRepository(t, gittest.WithLog(log))
 
 	client, _ := git.NewClient()
 	repo, err := client.Repository()
 
 	require.NoError(t, err)
+	assert.Equal(t, 4, repo.CloneDepth)
 	assert.False(t, repo.DetachedHead)
 	assert.False(t, repo.ShallowClone)
 	assert.Equal(t, gittest.DefaultBranch, repo.DefaultBranch)
 	assert.Equal(t, gittest.WorkingDirectory(t), repo.RootDir)
-	assert.Equal(t, repo.Origin, gittest.Remote(t))
+	assert.Equal(t, gittest.Remote(t), repo.Origin)
+	assert.Equal(t, gittest.DefaultBranch, repo.Ref)
 	require.Len(t, repo.Remotes, 1)
-	assert.Equal(t, repo.Remotes[gittest.DefaultOrigin], gittest.Remote(t))
+	assert.Equal(t, gittest.Remote(t), repo.Remotes[gittest.DefaultOrigin])
+}
+
+func TestRepositoryTagCheckout(t *testing.T) {
+	log := `(tag: 0.2.0) feat: include collapsable search menu for filtering
+(tag: 0.1.0) feat: use cards to display search results`
+	gittest.InitRepository(t, gittest.WithLog(log))
+	gittest.Checkout(t, "0.1.0")
+
+	client, _ := git.NewClient()
+	repo, err := client.Repository()
+
+	require.NoError(t, err)
+	assert.Equal(t, "0.1.0", repo.Ref)
+	assert.True(t, repo.DetachedHead)
+}
+
+func TestRepositoryBranchCheckout(t *testing.T) {
+	log := `(HEAD -> write-through-caching, origin/write-through-caching) feat: use redis to support write through caching
+(main, origin/main) docs: update design to include redis`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	client, _ := git.NewClient()
+	repo, err := client.Repository()
+
+	require.NoError(t, err)
+	assert.Equal(t, "write-through-caching", repo.Ref)
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
-	gittest.InitRepository(t, gittest.WithCloneDepth(1))
+	log := `(main, origin/main) docs: updated search api
+fix: entire search history is not returned under certain circumstances`
+	gittest.InitRepository(t,
+		gittest.WithLog(log),
+		gittest.WithCloneDepth(2),
+	)
 
 	client, _ := git.NewClient()
 	repo, err := client.Repository()
 
 	require.NoError(t, err)
 	assert.True(t, repo.ShallowClone)
+	assert.Equal(t, 2, repo.CloneDepth)
 }
 
 func TestRepositoryDetectsDetachedHead(t *testing.T) {
@@ -68,6 +105,7 @@ func TestRepositoryDetectsDetachedHead(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.True(t, repo.DetachedHead)
+	assert.Equal(t, hash, repo.Ref)
 }
 
 func TestRepositoryNotWorkingDirectory(t *testing.T) {
