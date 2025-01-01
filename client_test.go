@@ -67,10 +67,9 @@ func TestRepositoryTagCheckout(t *testing.T) {
 }
 
 func TestRepositoryBranchCheckout(t *testing.T) {
-	log := `(write-through-caching) feat: use redis to support write through caching
+	log := `(HEAD -> write-through-caching, origin/write-through-caching) feat: use redis to support write through caching
 (main, origin/main) docs: update design to include redis`
 	gittest.InitRepository(t, gittest.WithLog(log))
-	gittest.Checkout(t, "write-through-caching")
 
 	client, _ := git.NewClient()
 	repo, err := client.Repository()
