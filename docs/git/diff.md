@@ -2,7 +2,6 @@
 icon: material/vector-difference
 title: Diff local changes within a repository
 description: Inspect the current repository for changes to files and folders
-status: new
 ---
 
 #  Diff local changes within a repository

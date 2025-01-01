@@ -2,6 +2,7 @@
 icon: material/clipboard-check-outline
 title: Git checks and how to use them
 description: A series of inbuilt check for inspecting the environment and current repository
+status: new
 ---
 
 # Git checks and how to use them
@@ -54,21 +55,25 @@ func main() {
         log.Fatal("failed to check the current repository")
     }
 
-    fmt.Printf("Default Branch: %s\n", repo.DefaultBranch)
-    fmt.Printf("Detached Head:  %t\n", repo.DetachedHead)
-    fmt.Printf("Origin:         %s\n", repo.Origin)
+    fmt.Printf("Clone Depth:    %d\n",  repo.CloneDepth)
+    fmt.Printf("Default Branch: %s\n",  repo.DefaultBranch)
+    fmt.Printf("Detached Head:  %t\n",  repo.DetachedHead)
+    fmt.Printf("Origin:         %s\n",  repo.Origin)
+    fmt.Printf("Ref:            %s\n",  repo.Ref)
     fmt.Printf("Remotes:        %#v\n", repo.Remotes)
-    fmt.Printf("Root Directory: %s\n", repo.RootDir)
-    fmt.Printf("Shallow Clone:  %t\n", repo.ShallowClone)
+    fmt.Printf("Root Directory: %s\n",  repo.RootDir)
+    fmt.Printf("Shallow Clone:  %t\n",  repo.ShallowClone)
 }
 ```
 
 Example output when checking the integrity of a repository cloned within a CI system:
 
 ```{ .text .no-select .no-copy }
+Clone Depth:    10
 Default Branch: main
 Detached Head:  true
 Origin:         git@github.com:purpleclay/gitz.git
+Ref:            ee755fa89b96323b504833ad6ac188417cb04123
 Remotes:        map[string]string{"origin":"git@github.com:purpleclay/gitz.git"}
 Root Directory: /dev/github.com/purpleclay/gitz
 Shallow Clone:  false
