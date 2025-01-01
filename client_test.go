@@ -70,6 +70,7 @@ func TestRepositoryBranchCheckout(t *testing.T) {
 	log := `(write-through-caching) feat: use redis to support write through caching
 (main, origin/main) docs: update design to include redis`
 	gittest.InitRepository(t, gittest.WithLog(log))
+	gittest.Checkout(t, "write-through-caching")
 
 	client, _ := git.NewClient()
 	repo, err := client.Repository()
@@ -79,7 +80,7 @@ func TestRepositoryBranchCheckout(t *testing.T) {
 }
 
 func TestRepositoryDetectsShallowClone(t *testing.T) {
-	log := `(main) docs: updated search api
+	log := `(main, origin/main) docs: updated search api
 fix: entire search history is not returned under certain circumstances`
 	gittest.InitRepository(t,
 		gittest.WithLog(log),
@@ -91,7 +92,7 @@ fix: entire search history is not returned under certain circumstances`
 
 	require.NoError(t, err)
 	assert.True(t, repo.ShallowClone)
-	assert.Equal(t, repo.CloneDepth, 2)
+	assert.Equal(t, 2, repo.CloneDepth)
 }
 
 func TestRepositoryDetectsDetachedHead(t *testing.T) {
