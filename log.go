@@ -16,6 +16,7 @@ type LogOption func(*logOptions)
 type logOptions struct {
 	RefRange     string
 	LogPaths     []string
+	LogPrefix    string
 	SkipParse    bool
 	SkipCount    int
 	TakeCount    int
@@ -136,6 +137,14 @@ func WithMatchAll() LogOption {
 	}
 }
 
+// WithPrefix customizes the prefix used to split log entries. The default
+// prefix is ">"
+func WithPrefix(prefix string) LogOption {
+	return func(opts *logOptions) {
+		opts.LogPrefix = prefix
+	}
+}
+
 // Log represents a snapshot of commit history from a repository
 type Log struct {
 	// Raw contains the raw commit log
@@ -167,6 +176,9 @@ type LogEntry struct {
 // are generated using the default git options:
 //
 //	git log --pretty='format:> %H %B%-N' --no-color
+//
+// Log entries are split by the default prefix of ">". This prefix can be
+// customized using the [WithPrefix] option
 func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	options := &logOptions{
 		// Disable both counts by default
@@ -211,7 +223,11 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 		logCmd.WriteString(options.RefRange)
 	}
 
-	logCmd.WriteString(" --pretty='format:> %H %B%-N' --no-color")
+	logPrefix := ">"
+	if options.LogPrefix != "" {
+		logPrefix = options.LogPrefix
+	}
+	logCmd.WriteString(fmt.Sprintf(" --pretty='format:%s %%H %%B%%-N' --no-color", logPrefix))
 
 	if len(options.LogPaths) > 0 {
 		logCmd.WriteString(" --")
@@ -228,17 +244,17 @@ func (c *Client) Log(opts ...LogOption) (*Log, error) {
 	log := &Log{Raw: out}
 	// Support the option to skip parsing of the log into a structured format
 	if !options.SkipParse {
-		log.Commits = parseLog(out)
+		log.Commits = parseLog(out, logPrefix)
 	}
 
 	return log, nil
 }
 
-func parseLog(log string) []LogEntry {
+func parseLog(log, prefix string) []LogEntry {
 	var entries []LogEntry
 
 	scanner := bufio.NewScanner(strings.NewReader(log))
-	scanner.Split(scan.PrefixedLines('>'))
+	scanner.Split(scan.PrefixedLines([]byte(prefix)))
 
 	for scanner.Scan() {
 		// Expected format of log from using the --online format is: <hash><space><message>

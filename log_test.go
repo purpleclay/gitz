@@ -433,3 +433,6 @@ chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6`
 	assert.Contains(t, out.Raw, "chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6")
 	assert.Contains(t, out.Raw, gittest.InitialCommit)
 }
+
+func TestLogWithSeparator(t *testing.T) {
+}

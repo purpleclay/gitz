@@ -89,7 +89,7 @@ func ParseLog(log string) []LogEntry {
 
 	// Detect if the log requires multi-line parsing by checking for the git marker > (%m)
 	if log[0] == '>' {
-		scanner.Split(scan.PrefixedLines('>'))
+		scanner.Split(scan.PrefixedLines([]byte{'>'}))
 	} else {
 		scanner.Split(bufio.ScanLines)
 	}
@@ -128,8 +128,8 @@ func ParseLog(log string) []LogEntry {
 					continue
 				}
 
-				if strings.HasPrefix(cleanedRef, "tag: ") {
-					entry.Tags = append(entry.Tags, strings.TrimPrefix(cleanedRef, "tag: "))
+				if after, ok := strings.CutPrefix(cleanedRef, "tag: "); ok {
+					entry.Tags = append(entry.Tags, after)
 				} else {
 					entry.Branches = append(entry.Branches, cleanedRef)
 

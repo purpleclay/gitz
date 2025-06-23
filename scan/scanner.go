@@ -9,13 +9,14 @@ import (
 // and trailing whitespace. If no prefix is detected, the original text
 // will be treated as a single block of text, with any leading and trailing
 // whitespace stripped
-func PrefixedLines(prefix byte) func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func PrefixedLines(prefix []byte) func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
 		}
 
-		if i := bytes.Index(data, []byte{'\n', prefix}); i >= 0 {
+		searchPattern := append([]byte{'\n'}, prefix...)
+		if i := bytes.Index(data, searchPattern); i >= 0 {
 			return i + 1, eat(prefix, data[:i]), nil
 		}
 
@@ -27,13 +28,16 @@ func PrefixedLines(prefix byte) func(data []byte, atEOF bool) (advance int, toke
 	}
 }
 
-func eat(prefix byte, data []byte) []byte {
-	i := 0
-	if i < len(data) && data[i] == prefix {
-		i++
+func eat(prefix []byte, data []byte) []byte {
+	if len(prefix) == 0 {
+		return bytes.TrimSpace(data)
 	}
 
-	return bytes.TrimSpace(data[i:])
+	if bytes.HasPrefix(data, prefix) {
+		return bytes.TrimSpace(data[len(prefix):])
+	}
+
+	return bytes.TrimSpace(data)
 }
 
 // DiffLines is a split function for a [bufio.Scanner] that splits a git diff output
