@@ -125,10 +125,7 @@ type CommitDetails struct {
 //   - Local branch 'new-feature' has been checked out will all commits being
 //     pushed back to the remote
 //
-// The provided log is parsed using [ParseLog] and is based on the
-// output of git command:
-//
-//	git log --pretty='format:%d %s'
+// The provided log is parsed using [ParseLog]
 func WithLog(log string) RepositoryOption {
 	return func(opts *repositoryOptions) {
 		opts.Log = ParseLog(log)
@@ -392,6 +389,10 @@ func cloneRemoteAndInit(t *testing.T, cloneName string, options ...string) {
 	// Ensure author details are set
 	setConfig(t, "user.name", DefaultAuthorName)
 	setConfig(t, "user.email", DefaultAuthorEmail)
+
+	// Disable GPG signing to prevent prompting for passphrase during tests
+	setConfig(t, "commit.gpgsign", "false")
+	setConfig(t, "tag.gpgsign", "false")
 
 	// Check if there any any commits, if not, initialize with readme and push back first commit
 	if out := MustExec(t, "git rev-list -n1 --all"); out == "" {
