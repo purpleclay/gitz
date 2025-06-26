@@ -27,9 +27,33 @@ func PrefixedLines(prefix byte) func(data []byte, atEOF bool) (advance int, toke
 	}
 }
 
-func eat(prefix byte, data []byte) []byte {
+// NullTerminatedLines is a split function for a [bufio.Scanner] that returns each block of
+// text, stripped of both the null byte marker and any leading and trailing whitespace.
+// If the null byte marker is not found, the original text will be treated as a single
+// block of text, with any leading and trailing whitespace stripped.
+func NullTerminatedLines() func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	suffix := []byte{'\x00'}
+
+	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if atEOF && len(data) == 0 {
+			return 0, nil, nil
+		}
+
+		if i := bytes.Index(data, suffix); i >= 0 {
+			return i + 1, eat(suffix[0], data[:i]), nil
+		}
+
+		if atEOF {
+			return len(data), eat(suffix[0], data), nil
+		}
+
+		return 0, nil, nil
+	}
+}
+
+func eat(delim byte, data []byte) []byte {
 	i := 0
-	if i < len(data) && data[i] == prefix {
+	if i < len(data) && data[i] == delim {
 		i++
 	}
 

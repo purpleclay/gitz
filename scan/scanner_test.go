@@ -10,14 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPrefixedLines(t *testing.T) {
-	text := `> this is line #1
->this is line #2
->    this is line #3
-and it is spread over two lines   `
+func TestNullTerminatedLines(t *testing.T) {
+	text := joinWithNullByte(t,
+		"this is line #1  ",
+		"  this is line #2",
+		`    this is line #3
+and it is spread over two lines   `,
+	)
 
 	scanner := bufio.NewScanner(strings.NewReader(text))
-	scanner.Split(scan.PrefixedLines('>'))
+	scanner.Split(scan.NullTerminatedLines())
 
 	lines := readUntilEOF(t, scanner)
 	require.Len(t, lines, 3)
@@ -27,61 +29,9 @@ and it is spread over two lines   `
 and it is spread over two lines`, lines[2])
 }
 
-func TestPrefixedLinesIgnoresNonLeadingPrefix(t *testing.T) {
-	text := "this was created by jdoe >>> <jdoe@test.com>"
-
-	scanner := bufio.NewScanner(strings.NewReader(text))
-	scanner.Split(scan.PrefixedLines('>'))
-
-	lines := readUntilEOF(t, scanner)
-	require.Len(t, lines, 1)
-	assert.Equal(t, "this was created by jdoe >>> <jdoe@test.com>", lines[0])
-}
-
-func readUntilEOF(t *testing.T, scanner *bufio.Scanner) []string {
+func joinWithNullByte(t *testing.T, parts ...string) string {
 	t.Helper()
-
-	lines := make([]string, 0)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	return lines
-}
-
-func TestPrefixedLinesNoPrefix(t *testing.T) {
-	text := `this is line #1
-this is line #2
-this is line #3
-and it is spread over two lines
-`
-
-	scanner := bufio.NewScanner(strings.NewReader(text))
-	scanner.Split(scan.PrefixedLines('>'))
-
-	lines := readUntilEOF(t, scanner)
-	require.Len(t, lines, 1)
-	assert.Equal(t, `this is line #1
-this is line #2
-this is line #3
-and it is spread over two lines`, lines[0])
-}
-
-func TestPrefixedLinesInconsistentPrefixUse(t *testing.T) {
-	text := `this is line #1
-this is line #2
-> this is line #3
-and it is spread over two lines`
-
-	scanner := bufio.NewScanner(strings.NewReader(text))
-	scanner.Split(scan.PrefixedLines('>'))
-
-	lines := readUntilEOF(t, scanner)
-	require.Len(t, lines, 2)
-	assert.Equal(t, `this is line #1
-this is line #2`, lines[0])
-	assert.Equal(t, `this is line #3
-and it is spread over two lines`, lines[1])
+	return strings.Join(parts, "\x00")
 }
 
 func TestDiffLines(t *testing.T) {
@@ -140,4 +90,15 @@ index 906a132..2e6954c 100644
  type commitOptions struct {
         AllowEmpty    bool
         Config        []string`, lines[1])
+}
+
+func readUntilEOF(t *testing.T, scanner *bufio.Scanner) []string {
+	t.Helper()
+
+	lines := make([]string, 0)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	return lines
 }
