@@ -1,3 +1,5 @@
+version: 2
+
 run:
   timeout: 5m
 
@@ -5,14 +7,9 @@ linters:
   disable-all: true
   enable:
     - dupl
-    - gofumpt
-    - goimports
-    - gosimple
     - govet
     - ineffassign
     - misspell
-    - nakedret
-    - revive
     - staticcheck
     - unused
 

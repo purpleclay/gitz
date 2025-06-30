@@ -41,7 +41,9 @@
 
         packages.test = pkgs.writeShellScriptBin "${pname}-test" ''
           cd ${./.}
-          export HOME=$(mktemp -d)
+          export GOMODCACHE="''${GOMODCACHE:-$HOME/go/pkg/mod}"
+          export GOCACHE="''${GOCACHE:-$HOME/.cache/go-build}"
+
           echo "Running tests..."
           ${pkgs.go_1_23}/bin/go test \
             -short \
