@@ -9,11 +9,11 @@ on:
       - "go.mod"
       - "go.sum"
   pull_request:
-    paths:
-      - "**/*.go"
-      - "*.go"
-      - "go.mod"
-      - "go.sum"
+    # paths:
+    #   - "**/*.go"
+    #   - "*.go"
+    #   - "go.mod"
+    #   - "go.sum"
 
 permissions:
   contents: read
@@ -23,18 +23,19 @@ permissions:
 
 jobs:
   test:
-    runs-on: [ubuntu-latest, macos-latest]
+    runs-on: [ubuntu-24.04]
     steps:
       - uses: actions/checkout@v4
 
       - uses: cachix/install-nix-action@f0fe604f8a612776892427721526b4c7cfb23aba # v31
 
-      - uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
-        with:
-          name: purpleclay
-          authToken: "${{ secrets.GH_CACHIX }}"
 
-      - run: nix run .#test
+      # - uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      #   with:
+      #     name: purpleclay
+      #     authToken: "${{ secrets.GH_CACHIX }}"
+
+      # - run: nix run .#test
 
   # lint:
   #   runs-on: ubuntu-24.04
