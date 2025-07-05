@@ -40,20 +40,22 @@
         '';
 
         packages.test = pkgs.writeShellScriptBin "${pname}-test" ''
-          cd ${./.}
           export GOMODCACHE="''${GOMODCACHE:-$HOME/go/pkg/mod}"
           export GOCACHE="''${GOCACHE:-$HOME/.cache/go-build}"
+          mkdir -p reports
 
           echo "Running tests..."
           ${pkgs.go_1_23}/bin/go test \
+            -C ${./.} \
             -short \
             -race \
             -vet=off \
             -shuffle=on \
             -p 1 \
             -covermode=atomic \
-            -json ./... | ${pkgs.tparse}/bin/tparse -follow
+            -json ./... | tee reports/unittest.json | ${pkgs.tparse}/bin/tparse -follow
           exit_code=$?
+
           if [ $exit_code -eq 0 ]; then
             echo "✓ All tests passed!"
           else

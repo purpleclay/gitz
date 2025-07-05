@@ -18,6 +18,7 @@ on:
 permissions:
   contents: read
 
+# TODO: is it possible to capture the report? Will be useful for GitHub and GitLab
 jobs:
   test:
     strategy:
@@ -35,6 +36,12 @@ jobs:
           authToken: "${{ secrets.GH_CACHIX }}"
 
       - run: nix run .#test
+
+      - name: Publish Summary
+        if: always()
+        run: tparse -format markdown -file reports/unittest.json -all > $GITHUB_STEP_SUMMARY
+        env:
+          NO_COLOR: 1
 
   lint:
     runs-on: ubuntu-24.04
