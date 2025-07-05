@@ -39,7 +39,7 @@ jobs:
 
       - name: Publish Summary
         if: always()
-        run: tparse -format markdown -file reports/unittest.json -all > $GITHUB_STEP_SUMMARY
+        run: nix develop -c tparse -format markdown -file reports/unittest.json -all > $GITHUB_STEP_SUMMARY
         env:
           NO_COLOR: 1
 
