@@ -7,6 +7,7 @@
 !.gitignore
 !.golangci.yaml
 !.goreleaser.yaml
+!.zed/settings.json
 !CODEOWNERS
 !CODE_OF_CONDUCT.md
 !htmltest.yml
@@ -14,6 +15,7 @@
 !mkdocs.yml
 !README.md
 !taskfile.yaml
+!justfile
 !docs/**/*
 
 # Allow Nix files

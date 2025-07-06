@@ -129,7 +129,7 @@ func WithSigned() CreateTagOption {
 }
 
 // WithSigningKey will create a GPG-signed tag using the provided GPG
-// key ID, overridding any default GPG key set by the user.signingKey
+// key ID, overriding any default GPG key set by the user.signingKey
 // config setting. An annotated tag is mandatory when signing. A default
 // annotation will be assigned, unless overridden with the [WithAnnotation]
 // option:

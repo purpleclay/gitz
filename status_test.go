@@ -1,7 +1,6 @@
 package git_test
 
 import (
-	"fmt"
 	"testing"
 
 	git "github.com/purpleclay/gitz"
@@ -42,8 +41,6 @@ func TestPorcelainStatusWithIgnoreRenames(t *testing.T) {
 	client, _ := git.NewClient()
 	statuses, err := client.PorcelainStatus(git.WithIgnoreRenames())
 	require.NoError(t, err)
-
-	fmt.Println(statuses)
 
 	require.Len(t, statuses, 3)
 	assert.ElementsMatch(t,

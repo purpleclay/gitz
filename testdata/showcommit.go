@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if len(commits) != 1 {
-		log.Fatalf("invalid number of commits, expected '1' commit but recevied: '%d'", len(commits))
+		log.Fatalf("invalid number of commits, expected '1' commit but received: '%d'", len(commits))
 	}
 
 	commit := commits[gLog.Commits[0].Hash]
