@@ -419,7 +419,7 @@ func TestPorcelainStatus(t *testing.T) {
 	assert.ElementsMatch(t, []string{"?? file1.txt", "?? file2.txt"}, status)
 }
 
-func TestProcelainStatusNoChanges(t *testing.T) {
+func TestPorcelainStatusNoChanges(t *testing.T) {
 	gittest.InitRepository(t)
 	assert.Empty(t, gittest.PorcelainStatus(t))
 }

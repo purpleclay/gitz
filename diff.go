@@ -28,9 +28,9 @@ type diffOptions struct {
 }
 
 // WithDiffPaths allows the diff to be targeted to specific files and
-// folers within the current repository (working directory). Paths to
+// folders within the current repository (working directory). Paths to
 // files and folders are relative to the root of the repository. All
-// leading and trailing whitepsace will be trimmed from the file paths,
+// leading and trailing whitespace will be trimmed from the file paths,
 // allowing empty paths to be ignored
 func WithDiffPaths(paths ...string) DiffOption {
 	return func(opts *diffOptions) {

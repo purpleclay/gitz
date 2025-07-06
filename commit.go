@@ -51,7 +51,7 @@ func WithGpgSign() CommitOption {
 }
 
 // WithGpgSigningKey will create a GPG-signed commit using the provided GPG
-// key ID, overridding any default GPG key set by the user.signingKey git
+// key ID, overriding any default GPG key set by the user.signingKey git
 // config setting
 func WithGpgSigningKey(key string) CommitOption {
 	return func(opts *commitOptions) {
@@ -148,13 +148,13 @@ func (c *Client) VerifyCommit(hash string) (*CommitVerification, error) {
 	committer := parsePerson(pair[1])
 	out, _ = line()(out)
 
-	out, mesage := until("gpg: ")(out)
+	out, message := until("gpg: ")(out)
 
 	return &CommitVerification{
 		Author:    author,
 		Committer: committer,
 		Hash:      hash,
-		Message:   strings.TrimSpace(mesage),
+		Message:   strings.TrimSpace(message),
 		Signature: parseSignature(out),
 	}, nil
 }

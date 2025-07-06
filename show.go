@@ -74,7 +74,7 @@ type TagDetails struct {
 	Ref string
 }
 
-// TreeDetails contains details about a specifc tree within a repository
+// TreeDetails contains details about a specific tree within a repository
 type TreeDetails struct {
 	// Entries contains the file and directory listing within a tree
 	Entries []string
