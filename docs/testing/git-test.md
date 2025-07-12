@@ -2,6 +2,7 @@
 icon: material/test-tube
 title: Testing your interactions with git
 description: A dedicated package for testing your interactions with git
+status: new
 ---
 
 # Testing your interactions with git
@@ -73,6 +74,11 @@ ci: include github release workflow`
        repoLog.Commits[2].Message)
 }
 ```
+
+??? note "Imported log is appended to README.md"
+
+    To fix an identified issue on Windows ([#192](https://github.com/purpleclay/gitz/issues/192)), the imported log is now appended to the README.md
+    file to ensure the log history can be retrieved under all conditions.
 
 #### Multi-line commits
 

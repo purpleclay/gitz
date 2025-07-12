@@ -63,7 +63,7 @@ const (
 	FileContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 	// ReadmeContent is written to the README.md file when initializing the repository
-	ReadmeContent = "# Gitz Test Repository\n\n" + FileContent
+	ReadmeContent = "# Gitz Test Repository\n\n" + FileContent + "\n\n## History\n"
 
 	// an internal template for pushing changes back to a remote origin
 	gitPushTemplate = "git push -u origin %s"
@@ -297,6 +297,10 @@ func WithCloneDepth(depth int) RepositoryOption {
 //
 //	> git ls-files
 //	README.md
+//
+// When importing a log, the test repository will write the commit history
+// to the README.md file. In certain circumstances, git history will not be
+// retrieved unless commits are associated with a file.
 func InitRepository(t *testing.T, opts ...RepositoryOption) {
 	t.Helper()
 
@@ -456,10 +460,11 @@ process:
 }
 
 func importLogEntry(t *testing.T, entry LogEntry) {
-	// HACK:
-	// Flip the executable bit allowing the commit to be associated to the file
-	// without altering its contents
-	flipExecutableBit(t, "README.md")
+	// Append to README.md to create file changes for commits.
+	// This replaces the previous approach of flipping executable bits on README.md,
+	// which caused file locking issues on Windows during test cleanup,
+	// see: https://github.com/purpleclay/gitz/issues/192
+	appendToReadme(t, entry)
 	StageFile(t, "README.md")
 	commitCmd := fmt.Sprintf(`git commit -m "%s"`, entry.Message)
 	MustExec(t, commitCmd)
@@ -538,16 +543,14 @@ func importTagsAtRef(t *testing.T, tags []string, ref string) {
 	MustExec(t, "git push --tags")
 }
 
-func flipExecutableBit(t *testing.T, path string) {
-	fi, err := os.Stat(path)
-	require.NoError(t, err, "README.md should exist")
+func appendToReadme(t *testing.T, entry LogEntry) {
+	t.Helper()
+	file, err := os.OpenFile("README.md", os.O_APPEND|os.O_WRONLY, 0o600)
+	require.NoError(t, err, "failed to open README.md for appending")
+	defer file.Close()
 
-	perms := fi.Mode()
-	if perms&0o100 != 0 {
-		require.NoError(t, os.Chmod(path, perms&^0o100), "failed to turn on executable bit")
-	} else {
-		require.NoError(t, os.Chmod(path, perms|0o100), "failed to turn off executable bit")
-	}
+	_, err = fmt.Fprintf(file, "- %s\n", entry.Message)
+	require.NoError(t, err, "failed to append to README.md")
 }
 
 func setConfig(t *testing.T, key, value string) {

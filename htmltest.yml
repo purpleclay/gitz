@@ -2,6 +2,7 @@ IgnoreURLs:
   - fonts.gstatic.com
   - https://twitter.com/purpleclaydev
   - https://fosstodon.org/@purpleclaydev
+  - https://git-scm.com/docs
 IgnoreDirectoryMissingTrailingSlash: true
 IgnoreAltMissing: true
 IgnoreInternalEmptyHash: true

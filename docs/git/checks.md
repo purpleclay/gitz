@@ -2,7 +2,6 @@
 icon: material/clipboard-check-outline
 title: Git checks and how to use them
 description: A series of inbuilt check for inspecting the environment and current repository
-status: new
 ---
 
 # Git checks and how to use them
