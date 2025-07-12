@@ -182,6 +182,16 @@ func TestInitRepositoryWithLogCheckoutBranchNotPushed(t *testing.T) {
 	assert.NotContains(t, remoteBranches, "local-branch")
 }
 
+func TestInitRepositoryWithLogAppendsToReadme(t *testing.T) {
+	log := `(main, origin/main) ci: extend workflow to run docker tests
+feat: ensure changelog captures all commit history`
+	gittest.InitRepository(t, gittest.WithLog(log))
+
+	changelog := gitExec(t, "cat-file", "-p", "HEAD:README.md")
+	assert.Contains(t, changelog, "ci: extend workflow to run docker tests")
+	assert.Contains(t, changelog, "feat: ensure changelog captures all commit history")
+}
+
 func TestInitRepositoryWithFiles(t *testing.T) {
 	gittest.InitRepository(t, gittest.WithFiles("a.txt", "b.txt"))
 
@@ -419,7 +429,7 @@ func TestPorcelainStatus(t *testing.T) {
 	assert.ElementsMatch(t, []string{"?? file1.txt", "?? file2.txt"}, status)
 }
 
-func TestProcelainStatusNoChanges(t *testing.T) {
+func TestPorcelainStatusNoChanges(t *testing.T) {
 	gittest.InitRepository(t)
 	assert.Empty(t, gittest.PorcelainStatus(t))
 }
