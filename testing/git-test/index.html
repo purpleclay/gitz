@@ -464,14 +464,6 @@ and
   </span>
   
   
-    
-  
-  
-    <span class="md-status md-status--new" title="New Features Added">
-    </span>
-  
-
-  
 
       </a>
     </li>
@@ -946,6 +938,14 @@ and
   </span>
   
   
+    
+  
+  
+    <span class="md-status md-status--new" title="New Features Added">
+    </span>
+  
+
+  
 
           <span class="md-nav__icon md-icon"></span>
         </label>
@@ -964,6 +964,14 @@ and
     
   </span>
   
+  
+    
+  
+  
+    <span class="md-status md-status--new" title="New Features Added">
+    </span>
+  
+
   
 
       </a>
@@ -1649,6 +1657,11 @@ and
 </span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25"></a><span class="w">       </span><span class="nx">repoLog</span><span class="p">.</span><span class="nx">Commits</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">Message</span><span class="p">)</span>
 </span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26"></a><span class="p">}</span>
 </span></code></pre></div></td></tr></table></div>
+<details class="note">
+<summary>Imported log is appended to README.md</summary>
+<p>To fix an identified issue on Windows (<a href="https://github.com/purpleclay/gitz/issues/192">#192</a>), the imported log is now appended to the README.md
+file to ensure the log history can be retrieved under all conditions.</p>
+</details>
 <h4 id="multi-line-commits">Multi-line commits<a class="headerlink" href="#multi-line-commits" title="Permanent link">&para;</a></h4>
 <p>Import multi-line commits by prefixing each commit with a <code>&gt;</code> token. The expected format is equivalent to the output from the git command:</p>
 <p><code>git log --pretty='format:&gt; %d %s%+b%-N'</code></p>
