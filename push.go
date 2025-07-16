@@ -7,7 +7,7 @@ import (
 
 // PushOption provides a way of setting specific options during a git
 // push operation. Each supported option can customize the way in which
-// references are pushed back to the remote
+// references are pushed back to the remote.
 type PushOption func(*pushOptions)
 
 type pushOptions struct {
@@ -20,7 +20,7 @@ type pushOptions struct {
 }
 
 // WithAllBranches will push all locally created branch references
-// back to the remote
+// back to the remote.
 func WithAllBranches() PushOption {
 	return func(opts *pushOptions) {
 		opts.All = true
@@ -28,7 +28,7 @@ func WithAllBranches() PushOption {
 }
 
 // WithAllTags will push all locally created tag references back
-// to the remote
+// to the remote.
 func WithAllTags() PushOption {
 	return func(opts *pushOptions) {
 		opts.Tags = true
@@ -36,7 +36,7 @@ func WithAllTags() PushOption {
 }
 
 // WithDeleteRefSpecs will trigger the deletion of any named references
-// when pushed back to the remote
+// when pushed back to the remote.
 func WithDeleteRefSpecs(refs ...string) PushOption {
 	return func(opts *pushOptions) {
 		opts.Delete = true
@@ -49,7 +49,7 @@ func WithDeleteRefSpecs(refs ...string) PushOption {
 // any config defined within existing git config files. Config must be
 // provided as key value pairs, mismatched config will result in an
 // [ErrMissingConfigValue] error. Any invalid paths will result in an
-// [ErrInvalidConfigPath] error
+// [ErrInvalidConfigPath] error.
 func WithPushConfig(kv ...string) PushOption {
 	return func(opts *pushOptions) {
 		opts.Config = trim(kv...)
@@ -59,7 +59,7 @@ func WithPushConfig(kv ...string) PushOption {
 // WithPushOptions allows any number of aribitrary strings to be pushed
 // to the remote server. All options are transmitted in their received
 // order. A server must have the git config setting receive.advertisePushOptions
-// set to true to receive push options
+// set to true to receive push options.
 func WithPushOptions(options ...string) PushOption {
 	return func(opts *pushOptions) {
 		opts.PushOptions = trim(options...)
@@ -71,7 +71,7 @@ func WithPushOptions(options ...string) PushOption {
 // simple as a name, where git will automatically resolve any
 // ambiguity, or as explicit as providing a source and destination
 // for each local reference within the remote. Check out the official
-// git documentation on how to write a more complex [refspec]
+// git documentation on how to write a more complex [refspec].
 //
 // [refspec]: https://git-scm.com/docs/git-push#Documentation/git-push.txt-ltrefspecgt82308203
 func WithRefSpecs(refs ...string) PushOption {
@@ -83,7 +83,7 @@ func WithRefSpecs(refs ...string) PushOption {
 // Push (or upload) all local changes to the remote repository.
 // By default, changes associated with the current branch will
 // be pushed back to the remote. Options can be provided to
-// configure branch and tag push semantics
+// configure branch and tag push semantics.
 func (c *Client) Push(opts ...PushOption) (string, error) {
 	options := &pushOptions{}
 	for _, opt := range opts {
@@ -108,6 +108,7 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 		buf.WriteString(" --push-option=" + po)
 	}
 
+	//nolint:gocritic
 	if options.All {
 		buf.WriteString(" --all")
 	} else if options.Tags {
@@ -131,7 +132,7 @@ func (c *Client) Push(opts ...PushOption) (string, error) {
 }
 
 // PushRef will push an individual reference to the remote repository
-// Deprecated: use [Push] instead
+// Deprecated: use [Push] instead.
 func (c *Client) PushRef(ref string) (string, error) {
 	return c.Exec(fmt.Sprintf("git push origin %s", ref))
 }

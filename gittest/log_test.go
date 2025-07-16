@@ -3,9 +3,10 @@ package gittest_test
 import (
 	"testing"
 
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestParseLog(t *testing.T) {
@@ -19,36 +20,36 @@ feat: scaffold initial cli and add first command`
 	entries := gittest.ParseLog(log)
 
 	require.Len(t, entries, 6)
-	assert.Equal(t, entries[0].Message, "pass tests")
+	assert.Equal(t, "pass tests", entries[0].Message)
 	assert.Empty(t, entries[0].Tags)
 	assert.ElementsMatch(t, []string{"HEAD -> new-feature", "origin/new-feature"}, entries[0].Branches)
 	assert.False(t, entries[0].IsTrunk)
 	assert.Equal(t, "new-feature", entries[0].HeadPointerRef)
 
-	assert.Equal(t, entries[1].Message, "write tests for new feature")
+	assert.Equal(t, "write tests for new feature", entries[1].Message)
 	assert.Empty(t, entries[1].Tags)
 	assert.Empty(t, entries[1].Branches)
 	assert.False(t, entries[1].IsTrunk)
 	assert.Empty(t, entries[1].HeadPointerRef)
 
-	assert.Equal(t, entries[2].Message, "feat: improve existing cli documentation")
+	assert.Equal(t, "feat: improve existing cli documentation", entries[2].Message)
 	assert.ElementsMatch(t, []string{"0.2.0", "v1"}, entries[2].Tags)
 	assert.ElementsMatch(t, []string{"main", "origin/main"}, entries[2].Branches)
 	assert.True(t, entries[2].IsTrunk)
 	assert.Empty(t, entries[2].HeadPointerRef)
 
-	assert.Equal(t, entries[3].Message, "docs: create initial mkdocs material documentation")
+	assert.Equal(t, "docs: create initial mkdocs material documentation", entries[3].Message)
 	assert.Empty(t, entries[3].Branches)
 	assert.False(t, entries[3].IsTrunk)
 	assert.Empty(t, entries[3].HeadPointerRef)
 
-	assert.Equal(t, entries[4].Message, "feat: add secondary cli command to support filtering of results")
+	assert.Equal(t, "feat: add secondary cli command to support filtering of results", entries[4].Message)
 	assert.ElementsMatch(t, []string{"0.1.0"}, entries[4].Tags)
 	assert.Empty(t, entries[4].Branches)
 	assert.False(t, entries[4].IsTrunk)
 	assert.Empty(t, entries[4].HeadPointerRef)
 
-	assert.Equal(t, entries[5].Message, "feat: scaffold initial cli and add first command")
+	assert.Equal(t, "feat: scaffold initial cli and add first command", entries[5].Message)
 	assert.Empty(t, entries[5].Branches)
 	assert.False(t, entries[5].IsTrunk)
 	assert.Empty(t, entries[5].HeadPointerRef)
@@ -96,7 +97,7 @@ func TestParseLogTrimsSpaces(t *testing.T) {
 	entries := gittest.ParseLog(log)
 
 	require.Len(t, entries, 1)
-	assert.Equal(t, entries[0].Message, "feat: testing if leading and trailing spaces are removed")
+	assert.Equal(t, "feat: testing if leading and trailing spaces are removed", entries[0].Message)
 }
 
 func TestParseLogMalformedLine(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 
 // LogOption provides a way for setting specific options during a log operation.
 // Each supported option can customize the way the log history of the current
-// repository (working directory) is processed before retrieval
+// repository (working directory) is processed before retrieval.
 type LogOption func(*logOptions)
 
 type logOptions struct {
@@ -30,7 +30,7 @@ type logOptions struct {
 // name or tag. The output of this option will typically be a shorter,
 // fine-tuned history. This option is mutually exclusive with
 // [WithRefRange]. All leading and trailing whitespace are trimmed
-// from the reference, allowing empty references to be ignored
+// from the reference, allowing empty references to be ignored.
 func WithRef(ref string) LogOption {
 	return func(opts *logOptions) {
 		opts.RefRange = strings.TrimSpace(ref)
@@ -44,7 +44,7 @@ func WithRef(ref string) LogOption {
 // fine-tuned history, for example, the history between two tags.
 // This option is mutually exclusive with [WithRef]. All leading
 // and trailing whitespace are trimmed from the references, allowing
-// empty references to be ignored
+// empty references to be ignored.
 func WithRefRange(fromRef string, toRef string) LogOption {
 	return func(opts *logOptions) {
 		from := strings.TrimSpace(fromRef)
@@ -77,7 +77,7 @@ func WithPaths(paths ...string) LogOption {
 
 // WithRawOnly ensures only the raw output from the git log of the current
 // repository (working directory) is retrieved. No post-processing is
-// carried out, resulting in an empty [Log.Commits] slice
+// carried out, resulting in an empty [Log.Commits] slice.
 func WithRawOnly() LogOption {
 	return func(opts *logOptions) {
 		opts.SkipParse = true
@@ -88,7 +88,7 @@ func WithRawOnly() LogOption {
 // history. A positive number (greater than zero) is expected. Skipping
 // more commits than exists, will result in no history being retrieved.
 // Skipping zero commits, will retrieve the entire log. This option has
-// a higher order of precedence than [git.WithTake]
+// a higher order of precedence than [git.WithTake].
 func WithSkip(n int) LogOption {
 	return func(opts *logOptions) {
 		opts.SkipCount = n
@@ -99,7 +99,7 @@ func WithSkip(n int) LogOption {
 // log history. A positive number (greater than zero) is expected. Taking
 // more commits than exists, has the same effect as retrieving the entire
 // log. Taking zero commits, will retrieve an empty log. This option has
-// a lower order of precedence than [git.WithSkip]
+// a lower order of precedence than [git.WithSkip].
 func WithTake(n int) LogOption {
 	return func(opts *logOptions) {
 		opts.TakeCount = n
@@ -109,7 +109,7 @@ func WithTake(n int) LogOption {
 // WithGrep limits the number of commits that will be output within the
 // log history to any with a log message that contains one of the provided
 // matches (regular expressions). All leading and trailing whitespace
-// will be trimmed, allowing empty matches to be ignored
+// will be trimmed, allowing empty matches to be ignored.
 func WithGrep(matches ...string) LogOption {
 	return func(opts *logOptions) {
 		opts.Matches = trim(matches...)
@@ -119,7 +119,7 @@ func WithGrep(matches ...string) LogOption {
 // WithInvertGrep limits the number of commits that will be output within
 // the log history to any with a log message that does not contain one of
 // the provided matches (regular expressions). All leading and trailing
-// whitespace will be trimmed, allowing empty matches to be ignored
+// whitespace will be trimmed, allowing empty matches to be ignored.
 func WithInvertGrep(matches ...string) LogOption {
 	return func(opts *logOptions) {
 		WithGrep(matches...)(opts)
@@ -129,14 +129,14 @@ func WithInvertGrep(matches ...string) LogOption {
 
 // WithMatchAll when used in combination with [git.WithGrep] will limit
 // the number of returned commits to those whose log message contains all
-// of the provided matches (regular expressions)
+// of the provided matches (regular expressions).
 func WithMatchAll() LogOption {
 	return func(opts *logOptions) {
 		opts.MatchAll = true
 	}
 }
 
-// Log represents a snapshot of commit history from a repository
+// Log represents a snapshot of commit history from a repository.
 type Log struct {
 	// Raw contains the raw commit log
 	Raw string
@@ -148,7 +148,7 @@ type Log struct {
 }
 
 // LogEntry represents a single parsed entry from within the commit
-// history of a repository
+// history of a repository.
 type LogEntry struct {
 	// Hash contains the unique identifier associated with the commit
 	Hash string

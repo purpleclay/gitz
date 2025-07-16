@@ -4,7 +4,7 @@ import "strings"
 
 // StageOption provides a way for setting specific options during a stage
 // operation. Each supported option can customize the way files are staged
-// within the current repository (working directory)
+// within the current repository (working directory).
 type StageOption func(*stageOptions)
 
 type stageOptions struct {
@@ -15,7 +15,7 @@ type stageOptions struct {
 // that will stage any matching files within the current repository
 // (working directory). Paths to files and folders are relative to the
 // root of the repository. All leading and trailing whitespace will be
-// trimmed from the file paths, allowing empty paths to be ignored
+// trimmed from the file paths, allowing empty paths to be ignored.
 //
 // [PathSpecs]: https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
 func WithPathSpecs(specs ...string) StageOption {
@@ -52,7 +52,7 @@ func (c *Client) Stage(opts ...StageOption) (string, error) {
 }
 
 // Staged retrieves a list of all currently staged file changes within the
-// current repository
+// current repository.
 func (c *Client) Staged() ([]string, error) {
 	diff, err := c.Exec("git diff --staged --name-only")
 	if err != nil {

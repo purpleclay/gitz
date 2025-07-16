@@ -4,10 +4,11 @@ import (
 	"os"
 	"testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestClone(t *testing.T) {
@@ -26,7 +27,7 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, os.Chdir(gittest.ClonedRepositoryName))
-	assert.Equal(t, gittest.LastCommit(t).Message, "chore: testing if a git clone works")
+	assert.Equal(t, "chore: testing if a git clone works", gittest.LastCommit(t).Message)
 }
 
 func TestCloneWithDirectory(t *testing.T) {

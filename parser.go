@@ -56,7 +56,7 @@ func line() combinator {
 		if i := strings.Index(s, "\n"); i > 0 {
 			j := i
 			if j > 1 && s[j-1] == '\r' {
-				j = j - 1
+				j--
 			}
 
 			if len(s) == i {

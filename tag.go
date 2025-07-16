@@ -5,63 +5,63 @@ import (
 	"strings"
 )
 
-// ErrMissingTagCommitRef is raised when a git tag is missing an
-// associated commit hash
-type ErrMissingTagCommitRef struct {
+// MissingTagCommitRefError is raised when a git tag is missing an
+// associated commit hash.
+type MissingTagCommitRefError struct {
 	// Tag reference
 	Tag string
 }
 
-// Error returns a friendly formatted message of the current error
-func (e ErrMissingTagCommitRef) Error() string {
+// Error returns a friendly formatted message of the current error.
+func (e MissingTagCommitRefError) Error() string {
 	return fmt.Sprintf("tag commit ref mismatch. tag: %s is missing a corresponding commit ref", e.Tag)
 }
 
 // SortKey represents a structured [field name] that can be used as a sort key
-// when analysing referenced objects such as tags
+// when analysing referenced objects such as tags.
 //
 // [field name]: https://git-scm.com/docs/git-for-each-ref#_field_names
 type SortKey string
 
 const (
 	// CreatorDate sorts the reference in ascending order by the creation date
-	// of the underlying commit
+	// of the underlying commit.
 	CreatorDate SortKey = "creatordate"
 
 	// CreatorDateDesc sorts the reference in descending order by the creation date
-	// of the underlying commit
+	// of the underlying commit.
 	CreatorDateDesc SortKey = "-creatordate"
 
-	// RefName sorts the reference by its name in ascending lexicographic order
+	// RefName sorts the reference by its name in ascending lexicographic order.
 	RefName SortKey = "refname"
 
-	// RefNameDesc sorts the reference by its name in descending lexicographic order
+	// RefNameDesc sorts the reference by its name in descending lexicographic order.
 	RefNameDesc SortKey = "-refname"
 
-	// TaggerDate sorts the reference in ascending order by its tag creation date
+	// TaggerDate sorts the reference in ascending order by its tag creation date.
 	TaggerDate SortKey = "taggerdate"
 
 	// TaggerDateDesc sorts the reference in descending order by its tag
-	// creation date
+	// creation date.
 	TaggerDateDesc SortKey = "-taggerdate"
 
 	// Version interpolates the references as a version number and sorts in
-	// ascending order
+	// ascending order.
 	Version SortKey = "version:refname"
 
 	// VersionDesc interpolates the references as a version number and sorts in
-	// descending order
+	// descending order.
 	VersionDesc SortKey = "-version:refname"
 )
 
-// String converts the sort key from an enum into its string counterpart
+// String converts the sort key from an enum into its string counterpart.
 func (k SortKey) String() string {
 	return string(k)
 }
 
 // CreateTagOption provides a way for setting specific options during a tag
 // creation operation. Each supported option can customize the way the tag is
-// created against the current repository (working directory)
+// created against the current repository (working directory).
 type CreateTagOption func(*createTagOptions)
 
 type createTagOptions struct {
@@ -78,7 +78,7 @@ type createTagOptions struct {
 // message. This ultimately converts the standard lightweight tag into
 // an annotated tag which is stored as a full object within the git
 // database. Any leading and trailing whitespace will automatically be
-// trimmed from the message. This allows empty messages to be ignored
+// trimmed from the message. This allows empty messages to be ignored.
 func WithAnnotation(message string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Annotation = strings.TrimSpace(message)
@@ -87,7 +87,7 @@ func WithAnnotation(message string) CreateTagOption {
 
 // WithCommitRef ensures the created tag points to a specific commit
 // within the history of the repository. This changes the default behavior
-// of creating a tag against the HEAD (or latest commit) within the repository
+// of creating a tag against the HEAD (or latest commit) within the repository.
 func WithCommitRef(ref string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.CommitRef = strings.TrimSpace(ref)
@@ -95,7 +95,7 @@ func WithCommitRef(ref string) CreateTagOption {
 }
 
 // WithLocalOnly ensures the created tag will not be pushed back to
-// the remote and be kept as a local tag only
+// the remote and be kept as a local tag only.
 func WithLocalOnly() CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.LocalOnly = true
@@ -107,7 +107,7 @@ func WithLocalOnly() CreateTagOption {
 // any config defined within existing git config files. Config must be
 // provided as key value pairs, mismatched config will result in an
 // [ErrMissingConfigValue] error. Any invalid paths will result in an
-// [ErrInvalidConfigPath] error
+// [ErrInvalidConfigPath] error.
 func WithTagConfig(kv ...string) CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.Config = trim(kv...)
@@ -129,7 +129,7 @@ func WithSigned() CreateTagOption {
 }
 
 // WithSigningKey will create a GPG-signed tag using the provided GPG
-// key ID, overridding any default GPG key set by the user.signingKey
+// key ID, overriding any default GPG key set by the user.signingKey
 // config setting. An annotated tag is mandatory when signing. A default
 // annotation will be assigned, unless overridden with the [WithAnnotation]
 // option:
@@ -144,7 +144,7 @@ func WithSigningKey(key string) CreateTagOption {
 
 // WithSkipSigning ensures the created tag will not be GPG signed
 // regardless of the value assigned to the repositories tag.gpgSign
-// git config setting
+// git config setting.
 func WithSkipSigning() CreateTagOption {
 	return func(opts *createTagOptions) {
 		opts.ForceNoSigned = true
@@ -159,7 +159,7 @@ func WithSkipSigning() CreateTagOption {
 //     git, and must include a tagging message (or annotation)
 //
 // By default, a lightweight tag will be created, unless specific tag
-// options are provided
+// options are provided.
 func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 	options := &createTagOptions{}
 	for _, opt := range opts {
@@ -220,7 +220,7 @@ func (c *Client) Tag(tag string, opts ...CreateTagOption) (string, error) {
 // TagBatch attempts to create a batch of tags against a specific point within
 // a repositories history. All tags are created locally and then pushed in
 // a single transaction to the remote. This behavior is enforced by explicitly
-// enabling the [WithLocalOnly] option
+// enabling the [WithLocalOnly] option.
 func (c *Client) TagBatch(tags []string, opts ...CreateTagOption) (string, error) {
 	if len(tags) == 0 {
 		return "", nil
@@ -228,7 +228,9 @@ func (c *Client) TagBatch(tags []string, opts ...CreateTagOption) (string, error
 
 	opts = append(opts, WithLocalOnly())
 	for _, tag := range tags {
-		c.Tag(tag, opts...)
+		if _, err := c.Tag(tag, opts...); err != nil {
+			return "", err
+		}
 	}
 
 	return c.Push(WithRefSpecs(tags...))
@@ -242,20 +244,23 @@ func (c *Client) TagBatch(tags []string, opts ...CreateTagOption) (string, error
 //
 // All tags are created locally and then pushed in a single transaction to the
 // remote. This behavior is enforced by explicitly enabling the [WithLocalOnly]
-// option
+// option.
 func (c *Client) TagBatchAt(pairs []string, opts ...CreateTagOption) (string, error) {
 	if len(pairs) == 0 {
 		return "", nil
 	}
 
 	if len(pairs)%2 != 0 {
-		return "", ErrMissingTagCommitRef{Tag: pairs[len(pairs)-1]}
+		return "", MissingTagCommitRefError{Tag: pairs[len(pairs)-1]}
 	}
 
 	opts = append(opts, WithLocalOnly())
 	var refs []string
 	for i := 0; i < len(pairs); i += 2 {
-		c.Tag(pairs[i], append(opts, WithCommitRef(pairs[i+1]))...)
+		_, err := c.Tag(pairs[i], append(opts, WithCommitRef(pairs[i+1]))...)
+		if err != nil {
+			return "", err
+		}
 		refs = append(refs, pairs[i])
 	}
 
@@ -264,7 +269,7 @@ func (c *Client) TagBatchAt(pairs []string, opts ...CreateTagOption) (string, er
 
 // ListTagsOption provides a way for setting specific options during a list
 // tags operation. Each supported option can customize the way in which the
-// tags are queried and returned from the current repository (workng directory)
+// tags are queried and returned from the current repository (workng directory).
 type ListTagsOption func(*listTagsOptions)
 
 type listTagsOptions struct {
@@ -285,7 +290,7 @@ type listTagsOptions struct {
 type TagFilter func(tag string) bool
 
 // WithCount limits the number of tags that are returned after all
-// processing and filtering has been applied the retrieved list
+// processing and filtering has been applied the retrieved list.
 func WithCount(n int) ListTagsOption {
 	return func(opts *listTagsOptions) {
 		opts.Count = n
@@ -294,7 +299,7 @@ func WithCount(n int) ListTagsOption {
 
 // WithFilters allows the retrieved list of tags to be processed
 // with a set of user-defined filters. Each filter is applied in
-// turn to the working set. Nil filters are ignored
+// turn to the working set. Nil filters are ignored.
 func WithFilters(filters ...TagFilter) ListTagsOption {
 	return func(opts *listTagsOptions) {
 		opts.Filters = make([]TagFilter, 0, len(filters))
@@ -312,7 +317,7 @@ func WithFilters(filters ...TagFilter) ListTagsOption {
 // returning tags that match a given [Shell Glob] pattern. If multiple
 // patterns are provided, tags will be retrieved if they match against
 // a single pattern. All leading and trailing whitespace will be trimmed,
-// allowing empty patterns to be ignored
+// allowing empty patterns to be ignored.
 //
 // [Shell Glob]: https://tldp.org/LDP/GNU-Linux-Tools-Summary/html/x11655.htm
 func WithShellGlob(patterns ...string) ListTagsOption {
@@ -327,7 +332,7 @@ func WithShellGlob(patterns ...string) ListTagsOption {
 // hyphen (-<fieldname>). You can sort tags against multiple fields, but
 // this does change the expected behavior. The last field name is treated
 // as the primary key for the entire sort. All leading and trailing whitespace
-// will be trimmed, allowing empty field names to be ignored
+// will be trimmed, allowing empty field names to be ignored.
 //
 // [field name]: https://git-scm.com/docs/git-for-each-ref#_field_names
 func WithSortBy(keys ...SortKey) ListTagsOption {
@@ -348,7 +353,7 @@ func WithSortBy(keys ...SortKey) ListTagsOption {
 
 // Tags retrieves all local tags from the current repository (working directory).
 // By default, all tags are retrieved in ascending lexicographic order as implied
-// through the [RefName] sort key. Options can be provided to customize retrieval
+// through the [RefName] sort key. Options can be provided to customize retrieval.
 func (c *Client) Tags(opts ...ListTagsOption) ([]string, error) {
 	options := &listTagsOptions{
 		Count: disabledNumericOption,
@@ -409,7 +414,7 @@ const (
 	signedByPrefix    = "Good signature from \""
 )
 
-// TagVerification contains details about a GPG signed tag
+// TagVerification contains details about a GPG signed tag.
 type TagVerification struct {
 	// Annotation contains the annotated message associated with
 	// the tag
@@ -425,7 +430,7 @@ type TagVerification struct {
 	Tagger Person
 }
 
-// Signature contains details about a GPG signature
+// Signature contains details about a GPG signature.
 type Signature struct {
 	// Fingerprint contains the fingerprint of the private key used
 	// during key verification
@@ -462,7 +467,7 @@ func parseSignature(str string) *Signature {
 }
 
 // VerifyTag validates that a given tag has a valid GPG signature
-// and returns details about that signature
+// and returns details about that signature.
 func (c *Client) VerifyTag(ref string) (*TagVerification, error) {
 	out, err := c.Exec("git tag -v " + ref)
 	if err != nil {
@@ -508,7 +513,7 @@ func chompUntil(str string, until byte) string {
 }
 
 // DeleteTagsOption provides a way for setting specific options during
-// a tag deletion operation
+// a tag deletion operation.
 type DeleteTagsOption func(*deleteTagsOptions)
 
 type deleteTagsOptions struct {
@@ -517,20 +522,20 @@ type deleteTagsOptions struct {
 
 // WithLocalDelete ensures the reference to the tag is deleted from
 // the local index only and is not pushed back to the remote. Useful
-// if working with temporary tags that need to be removed
+// if working with temporary tags that need to be removed.
 func WithLocalDelete() DeleteTagsOption {
 	return func(opts *deleteTagsOptions) {
 		opts.LocalOnly = true
 	}
 }
 
-// DeleteTag a tag both locally and from the remote origin
+// DeleteTag a tag both locally and from the remote origin.
 func (c *Client) DeleteTag(tag string, opts ...DeleteTagsOption) (string, error) {
 	return c.DeleteTags([]string{tag}, opts...)
 }
 
 // DeleteTags will attempt to delete a series of tags from the current
-// repository and push those deletions back to the remote
+// repository and push those deletions back to the remote.
 func (c *Client) DeleteTags(tags []string, opts ...DeleteTagsOption) (string, error) {
 	if len(tags) == 0 {
 		return "", nil

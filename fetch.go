@@ -7,7 +7,7 @@ import (
 
 // FetchOption provides a way for setting specific options while fetching changes
 // from the remote. Each supported option can customize how changes are fetched
-// from the remote
+// from the remote.
 type FetchOption func(*fetchOptions)
 
 type fetchOptions struct {
@@ -62,14 +62,14 @@ func (o fetchOptions) String() string {
 // any config defined within existing git config files. Config must be
 // provided as key value pairs, mismatched config will result in an
 // [ErrMissingConfigValue] error. Any invalid paths will result in an
-// [ErrInvalidConfigPath] error
+// [ErrInvalidConfigPath] error.
 func WithFetchConfig(kv ...string) FetchOption {
 	return func(opts *fetchOptions) {
 		opts.Config = trim(kv...)
 	}
 }
 
-// WithAll will fetch the latest changes from all tracked remotes
+// WithAll will fetch the latest changes from all tracked remotes.
 func WithAll() FetchOption {
 	return func(opts *fetchOptions) {
 		opts.All = true
@@ -77,7 +77,7 @@ func WithAll() FetchOption {
 }
 
 // WithTags will fetch all tags from the remote into local tag
-// references with the same name
+// references with the same name.
 func WithTags() FetchOption {
 	return func(opts *fetchOptions) {
 		opts.Tags = true
@@ -87,7 +87,7 @@ func WithTags() FetchOption {
 // WithDepthTo will limit the number of commits to be fetched from the
 // remotes history to the specified depth. If fetching into a shallow
 // clone of a repository, this can be used to shorten or deepen the
-// existing history
+// existing history.
 func WithDepthTo(depth int) FetchOption {
 	return func(opts *fetchOptions) {
 		opts.Depth = depth
@@ -97,14 +97,14 @@ func WithDepthTo(depth int) FetchOption {
 // WithForce will force the fetching of a remote branch into a local
 // branch with a different name (or refspec). Default behavior within
 // git prevents such an operation. Typically used in conjunction with
-// the [WithFetchRefSpecs] option
+// the [WithFetchRefSpecs] option.
 func WithForce() FetchOption {
 	return func(opts *fetchOptions) {
 		opts.Force = true
 	}
 }
 
-// WithIgnoreTags disables local tracking of tags from the remote
+// WithIgnoreTags disables local tracking of tags from the remote.
 func WithIgnoreTags() FetchOption {
 	return func(opts *fetchOptions) {
 		opts.NoTags = true
@@ -116,7 +116,8 @@ func WithIgnoreTags() FetchOption {
 // (or refspec) can be as simple as a name, where git will automatically
 // resolve any ambiguity, or as explicit as providing a source and destination
 // for reference within the remote. Check out the official git documentation
-// on how to write a more complex [refspec]
+// on how to write a more complex [refspec].
+//
 // [refspec]: https://git-scm.com/docs/git-fetch#Documentation/git-fetch.txt-ltrefspecgt
 func WithFetchRefSpecs(refs ...string) FetchOption {
 	return func(opts *fetchOptions) {
@@ -124,7 +125,7 @@ func WithFetchRefSpecs(refs ...string) FetchOption {
 	}
 }
 
-// WithUnshallow will fetch the complete history from the remote
+// WithUnshallow will fetch the complete history from the remote.
 func WithUnshallow() FetchOption {
 	return func(opts *fetchOptions) {
 		opts.Unshallow = true
@@ -133,7 +134,7 @@ func WithUnshallow() FetchOption {
 
 // Fetch all remote changes from a remote repository without integrating (merging)
 // them into the current repository (working directory). Ensures the current repository
-// only tracks the latest remote changes
+// only tracks the latest remote changes.
 func (c *Client) Fetch(opts ...FetchOption) (string, error) {
 	options := &fetchOptions{}
 	for _, opt := range opts {

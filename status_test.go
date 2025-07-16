@@ -1,13 +1,13 @@
 package git_test
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	git "github.com/purpleclay/gitz"
 	"github.com/purpleclay/gitz/gittest"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestPorcelainStatus(t *testing.T) {
@@ -42,8 +42,6 @@ func TestPorcelainStatusWithIgnoreRenames(t *testing.T) {
 	client, _ := git.NewClient()
 	statuses, err := client.PorcelainStatus(git.WithIgnoreRenames())
 	require.NoError(t, err)
-
-	fmt.Println(statuses)
 
 	require.Len(t, statuses, 3)
 	assert.ElementsMatch(t,

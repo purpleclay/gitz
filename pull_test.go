@@ -3,23 +3,24 @@ package git_test
 import (
 	"testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestPull(t *testing.T) {
 	log := "(tag: 0.1.0, main, origin/main) feat: a new exciting feature"
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 
-	require.NotEqual(t, gittest.LastCommit(t).Message, "feat: a new exciting feature")
+	require.NotEqual(t, "feat: a new exciting feature", gittest.LastCommit(t).Message)
 
 	client, _ := git.NewClient()
 	_, err := client.Pull()
 	require.NoError(t, err)
 
-	assert.Equal(t, gittest.LastCommit(t).Message, "feat: a new exciting feature")
+	assert.Equal(t, "feat: a new exciting feature", gittest.LastCommit(t).Message)
 	tags := gittest.Tags(t)
 	assert.ElementsMatch(t, []string{"0.1.0"}, tags)
 }

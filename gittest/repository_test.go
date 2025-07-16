@@ -9,12 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/purpleclay/gitz/gittest"
 )
 
-// Utility method for executing git commands and ensuring the trailing slash is trimmed
+// Utility method for executing git commands and ensuring the trailing slash is trimmed.
 func gitExec(t *testing.T, args ...string) string {
 	t.Helper()
 	out, err := exec.Command("git", args...).CombinedOutput()
@@ -132,6 +133,7 @@ func shellExecInline(t *testing.T, inline string, args ...string) string {
 		interp = "bash"
 	}
 
+	// #nosec G204
 	out, err := exec.Command(interp, cmdArgs...).CombinedOutput()
 	require.NoError(t, err)
 

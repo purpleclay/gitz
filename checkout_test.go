@@ -3,10 +3,11 @@ package git_test
 import (
 	"testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestCheckout(t *testing.T) {
@@ -21,7 +22,7 @@ write tests for branch checkout
 
 	// Inspect the raw git output
 	assert.Contains(t, out, "Switched to branch 'main'")
-	assert.Equal(t, gittest.LastCommit(t).Message, "docs: update existing project README")
+	assert.Equal(t, "docs: update existing project README", gittest.LastCommit(t).Message)
 }
 
 func TestCheckoutCreatesLocalBranch(t *testing.T) {
