@@ -6,10 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestNewClientGitFound(t *testing.T) {
@@ -26,8 +27,8 @@ func TestNewClientGitMissingError(t *testing.T) {
 
 	client, err := git.NewClient()
 
-	require.ErrorAs(t, err, &git.ErrGitMissing{})
-	assert.EqualError(t, err, "git is not installed under the PATH environment variable. PATH resolves to /fake")
+	require.ErrorAs(t, err, &git.ClientMissingError{})
+	require.EqualError(t, err, "git is not installed under the PATH environment variable. PATH resolves to /fake")
 	assert.Nil(t, client)
 }
 
@@ -53,7 +54,7 @@ feat: include support for building app using nix build`
 }
 
 func TestRepositoryTagCheckout(t *testing.T) {
-	log := `(tag: 0.2.0) feat: include collapsable search menu for filtering
+	log := `(tag: 0.2.0) feat: include collapsible search menu for filtering
 (tag: 0.1.0) feat: use cards to display search results`
 	gittest.InitRepository(t, gittest.WithLog(log))
 	gittest.Checkout(t, "0.1.0")
@@ -119,7 +120,8 @@ func TestRepositoryNotWorkingDirectory(t *testing.T) {
 
 func TestRepositoryWithMultipleRemotes(t *testing.T) {
 	gittest.InitRepository(t)
-	gittest.Exec(t, "git remote add gitlab git@gitlab.com:purpleclay/test.git")
+	_, err := gittest.Exec(t, "git remote add gitlab git@gitlab.com:purpleclay/test.git")
+	require.NoError(t, err)
 
 	client, _ := git.NewClient()
 	repo, err := client.Repository()
@@ -127,7 +129,7 @@ func TestRepositoryWithMultipleRemotes(t *testing.T) {
 
 	require.Len(t, repo.Remotes, 2)
 	assert.Equal(t, repo.Remotes[gittest.DefaultOrigin], gittest.Remote(t))
-	assert.Equal(t, repo.Remotes["gitlab"], "git@gitlab.com:purpleclay/test.git")
+	assert.Equal(t, "git@gitlab.com:purpleclay/test.git", repo.Remotes["gitlab"])
 }
 
 func TestToRelativePath(t *testing.T) {
@@ -150,7 +152,7 @@ func TestToRelativePathNotInWorkingDirectoryError(t *testing.T) {
 	client, _ := git.NewClient()
 	_, err := client.ToRelativePath(rel)
 
-	// Cope with unwiedly paths due to temporary test directories
+	// Cope with unwieldy paths due to temporary test directories
 	assert.EqualError(t, err,
 		fmt.Sprintf("%s is not relative to the git repository working directory %s as it produces path %s",
 			rel, root, makeRelativeTo(t, rel, root)))

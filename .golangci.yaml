@@ -1,21 +1,62 @@
+version: "2"
 run:
   timeout: 5m
+  tests: true
 
 linters:
-  disable-all: true
+  default: none
   enable:
+    - bodyclose
+    - contextcheck
+    - copyloopvar
     - dupl
-    - gofumpt
-    - goimports
-    - gosimple
+    - durationcheck
+    - errcheck
+    - errname
+    - forbidigo
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gosec
     - govet
     - ineffassign
     - misspell
-    - nakedret
+    - nilnil
+    - reassign
     - revive
+    - spancheck
     - staticcheck
+    - tagliatelle
+    - testifylint
+    - thelper
+    - tparallel
     - unused
+    - wrapcheck
+  settings:
+    errcheck:
+      check-type-assertions: true
+    goconst:
+      numbers: true
+    gocyclo:
+      min-complexity: 15
+    tagliatelle:
+      case:
+        rules:
+          json: snake
 
-linters-settings:
-  dupl:
-    threshold: 400
+formatters:
+  enable:
+    - gci
+    - gofumpt
+
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 0

@@ -8,31 +8,31 @@ import (
 )
 
 // LogEntry represents a single log entry from the history
-// of a git repository
+// of a git repository.
 type LogEntry struct {
-	// Hash contains the unique identifier associated with the commit
+	// Hash contains the unique identifier associated with the commit.
 	Hash string
 
-	// AbbrevHash contains the seven character abbreviated commit hash
+	// AbbrevHash contains the seven character abbreviated commit hash.
 	AbbrevHash string
 
-	// Message contains the log message associated with the commit
+	// Message contains the log message associated with the commit.
 	Message string
 
 	// Tags contains all tag references that are associated
-	// with the current commit
+	// with the current commit.
 	Tags []string
 
 	// Branches contains the name of all branches (local and remote)
-	// that are associated with the current commit
+	// that are associated with the current commit.
 	Branches []string
 
 	// IsTrunk identifies if the current log entry has a reference
-	// to the default branch
+	// to the default branch.
 	IsTrunk bool
 
 	// HeadPointerRef contains the name of the branch the HEAD of the
-	// repository points to
+	// repository points to.
 	HeadPointerRef string
 }
 
@@ -175,7 +175,7 @@ func chompHash(str string) (string, string) {
 
 	hash := str[:40]
 	for _, b := range []byte(hash) {
-		if !(b >= '0' && b <= '9' || b >= 'a' && b <= 'f' || b >= 'A' && b <= 'F') {
+		if (b < '0' || b > '9') && (b < 'a' || b > 'f') && (b < 'A' || b > 'F') {
 			return "", str
 		}
 	}

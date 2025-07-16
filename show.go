@@ -10,7 +10,7 @@ const (
 	commitIndent = "    "
 )
 
-// BlobDetails contains details about a specific blob within a repository
+// BlobDetails contains details about a specific blob within a repository.
 type BlobDetails struct {
 	// Diff contains the blobs contents
 	Diff string
@@ -19,7 +19,7 @@ type BlobDetails struct {
 	Ref string
 }
 
-// CommitDetails contains details about a specific commit within a repository
+// CommitDetails contains details about a specific commit within a repository.
 type CommitDetails struct {
 	// Author represents a person who originally created the files
 	// within the repository
@@ -48,7 +48,7 @@ type CommitDetails struct {
 }
 
 // TagAnnotation contains details about an annotation associated with a tag
-// within a repository
+// within a repository.
 type TagAnnotation struct {
 	// Tagger represents a person who created the tag
 	Tagger Person
@@ -61,7 +61,7 @@ type TagAnnotation struct {
 	Message string
 }
 
-// TagDetails contains details about a specific tag within a repository
+// TagDetails contains details about a specific tag within a repository.
 type TagDetails struct {
 	// Annotation contains optional details about the annotation associated
 	// with the tag
@@ -74,7 +74,7 @@ type TagDetails struct {
 	Ref string
 }
 
-// TreeDetails contains details about a specifc tree within a repository
+// TreeDetails contains details about a specific tree within a repository.
 type TreeDetails struct {
 	// Entries contains the file and directory listing within a tree
 	Entries []string
@@ -84,7 +84,7 @@ type TreeDetails struct {
 }
 
 // Person represents a human that has performed an interaction against
-// a repository
+// a repository.
 type Person struct {
 	// Name of the person
 	Name string
@@ -94,7 +94,7 @@ type Person struct {
 }
 
 // ShowBlobs retrieves details about any number of blobs within the current
-// repository (working directory)
+// repository (working directory).
 func (c *Client) ShowBlobs(refs ...string) (map[string]BlobDetails, error) {
 	details := map[string]BlobDetails{}
 	for _, ref := range refs {
@@ -109,7 +109,7 @@ func (c *Client) ShowBlobs(refs ...string) (map[string]BlobDetails, error) {
 }
 
 // ShowCommits retrieves details about any number of commits within the current
-// repository (working directory)
+// repository (working directory).
 func (c *Client) ShowCommits(refs ...string) (map[string]CommitDetails, error) {
 	details := map[string]CommitDetails{}
 	for _, ref := range refs {
@@ -159,7 +159,7 @@ func parseCommit(str string) CommitDetails {
 }
 
 // ShowTags retrieves details about any number of tags within the current
-// repository (working directory)
+// repository (working directory).
 func (c *Client) ShowTags(refs ...string) (map[string]TagDetails, error) {
 	details := map[string]TagDetails{}
 	for _, ref := range refs {
@@ -205,7 +205,7 @@ func (c *Client) ShowTags(refs ...string) (map[string]TagDetails, error) {
 }
 
 // ShowTrees retrieves details about any number of trees within the current
-// repository (working directory)
+// repository (working directory).
 func (c *Client) ShowTrees(refs ...string) (map[string]TreeDetails, error) {
 	details := map[string]TreeDetails{}
 	for _, ref := range refs {

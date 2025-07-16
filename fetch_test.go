@@ -4,10 +4,11 @@ import (
 	"os"
 	"testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestFetch(t *testing.T) {
@@ -29,9 +30,9 @@ func TestFetch(t *testing.T) {
 }
 
 func TestFetchWithIgnoreTags(t *testing.T) {
-	log := `(tag: 0.3.0, main, origin/main) feat: third feature
-(tag: 0.2.0) feat: second feature
-(tag: 0.1.0) feat: first feature`
+	log := `(tag: 0.2.1, main, origin/main) fix: expiry of cache items is not consistent
+(tag: 0.2.0) feat: extend caching to include ttl configuration
+(tag: 0.1.0) feat: basic caching support`
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 
 	client, _ := git.NewClient()
@@ -39,7 +40,7 @@ func TestFetchWithIgnoreTags(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Empty(t, gittest.Tags(t))
-	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0", "0.3.0"}, gittest.RemoteTags(t))
+	assert.ElementsMatch(t, []string{"0.1.0", "0.2.0", "0.2.1"}, gittest.RemoteTags(t))
 }
 
 func TestFetchWithTags(t *testing.T) {
@@ -94,11 +95,11 @@ func TestFetchWithFetchRefSpecs(t *testing.T) {
 }
 
 func TestFetchWithUnshallow(t *testing.T) {
-	log := `(main, origin/main) fifth feature
-feat: fourth feature
-feat: third feature
-feat: second feature
-feat: first feature`
+	log := `(main, origin/main) fix: fifth feature
+docs: improve documentation around fetching specs
+test: extend suite of unit tests by including edge cases
+feat: extend support for fetching
+feat: add initial support for fetching`
 	gittest.InitRepository(t, gittest.WithRemoteLog(log))
 	shallowClone(t, gittest.Remote(t))
 

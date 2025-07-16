@@ -6,7 +6,7 @@ import (
 
 // CheckoutOption provides a way for setting specific options while attempting
 // to checkout a branch. Each supported option can customize how a branch is checked
-// out from the remote and integrated into the current repository (working directory)
+// out from the remote and integrated into the current repository (working directory).
 type CheckoutOption func(*checkoutOptions)
 
 type checkoutOptions struct {
@@ -18,7 +18,7 @@ type checkoutOptions struct {
 // any config defined within existing git config files. Config must be
 // provided as key value pairs, mismatched config will result in an
 // [ErrMissingConfigValue] error. Any invalid paths will result in an
-// [ErrInvalidConfigPath] error
+// [ErrInvalidConfigPath] error.
 func WithCheckoutConfig(kv ...string) CheckoutOption {
 	return func(opts *checkoutOptions) {
 		opts.Config = trim(kv...)
@@ -28,7 +28,7 @@ func WithCheckoutConfig(kv ...string) CheckoutOption {
 // Checkout will attempt to checkout a branch with the given name. If the branch
 // does not exist, it is created at the current working tree reference (or commit),
 // and then switched to. If the branch does exist, then switching to it restores
-// all working tree files
+// all working tree files.
 func (c *Client) Checkout(branch string, opts ...CheckoutOption) (string, error) {
 	options := &checkoutOptions{}
 	for _, opt := range opts {

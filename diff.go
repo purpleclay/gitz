@@ -6,21 +6,22 @@ import (
 	"strings"
 
 	"github.com/purpleclay/chomp"
+
 	"github.com/purpleclay/gitz/scan"
 )
 
 const (
-	// git diff header delimiter > @@ ... @@
+	// git diff header delimiter > @@ ... @@.
 	hdrDelim = "@@"
-	// prefix for lines added
+	// prefix for lines added.
 	addPrefix = "+"
-	// prefix for lines removed
+	// prefix for lines removed.
 	remPrefix = "-"
 )
 
 // DiffOption provides a way for setting specific options during a diff
 // operation. Each supported option can customize the way the diff is
-// executed against the current repository (working directory)
+// executed against the current repository (working directory).
 type DiffOption func(*diffOptions)
 
 type diffOptions struct {
@@ -28,10 +29,10 @@ type diffOptions struct {
 }
 
 // WithDiffPaths allows the diff to be targeted to specific files and
-// folers within the current repository (working directory). Paths to
+// folders within the current repository (working directory). Paths to
 // files and folders are relative to the root of the repository. All
-// leading and trailing whitepsace will be trimmed from the file paths,
-// allowing empty paths to be ignored
+// leading and trailing whitespace will be trimmed from the file paths,
+// allowing empty paths to be ignored.
 func WithDiffPaths(paths ...string) DiffOption {
 	return func(opts *diffOptions) {
 		opts.DiffPaths = trim(paths...)
@@ -39,7 +40,7 @@ func WithDiffPaths(paths ...string) DiffOption {
 }
 
 // FileDiff represents a snapshot containing all of the changes to
-// a file within a repository (working directory)
+// a file within a repository (working directory).
 type FileDiff struct {
 	// Path of the file within the repository (working directory)
 	Path string
@@ -50,7 +51,7 @@ type FileDiff struct {
 }
 
 // DiffChunk represents a snapshot of a single change (chunk) to
-// a file within a repository (working directory)
+// a file within a repository (working directory).
 type DiffChunk struct {
 	// Added optionally contains details of the text that has
 	// been added to a file as part of the current change
@@ -63,7 +64,7 @@ type DiffChunk struct {
 
 // DiffChange captures details about an individual chunk
 // within a git diff. It contains both the changed text and
-// its exact position (and line count) within the file
+// its exact position (and line count) within the file.
 type DiffChange struct {
 	// LineNo is the position within the file where the
 	// change starts

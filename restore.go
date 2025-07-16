@@ -8,16 +8,17 @@ import (
 // RestoreUsing will restore a given set of files back to their previous
 // known state within the current repository (working directory). By
 // inspecting each files [FileStatus], the correct decision can be made
-// when restoring it
+// when restoring it.
 func (c *Client) RestoreUsing(statuses []FileStatus) error {
 	for _, status := range statuses {
 		var err error
 
-		if status.Untracked() {
+		switch {
+		case status.Untracked():
 			err = c.removeUntrackedFile(status.Path)
-		} else if status.Modified() {
+		case status.Modified():
 			err = c.restoreFile(status)
-		} else if status.Renamed() {
+		case status.Renamed():
 			err = c.undoRenamedFile(status.Path)
 		}
 

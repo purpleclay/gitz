@@ -6,7 +6,7 @@ import (
 
 // PullOption provides a way for setting specific options while pulling changes
 // from the remote. Each supported option can customize how changes are pulled
-// from the remote and integrated into the current repository (working directory)
+// from the remote and integrated into the current repository (working directory).
 type PullOption func(*pullOptions)
 
 type pullOptions struct {
@@ -19,14 +19,14 @@ type pullOptions struct {
 // any config defined within existing git config files. Config must be
 // provided as key value pairs, mismatched config will result in an
 // [ErrMissingConfigValue] error. Any invalid paths will result in an
-// [ErrInvalidConfigPath] error
+// [ErrInvalidConfigPath] error.
 func WithPullConfig(kv ...string) PullOption {
 	return func(opts *pullOptions) {
 		opts.Config = trim(kv...)
 	}
 }
 
-// WithFetchAll will fetch the latest changes from all tracked remotes
+// WithFetchAll will fetch the latest changes from all tracked remotes.
 func WithFetchAll() PullOption {
 	return func(opts *pullOptions) {
 		opts.All = true
@@ -34,7 +34,7 @@ func WithFetchAll() PullOption {
 }
 
 // WithFetchTags will fetch all tags from the remote into local tag
-// references with the same name
+// references with the same name.
 func WithFetchTags() PullOption {
 	return func(opts *pullOptions) {
 		opts.Tags = true
@@ -43,7 +43,7 @@ func WithFetchTags() PullOption {
 
 // WithFetchDepthTo will limit the number of commits to be fetched from the
 // remotes history. If fetching into a shallow clone of a repository,
-// this can be used to shorten or deepen the existing history
+// this can be used to shorten or deepen the existing history.
 func WithFetchDepthTo(depth int) PullOption {
 	return func(opts *pullOptions) {
 		opts.Depth = depth
@@ -53,14 +53,14 @@ func WithFetchDepthTo(depth int) PullOption {
 // WithFetchForce will force the fetching of a remote branch into a local
 // branch with a different name (or refspec). Default behavior within
 // git prevents such an operation. Typically used in conjunction with
-// the [WithFetchRefSpecs] option
+// the [WithFetchRefSpecs] option.
 func WithFetchForce() PullOption {
 	return func(opts *pullOptions) {
 		opts.Force = true
 	}
 }
 
-// WithFetchIgnoreTags disables local tracking of tags from the remote
+// WithFetchIgnoreTags disables local tracking of tags from the remote.
 func WithFetchIgnoreTags() PullOption {
 	return func(opts *pullOptions) {
 		opts.NoTags = true
@@ -72,7 +72,8 @@ func WithFetchIgnoreTags() PullOption {
 // reference (or refspec) can be as simple as a name, where git will
 // automatically resolve any ambiguity, or as explicit as providing a
 // source and destination for reference within the remote. Check out the
-// official git documentation on how to write a more complex [refspec]
+// official git documentation on how to write a more complex [refspec].
+//
 // [refspec]: https://git-scm.com/docs/git-pull#Documentation/git-pull.txt-ltrefspecgt
 func WithPullRefSpecs(refs ...string) PullOption {
 	return func(opts *pullOptions) {
@@ -82,7 +83,7 @@ func WithPullRefSpecs(refs ...string) PullOption {
 
 // Pull all changes from a remote repository and immediately update the current
 // repository (working directory) with those changes. This ensures that your current
-// repository keeps track of remote changes and stays in sync
+// repository keeps track of remote changes and stays in sync.
 func (c *Client) Pull(opts ...PullOption) (string, error) {
 	options := &pullOptions{}
 	for _, opt := range opts {
@@ -103,6 +104,6 @@ func (c *Client) Pull(opts ...PullOption) (string, error) {
 	}
 
 	buf.WriteString(" pull")
-	buf.WriteString(options.fetchOptions.String())
+	buf.WriteString(options.String())
 	return c.Exec(buf.String())
 }

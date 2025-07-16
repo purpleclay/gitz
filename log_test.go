@@ -6,10 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	git "github.com/purpleclay/gitz"
-	"github.com/purpleclay/gitz/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	git "github.com/purpleclay/gitz"
+	"github.com/purpleclay/gitz/gittest"
 )
 
 func TestLog(t *testing.T) {
@@ -27,7 +28,7 @@ feat: add first operation to library`
 
 	lines := countLogLines(t, out.Raw)
 	require.Equal(t, 6, lines)
-	require.Equal(t, 6, len(out.Commits))
+	require.Len(t, out.Commits, 6)
 
 	assert.Contains(t, out.Raw, "fix: parsing error when input string is too long")
 	assert.Equal(t, "fix: parsing error when input string is too long", out.Commits[0].Message)
@@ -68,7 +69,7 @@ across multiple lines`, out.Commits[0].Message)
 // A utility function that will scan the raw output from a git log and
 // count all of the returned log lines. It is important to note, that
 // in some scenarios the log will contain the [gittest.InitialCommit]
-// used to initialize the repository
+// used to initialize the repository.
 func countLogLines(t *testing.T, log string) int {
 	t.Helper()
 	scanner := bufio.NewScanner(strings.NewReader(log))
@@ -243,11 +244,15 @@ func TestLogWithPaths(t *testing.T) {
 func overwriteFile(t *testing.T, path, content string) {
 	t.Helper()
 
+	// #nosec G304
 	fi, err := os.Create(path)
 	require.NoError(t, err)
-	defer fi.Close()
+	defer func() {
+		require.NoError(t, fi.Close())
+	}()
 
-	fi.WriteString(content)
+	_, err = fi.WriteString(content)
+	require.NoError(t, err)
 	require.NoError(t, fi.Sync())
 }
 
@@ -385,8 +390,8 @@ chore: configure basic structure of project`
 }
 
 func TestWithGrep(t *testing.T) {
-	log := `feat: add option to match commits by regex
-docs: document how to use new option for commit matching
+	log := `feat: add option to match commits using grep
+docs: document how to use new option for grep matching
 chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6`
 
 	gittest.InitRepository(t, gittest.WithLog(log))
@@ -397,8 +402,8 @@ chore(deps): bump dependabot/fetch-metadata from 1.3.5 to 1.3.6`
 
 	lines := countLogLines(t, out.Raw)
 	require.Equal(t, 2, lines)
-	assert.Contains(t, out.Raw, "feat: add option to match commits by regex")
-	assert.Contains(t, out.Raw, "docs: document how to use new option for commit matching")
+	assert.Contains(t, out.Raw, "feat: add option to match commits using grep")
+	assert.Contains(t, out.Raw, "docs: document how to use new option for grep matching")
 }
 
 func TestWithGrepAndMatchAll(t *testing.T) {

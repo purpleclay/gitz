@@ -7,7 +7,7 @@ import (
 
 // CommitOption provides a way for setting specific options during a commit
 // operation. Each supported option can customize the way the commit is
-// created against the current repository (working directory)
+// created against the current repository (working directory).
 type CommitOption func(*commitOptions)
 
 type commitOptions struct {
@@ -20,7 +20,7 @@ type commitOptions struct {
 
 // WithAllowEmpty allows a commit to be created without having to track
 // any changes. This bypasses the default protection by git, preventing
-// a commit from having the exact same tree as its parent
+// a commit from having the exact same tree as its parent.
 func WithAllowEmpty() CommitOption {
 	return func(opts *commitOptions) {
 		opts.AllowEmpty = true
@@ -32,7 +32,7 @@ func WithAllowEmpty() CommitOption {
 // any config defined within existing git config files. Config must be
 // provided as key value pairs, mismatched config will result in an
 // [ErrMissingConfigValue] error. Any invalid paths will result in an
-// [ErrInvalidConfigPath] error
+// [ErrInvalidConfigPath] error.
 func WithCommitConfig(kv ...string) CommitOption {
 	return func(opts *commitOptions) {
 		opts.Config = trim(kv...)
@@ -43,7 +43,7 @@ func WithCommitConfig(kv ...string) CommitOption {
 // with the committers email address. Overriding this behavior is possible
 // through the user.signingkey config setting. This option does not need
 // to be explicitly called if the commit.gpgSign config setting is set to
-// true
+// true.
 func WithGpgSign() CommitOption {
 	return func(opts *commitOptions) {
 		opts.Signed = true
@@ -51,8 +51,8 @@ func WithGpgSign() CommitOption {
 }
 
 // WithGpgSigningKey will create a GPG-signed commit using the provided GPG
-// key ID, overridding any default GPG key set by the user.signingKey git
-// config setting
+// key ID, overriding any default GPG key set by the user.signingKey git
+// config setting.
 func WithGpgSigningKey(key string) CommitOption {
 	return func(opts *commitOptions) {
 		opts.Signed = true
@@ -62,7 +62,7 @@ func WithGpgSigningKey(key string) CommitOption {
 
 // WithNoGpgSign ensures the created commit will not be GPG signed
 // regardless of the value assigned to the repositories commit.gpgSign
-// git config setting
+// git config setting.
 func WithNoGpgSign() CommitOption {
 	return func(opts *commitOptions) {
 		opts.ForceNoSigned = true
@@ -71,7 +71,7 @@ func WithNoGpgSign() CommitOption {
 
 // Commit a snapshot of changes within the current repository (working directory)
 // and describe those changes with a given log message. Commit behavior can be
-// customized through the use of options
+// customized through the use of options.
 func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 	options := &commitOptions{}
 	for _, opt := range opts {
@@ -112,7 +112,7 @@ func (c *Client) Commit(msg string, opts ...CommitOption) (string, error) {
 	return c.Exec(buf.String())
 }
 
-// CommitVerification contains details about a GPG signed commit
+// CommitVerification contains details about a GPG signed commit.
 type CommitVerification struct {
 	// Author represents a person who originally created the files
 	// within the repository
@@ -133,7 +133,7 @@ type CommitVerification struct {
 }
 
 // VerifyCommit validates that a given commit has a valid GPG signature
-// and returns details about that signature
+// and returns details about that signature.
 func (c *Client) VerifyCommit(hash string) (*CommitVerification, error) {
 	out, err := c.Exec("git verify-commit -v " + hash)
 	if err != nil {
@@ -148,13 +148,13 @@ func (c *Client) VerifyCommit(hash string) (*CommitVerification, error) {
 	committer := parsePerson(pair[1])
 	out, _ = line()(out)
 
-	out, mesage := until("gpg: ")(out)
+	out, message := until("gpg: ")(out)
 
 	return &CommitVerification{
 		Author:    author,
 		Committer: committer,
 		Hash:      hash,
-		Message:   strings.TrimSpace(mesage),
+		Message:   strings.TrimSpace(message),
 		Signature: parseSignature(out),
 	}, nil
 }

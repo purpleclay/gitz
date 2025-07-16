@@ -5,9 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/purpleclay/gitz/scan"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/purpleclay/gitz/scan"
 )
 
 func TestNullTerminatedLines(t *testing.T) {
