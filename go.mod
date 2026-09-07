@@ -1,10 +1,10 @@
 module github.com/purpleclay/gitz
 
-go 1.22
+go 1.22.12
 
 require (
-	github.com/purpleclay/chomp v0.4.0
-	github.com/stretchr/testify v1.10.0
+	github.com/purpleclay/chomp v0.8.0
+	github.com/stretchr/testify v1.11.1
 	mvdan.cc/sh/v3 v3.10.0
 )
 
